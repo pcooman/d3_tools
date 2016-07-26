@@ -1,0 +1,277 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="//d3js.org/d3.v4.min.js"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+
+<style>
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  width: 140px;
+}
+.chart {
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+.axis path,
+.axis line {
+  stroke: #999;
+  fill: none;
+}
+.x.axis path {
+  display: none;
+}
+.tick {
+  fill: #999;
+}
+
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+
+path {
+  fill: #ccc;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
+body, html { overflow: scroll; height: 100% }
+  
+.q0-9 { fill:rgb(247,251,255); }
+.q1-9 { fill:rgb(222,235,247); }
+.q2-9 { fill:rgb(198,219,239); }
+.q3-9 { fill:rgb(158,202,225); }
+.q4-9 { fill:rgb(107,174,214); }
+.q5-9 { fill:rgb(66,146,198); }
+.q6-9 { fill:rgb(33,113,181); }
+.q7-9 { fill:rgb(8,81,156); }
+.q8-9 { fill:rgb(8,48,107); }
+  
+.toss-up { fill:LightGrey; } 
+.lean_R  { fill:Pink; }
+.solid_R { fill:Red; }
+.lean_D { fill: LightSkyBlue; }
+.solid_D { fill: MediumBlue}  
+
+</style>
+    
+<script>
+draw_map = function(vis_width, vis_height,params) {
+	var margin = {top: 10, right: 20, bottom: 0, left: 75};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", width)
+    .attr("height", height);
+  var chart = d3.select(".chart-outer")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	var path = d3.geo.path();
+
+	var svg = d3.select(".chart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+	
+  if (params['gaxis'] == 'counties') {
+    d3.json("https://rawgit.com/pcooman/d3_tools/master/us.json", function(error, topology) {
+      if (error) throw error;
+
+      svg.selectAll("path")
+          .data(topojson.feature(topology, topology.objects.counties).features)
+        .enter().append("path")
+          .attr("class", function(d) {return "fips_"+d.id;})
+          .attr("d", path);
+    });
+  } else if (params['gaxis'] == 'states') {
+    d3.json("https://rawgit.com/pcooman/d3_tools/master/us.json", function(error, topology) {
+      if (error) throw error;
+			debugger;
+      svg.selectAll("path")
+          .data(topojson.feature(topology, topology.objects.states).features)
+        .enter().append("path")
+          .attr("class", function(d) {return "fips_"+d.id;})
+          .attr("d", path);
+    });
+  } else if (params['gaxis'] == 'congress') {
+    d3.json("https://rawgit.com/pcooman/d3_tools/master/us-congress-113.json", function(error, topology) {
+      if (error) throw error;
+			debugger;
+      svg.selectAll("path")
+          .data(topojson.feature(topology, topology.objects.districts).features)
+        .enter().append("path")
+          .attr("class", function(d) {return "fips_"+d.id;})
+          .attr("d", path);
+    });
+  }
+}
+
+add_var = function(data, params) {
+  
+  var quantize = d3.scaleQuantize()
+    .domain([0, 0.15])
+    .range(d3.range(9).map(function(i) { return "q" + i + "-9"; }));
+  
+  var quantize_district = function(x) {
+    if (x <= -20) { 
+      return "solid_D"
+    } else if (x <= -10) {
+      return "lean_D"
+    } else if (x >= 20) {
+      return "solid_R"
+    } else if (x >= 10) {
+      return "lean_R"
+    } else {
+      return "Toss-up"
+    }
+  }
+  
+  console.log(params)
+
+  for (i=0; i<data.length; i++) {
+    if (params['gaxis'] == 'congress') {
+    	d3.selectAll("path.fips_"+data[i][params['xaxis']])
+      	.attr("class", "fips_"+data[i][params['xaxis']]+" "+quantize_district(data[i][params['yaxis']]))
+    } else {
+      d3.selectAll("path.fips_"+data[i][params['xaxis']])
+      	.attr("class", "fips_"+data[i][params['xaxis']]+" "+quantize(data[i][params['yaxis']]))
+    }
+  }
+}
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 960;
+var def_vis_height = 2000;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+  
+var createGeoToolbar = function(def_vis_width, def_vis_height, params) {
+  	var GEO_OPTIONS = ['counties','states','congress'];
+  	$("#vis").prepend("<div id='toolbar'></div>");
+  	var dim = "g"
+    var label = "GEO_type"
+    $("#toolbar")
+      .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+      .attr("selected",GEO_OPTIONS[0])
+    // populate the dropdown with the geography types
+    for(i_label in GEO_OPTIONS) {
+      geo_type = GEO_OPTIONS[i_label];
+      $("#"+dim+"-var").append("<option value='"+geo_type+"'>"+geo_type+"</option>");
+    }
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        d3.selectAll("path").remove()
+        draw_map(def_vis_width, def_vis_height, params);
+     }
+ 		}(dim));
+}
+var createToolbar = function(data, params) {
+  // an array of the column names in the original data source
+  var columns = Object.keys(data[0]);
+  
+  // create pickers for both the x and y axis
+  var dimensions = ['x', 'y'];
+  var toolbar_labels = ['GEO id', 'Var'];
+  
+  for(var i_dim in dimensions) {
+    var dim = dimensions[i_dim];
+    var label = toolbar_labels[i_dim];
+    
+    // create the select dropdown
+    $("#toolbar").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+    // populate the dropdown with the columns in the dataset
+    for(i_col in columns) {
+      col_name = columns[i_col];
+      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+    }
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        debugger;
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        debugger;
+        add_var(data, params);
+     }
+ 		}(dim));
+  }
+};
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+
+  var params = config['params'] || {};
+  
+  // sizing
+  if('dimensions' in config) {
+    def_vis_width = config['dimensions']['width'];
+    def_vis_height = config['dimensions']['height'];
+  }
+  // tooltips
+  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+  
+  createGeoToolbar(def_vis_width, def_vis_height,params);
+  draw_map(def_vis_width, def_vis_height,params);
+  
+  d3.csv(config['dataUrl'], function(error, data) {
+    if(config['mode'] == 'edit') {
+      createToolbar(data, params);
+      def_vis_height = def_vis_height - 50; // account for toolbar
+    }
+    add_var(data, params);
+  });
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+//
+// END toolbar edit code
+//////////////////////////////////////////////////////////
+</script>
+
+<div id='vis'>
+  <svg class='chart-outer'><g class="chart"></g></svg>
+</div>
+</html>

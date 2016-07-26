@@ -1,0 +1,260 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="//rawgit.com/jasondavies/d3-cloud/v1.2.1/build/d3.layout.cloud.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+
+<style>
+input {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+  
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 130;
+}
+.chart {
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+</style>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active" id="a_tab">
+            <h1>Graph</h1>
+            <acontent><div id='vis'>
+              <svg class='chart-outer'><g class="chart"></g></svg>
+            </div>
+            </acontent>
+        </div>
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<p>Add manual here! (In HTML)</p>
+            <p>Add a table to demonstrate the row/column requirements on the input table.</p>
+            <p>Data dictionary for the iputs</p>
+          	<p>Common issues! (e.g. if words are too large they will be omitted entirely, without warning)</p>
+            <bcontent></bcontent>
+        </div>
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+            <p>Add an example image. What would the plot look like if you did everything correctly? (Again, in HTML)</p>
+            <img src="http://uigalleries.com/previews/xiyQ3N3UH-wordcloud-d3js.png">
+            <ccontent></ccontent>
+        </div>
+    </div>
+</div>
+
+<script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+
+draw = function(data, vis_width, vis_height, params) {
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+  var margin = {top: 10, right: 20, bottom: 60, left: 75};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", vis_width)
+    .attr("height", vis_height);
+  var chart = d3.select(".chart")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  var minFontsize = parseInt(params['minaxis']) || 0,
+	maxFontsize = parseInt(params['maxaxis']) || 75;
+	
+  var wordScale = d3.scale.linear()
+	.range([minFontsize,maxFontsize])
+	.domain([
+		d3.min(data, function(d) {return parseInt(d[params['yaxis']]) || 0;}),
+		d3.max(data, function(d) {return parseInt(d[params['yaxis']]) || 0;})
+	])
+  var fill = d3.scale.category20();
+		
+  d3.layout.cloud().size([width,height])
+	.words(data)
+	.padding(5)		// amount of white space in between words
+	//.padding(0)
+	.rotate(function() {return ~~(Math.random()*2)*90-45;})
+  //.rotate(0)
+	.font("Impact")
+  .text(function(d) {return d[params['xaxis']];})
+	.fontSize(function(d) {return wordScale(d[params['yaxis']]);})
+	.on("end", drawCloud)
+	.start();
+		
+  function drawCloud(words) {
+		d3.select(".chart-outer").append("svg")
+      .attr("class", "cloud")
+			.attr("width", width)
+			.attr("height", height)
+		  .append("g")
+			.attr("transform", "translate("+ (width/2) +", "+ (height/2) +")")
+		  .selectAll("text")
+			.data(words)
+		  .enter().append("text")
+    	.style("font-size", function(d) {return d.size + "px";})
+			.style("font-family", "Impact")
+			.style("fill", function(d,i) {return fill(i);})
+    	.attr("class", "word")
+			.attr("text-anchor", "middle")
+			.attr("transform", function(d) {
+				return "translate(" + [d.x,d.y] + ")rotate(" + d.rotate + ")";
+				})
+			.text(function(d) {return d[params['xaxis']];})
+                .on("mouseover", function(d) {return showDetails(d[params['xaxis']]+": "+d[params['yaxis']],this);})
+                .on("mouseout", function(d) {return hideDetails();})
+	}
+}
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 475;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(data, params) {
+  // an array of the column names in the original data source
+  var columns = Object.keys(data[0]);
+  // set up toolbar
+  $("#vis").prepend("<div id='toolbar'></div>");
+  // create pickers for both the x and y axis
+  var dimensions = ['x', 'y'];
+  var toolbar_labels = ['words', 'counts'];
+
+  for(var i_dim in dimensions) {
+    var dim = dimensions[i_dim];
+    var label = toolbar_labels[i_dim];
+    // create the select dropdown
+    $("#toolbar").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+    // populate the dropdown with the columns in the dataset
+    for(i_col in columns) {
+      col_name = columns[i_col];
+      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+    }
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        d3.selectAll(".word").remove()
+        
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        draw(data, def_vis_width, def_vis_height, params);
+      }
+    }(dim));
+  }
+  
+  var dimensions_size = ['min','max'];
+  var toolbar_labels = ['Min Font Size', 'Max Font Size'];
+  
+  for(var i_dim in dimensions_size) {
+    var dim = dimensions_size[i_dim];
+    var label = toolbar_labels[i_dim];
+    // create the select dropdown 
+    $("#toolbar").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><input type='number' min="+0+" max="+1000+" step="+5+" id='"+dim+"-var'>px")
+    // populate the dropdown with the columns in the dataset
+    for(i_col in columns) {
+      col_name = columns[i_col];
+      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+    }
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        d3.selectAll(".word").remove()
+        
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        draw(data, def_vis_width, def_vis_height, params);
+      }
+    }(dim));
+  }
+};
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+
+  var params = config['params'] || {};
+  
+  // sizing
+  if('dimensions' in config) {
+    def_vis_width = config['dimensions']['width'];
+    def_vis_height = config['dimensions']['height'];
+  }
+  // tooltips
+  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+  d3.csv(config['dataUrl'], function(error, data) {
+    if(config['mode'] == 'edit') {
+      createToolbar(data, params);
+      def_vis_height = def_vis_height - 50; // account for toolbar
+    }
+    draw(data, def_vis_width, def_vis_height, params);
+  });
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+///////////////////////////////////////////////////////////////////////////////
+$(".atab").click(function() {
+
+})
+
+</script>
+
+</html>

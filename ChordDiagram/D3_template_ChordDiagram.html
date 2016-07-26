@@ -1,0 +1,369 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="https://rawgit.com/jashkenas/underscore/master/underscore-min.js"></script>
+<script src="https://rawgit.com/d3/d3.github.com/master/colorbrewer.v1.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+
+<script>
+draw = function(data, vis_width, vis_height, params) {
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+  var margin = {top: 10, right: 20, bottom: 60, left: 75};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", vis_width)
+    .attr("height", vis_height);
+  var chart = d3.select(".chart")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+  // blog-post - http://www.delimited.io/blog/2013/12/8/chord-diagrams-in-d3
+  //*******************************************************************
+  //  CHORD MAPPER 
+  //*******************************************************************
+  function chordMpr (data) {
+    var mpr = {}, mmap = {}, n = 0,
+        matrix = [], filter, accessor;
+
+    mpr.setFilter = function (fun) {
+      filter = fun;
+      return this;
+    },
+    mpr.setAccessor = function (fun) {
+      accessor = fun;
+      return this;
+    },
+    mpr.getMatrix = function () {
+      matrix = [];
+      _.each(mmap, function (a) {
+        if (!matrix[a.id]) matrix[a.id] = [];
+        _.each(mmap, function (b) {
+         var recs = _.filter(data, function (row) {
+            return filter(row, a, b);
+          })
+          matrix[a.id][b.id] = accessor(recs, a, b);
+        });
+      });
+      return matrix;
+    },
+    mpr.getMap = function () {
+      return mmap;
+    },
+    mpr.printMatrix = function () {
+      _.each(matrix, function (elem) {
+        console.log(elem);
+      })
+    },
+    mpr.addToMap = function (value, info) {
+      if (!mmap[value]) {
+        mmap[value] = { name: value, id: n++, data: info }
+      }
+    },
+    mpr.addValuesToMap = function (varName, info) {
+      var values = _.uniq(_.pluck(data, varName));
+      _.map(values, function (v) {
+        if (!mmap[v]) {
+          mmap[v] = { name: v, id: n++, data: info }
+        }
+      });
+      return this;
+    }
+    return mpr;
+  }
+  //*******************************************************************
+  //  CHORD READER
+  //*******************************************************************
+  function chordRdr (matrix, mmap) {
+    return function (d) {
+      var i,j,s,t,g,m = {};
+      if (d.source) {
+        i = d.source.index; j = d.target.index;
+        s = _.where(mmap, {id: i });
+        t = _.where(mmap, {id: j });
+        m.sname = s[0].name;
+        m.sdata = d.source.value;
+        m.svalue = +d.source.value;
+        m.stotal = _.reduce(matrix[i], function (k, n) { return k + n }, 0);
+        m.tname = t[0].name;
+        m.tdata = d.target.value;
+        m.tvalue = +d.target.value;
+        m.ttotal = _.reduce(matrix[j], function (k, n) { return k + n }, 0);
+      } else {
+        g = _.where(mmap, {id: d.index });
+        m.gname = g[0].name;
+        m.gdata = g[0].data;
+        m.gvalue = d.value;
+      }
+      m.mtotal = _.reduce(matrix, function (m1, n1) { 
+        return m1 + _.reduce(n1, function (m2, n2) { return m2 + n2}, 0);
+      }, 0);
+      return m;
+    }
+  }
+  
+  //*******************************************************************
+  //  DRAW THE CHORD DIAGRAM
+  //*******************************************************************
+  function drawChords (matrix, mmap) {
+    var w = 500, h = 500, r1 = h / 2, r0 = r1 - 110;
+
+    var chord = d3.layout.chord()
+        .padding(.02)
+        .sortSubgroups(d3.descending)
+        .sortChords(d3.descending);
+
+    var arc = d3.svg.arc()
+        .innerRadius(r0)
+        .outerRadius(r0 + 20);
+
+    var svg = d3.select(".chart").append("svg:svg")
+        .attr("width", w)
+        .attr("height", h)
+        .append("svg:g")
+        .attr("id", "circle")
+        .attr("transform", "translate(" + w / 2 + "," + h / 2 + ")");
+
+    svg.append("circle")
+        .attr("r", r0 + 20);
+
+    var rdr = chordRdr(matrix, mmap);
+    chord.matrix(matrix);
+
+    var g = svg.selectAll("g.group")
+        .data(chord.groups())
+        .enter().append("svg:g")
+        .attr("class", "group")
+        .on("mouseover", mouseover)
+        .on("mouseout", function (d) { d3.select("#tooltip").style("visibility", "hidden") });
+
+    g.append("svg:path")
+        .style("stroke", "grey")
+        .style("fill", function(d) { return d3.interpolateSpectral(d.index/14.0); })
+        .attr("d", arc);
+
+    g.append("svg:text")
+        .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+        .attr("dy", ".35em")
+        .style("font-family", "helvetica, arial, sans-serif")
+        .style("font-size", "9px")
+        .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+        .attr("transform", function(d) {
+            return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+             + "translate(" + (r0 + 26) + ")"
+             + (d.angle > Math.PI ? "rotate(180)" : "");
+        })
+        .text(function(d) { return rdr(d).gname; });
+
+    var chordPaths = svg.selectAll("path.chord")
+        .data(chord.chords())
+        .enter().append("svg:path")
+        .attr("class", "chord")
+        .style("stroke", "grey")
+        .style("fill", function(d) { 
+          debugger;
+          return d3.interpolateSpectral(d.source.index/14.0); })
+        .attr("d", d3.svg.chord().radius(r0))
+        .on("mouseover", function (d) {
+            d3.select("#tooltip")
+            .style("visibility", "visible")
+            .html(chordTip(rdr(d)))
+            .style("top", function () { return (d3.event.pageY - 100)+"px"})
+            .style("left", function () { return (d3.event.pageX - 100)+"px";})
+        })
+        .on("mouseout", function (d) { d3.select("#tooltip").style("visibility", "hidden") });
+
+    function chordTip (d) {
+        var p = d3.format(".1%"), q = d3.format(",.2r")
+        return "Chord Info:<br/>"
+        +  d.sname + " → " + d.tname
+        + ": " + p(d.svalue) + "<br/>"
+        + d.tname + " → " + d.sname
+        + ": " + p(d.tvalue) + "<br/>";
+        }
+          
+    function groupTip (d) {
+        var p = d3.format(".1%"), q = d3.format(",.2r")
+        return "Group Info:<br/>"
+        + d.gname + " : " + p(d.gvalue) + "<br/>";
+        }
+
+    function mouseover(d, i) {
+        d3.select("#tooltip")
+        .style("visibility", "visible")
+        .html(groupTip(rdr(d)))
+        .style("top", function () { return (d3.event.pageY - 80)+"px"})
+        .style("left", function () { return (d3.event.pageX - 130)+"px";})
+
+    chordPaths.classed("fade", function(p) {
+        return p.source.index != i
+        && p.target.index != i;
+        });
+    }
+  }
+  
+  if (params['xaxis'] != null & params['yaxis'] != null & params['zaxis'] != null) {
+
+  	var mpr = chordMpr(data);
+  
+    mpr.addValuesToMap(params['xaxis'])
+      .setFilter(function (row, a, b) {
+        return (row[params['xaxis']] === a.name && row[params['yaxis']] === b.name)
+        })
+      .setAccessor(function (recs, a, b) {
+        if (!recs[0]) return 0;
+           return +recs[0][params['zaxis']];
+        });
+
+    drawChords(mpr.getMatrix(), mpr.getMap());
+  }
+}
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 475;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(data, params) {
+  // an array of the column names in the original data source
+  var columns = Object.keys(data[0]);
+  // set up toolbar
+  $("#vis").prepend("<div id='toolbar'></div>");
+  // create pickers for both the x and y axis
+  var dimensions = ['x', 'y','z'];
+  var toolbar_labels = ['origins', 'destinations', 'counts'];
+
+  for(var i_dim in dimensions) {
+    var dim = dimensions[i_dim];
+    var label = toolbar_labels[i_dim];
+    // create the select dropdown
+    $("#toolbar").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+    // populate the dropdown with the columns in the dataset
+    for(i_col in columns) {
+      col_name = columns[i_col];
+      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+    }
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        d3.selectAll(".word").remove()
+        
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        //CivisResult.saveParams(params);
+        draw(data, def_vis_width, def_vis_height, params);
+      }
+    }(dim));
+  }
+};
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+
+  var params = config['params'] || {};
+  
+  // sizing
+  if('dimensions' in config) {
+    def_vis_width = config['dimensions']['width'];
+    def_vis_height = config['dimensions']['height'];
+  }
+  // tooltips
+  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+  d3.csv(config['dataUrl'], function(error, data) {
+    if(config['mode'] == 'edit') {
+      createToolbar(data, params);
+      def_vis_height = def_vis_height - 50; // account for toolbar
+    }
+    draw(data, def_vis_width, def_vis_height, params);
+  });
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+//
+// END toolbar edit code
+//////////////////////////////////////////////////////////
+</script>
+
+<style>
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+  
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  width: 140px;
+}
+.chart {
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+
+#tooltip {
+  color: white;
+  opacity: .9;
+  background: #333;
+  padding: 5px;
+  border: 1px solid lightgrey;
+  border-radius: 5px;
+  position: absolute;
+  z-index: 10;
+  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+      
+#circle circle {
+  fill: none;
+  pointer-events: all;
+}
+      
+path.group {
+  fill-opacity: .8;
+}
+      
+path.chord {
+  fill-opacity: .8;
+  stroke: #000;
+  stroke-width: .25px;
+}
+      
+#circle:hover path.fade {
+  display: none;
+}
+</style>
+
+<div id='vis'>
+  <svg class='chart-outer'><g class="chart"></g></svg>
+</div>
+</html>
