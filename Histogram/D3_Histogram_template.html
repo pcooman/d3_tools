@@ -1,0 +1,434 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="//rawgit.com/jasondavies/d3-cloud/v1.2.1/build/d3.layout.cloud.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+
+<style>
+input {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+  
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 130;
+}
+  
+.chart {
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+  
+rect {
+  shape-rendering: crispEdges;
+  fill-opacity: 0.5;
+}
+
+.line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.y.axis path {
+  display: none;
+}
+
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+  
+body, html { overflow: scroll; height: 100% }
+  
+</style>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+      
+        <div class="tab-pane active" id="a_tab">
+            <h1>Graph</h1>
+            <acontent><div id='vis'>
+              <svg class='chart-outer'><g class="chart"></g></svg>
+            </div>
+            </acontent>
+        </div>
+      
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<h2>Introduction</h2>
+          	<p>This section provides a manual for the Word Cloud visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<h2>Inputs</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Toolbar_empty.png?raw=true">
+    				<ul>
+              <li><b>Words:</b> A dropdown menu to select the column in the data table that contains the words.</li>
+              <li><b>Counts:</b> A dropdown menu to select the column in the data table that contains the word count.</li>
+              <li><b>Min Font Size:</b> An input form to specifiy the minimum font size. This will be the font of the least frequent word. This value increments and decrements in steps of size 5 and has been set to 0 by default.</li>
+              <li><b>Max Font Size:</b> An input form to specify the maximum font size. This will be the font size of the most frequent word. This value increments and decrements in steps of size 5 and has been set to 75 pixels by default.</li>
+            </ul>
+          	<h2>Data table</h2>
+          	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
+          	<p>Each row in the table should correspond to a single word. If a word appears twice, it will be plotted twice. You are responsible for removing duplicate rows. You will need at least one column with words and at least one column with corresponding word counts. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<h2>Known issues</h2>
+          	<p>If you set the font size too large, not all words will be able to fit inside the plotting window. In that case, the template drops the largest, most frequent words. We recoomend that you start by selecting a small Max Font Size and then gradually increase the font size while monitoring the largest words. </p>
+            <bcontent></bcontent>
+        </div>
+      
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+          	<h2>Introduction</h2>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a word cloud of the 2012 Democratic and Republican Convention speeches. The data can be found either on Platform (schema.table = <i>pcooman.conventions</i> on redshift-general) or here: <i>https://gist.github.com/mollietaylor/3671518</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+            <h2>Data table</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
+          	<p>In this table, the <i>wordper25k</i> column contains the word we want to plot and the <i>democrats</i> and <i>republicans</i> columns contain the word counts from the 2012 DNC and RNC speecehs respectively. You don't need to worry about data types. D3 reads in all data as strings, so our code automatically converts the word counts to integers.</p>
+          	<h2>Sample plot</h2>
+          	<p>If everything goes well. Your plot should look something like this:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example.png?raw=true">
+          	<p>The word cloud layout randomizes the position and rotation of words, so your plot may looks slightly different from the one show above. This is fine, just make sure the largest words ("Obama" for <i>Democrats</i> or "Romney" for <i>Republicans</i>) have been included.</p>
+            <p>If you hover over a word (in your own D3 plot, not in the static sample image shown above), a tooltip should pop up, indicating the word and its word count. This is a handy way to check the counts of less frequent, barely visible words.The following image shows ane xample of this tooltip:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Tooltip.png?raw=true">
+            <ccontent></ccontent>
+        </div>
+      
+    </div>
+</div>
+
+<script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+  
+draw = function(data, vis_width, vis_height, params) {
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+  var margin = {top: 10, right: 20, bottom: 60, left: 75};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", vis_width)
+    .attr("height", vis_height);
+  var chart = d3.select(".chart")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+ // var data = [79,54,74,62,85,55,88,85,51,85,54,84,78,47,83,52,62,84,52,79,51,47,78,69,74,83,55,76,78,79,73,77,66,80,74,52,48,80,59,90,80,58,84,58,73,83,64,53,82,59,75,90,54,80,54,83,71,64,77,81,59,84,48,82,60,92,78,78,65,73,82,56,79,71,62,76,60,78,76,83,75,82,70,65,73,88,76,80,48,86,60,90,50,78,63,72,84,75,51,82,62,88,49,83,81,47,84,52,86,81,75,59,89,79,59,81,50,85,59,87,53,69,77,56,88,81,45,82,55,90,45,83,56,89,46,82,51,86,53,79,81,60,82,77,76,59,80,49,96,53,77,77,65,81,71,70,81,93,53,89,45,86,58,78,66,76,63,88,52,93,49,57,77,68,81,81,73,50,85,74,55,77,83,83,51,78,84,46,83,55,81,57,76,84,77,81,87,77,51,78,60,82,91,53,78,46,77,84,49,83,71,80,49,75,64,76,53,94,55,76,50,82,54,75,78,79,78,78,70,79,70,54,86,50,90,54,54,77,79,64,75,47,86,63,85,82,57,82,67,74,54,83,73,73,88,80,71,83,56,79,78,84,58,83,43,60,75,81,46,90,46,74];
+  
+  if (params['yaxis'].length > 0) {
+    var classes = d3.set(data.map(function(d) { return d[params['yaxis']];})).values();
+	  var count = classes.length;
+  } else {
+    var classes = [params['xaxis']];
+    var count = 1
+  }
+
+  var x = d3.scale.linear()
+    .domain([
+     	d3.min(data, function(d) {return parseFloat(d[params['xaxis']]) || 0;}),
+			d3.max(data, function(d) {return parseFloat(d[params['xaxis']]) || 0;})])
+    .range([0, width]);
+
+	var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+	var histogram = d3.layout.histogram()
+    .frequency(false)
+    .bins(x.ticks(params['binaxis']));  
+    
+  var data_split = [];
+  var data_hist = [];
+  var max_hist = [];
+  for (var i=1; i<=count; i++) {
+    var data_class = data.filter(function(d) {
+        if (count > 1) {return d[params['yaxis']] == classes[i-1]}
+        else {return d;}})
+    var data_arr = data_class.map(function(d) { return d[params['xaxis']]; });
+    data_split.push(data_arr)
+    data_hist_new = histogram(data_split[i-1])
+    data_hist.push(data_hist_new)
+    max_hist.push(d3.max(data_hist_new.map(function(d) {return d['y'];})))
+  }
+
+  var y = d3.scale.linear()
+    .domain([
+      0,
+      d3.max(max_hist)])
+    .range([height, 0]);
+  
+  
+	var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .tickFormat(d3.format("%"));
+  
+  var line = d3.svg.line()
+  	.interpolate("basis")
+    .x(function(d) { return x(d['x'] + d['dx']/2); })
+    .y(function(d) { return y(d['y']); });
+
+	var svg = d3.select(".chart-outer").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis)
+  .append("text")
+    .attr("class", "label")
+    .attr("x", width)
+    .attr("y", -6)
+    .style("text-anchor", "end")
+
+	svg.append("g")
+    .attr("class", "y axis")
+    .call(yAxis);
+  
+  // var	kde = kernelDensityEstimator(epanechnikovKernel(params['smoothaxis']), x.ticks(100));
+
+  debugger;
+  // kde(data_arr)
+  
+  svg.selectAll(".legend")
+      .data(classes)  
+    .enter().insert("circle", ".legend")
+      .attr("class", "legend")
+      .attr("cx", width - 170)
+      .attr("cy", function (d,i) { return 5 + 30*i;})
+      .attr("r", 10)
+      .style("fill", function(d,i) {return d3.interpolateSpectral(1-(i/count)); })
+    
+   svg.selectAll(".legend_label")
+   		.data(classes)
+   	.enter().insert("text")
+      .attr("class", "legend_label")
+      .attr("x", width - 145)
+      .attr("y", function (d,i) { return 12 + 30*i;})
+      .style("text-anchor", "left")
+   		.style("font-weight", "bold")
+   		.style("font-size", "20px")
+   		.style("fill", function(d,i) {return d3.interpolateSpectral(1-(i/count)); })
+  		.text(function(d) {return d;})
+  
+  for (var i=1; i<=count; i++) {
+    svg.selectAll(".bar"+i)
+      .data(data_hist[i-1])  
+    .enter().insert("rect", ".axis")
+      .attr("class", "bar"+i)
+      .attr("x", function(d) { return x(d.x) + 1; })
+      .attr("y", function(d) { return y(d.y); })
+      .attr("width", x(data_hist[i-1][0].dx + data_hist[i-1][0].x) - x(data_hist[i-1][0].x) - 1)
+      .attr("height", function(d) { return height - y(d.y); })
+      .attr("fill", function(d) {
+        return d3.interpolateSpectral(1-(i-1)/count); })
+    	.attr("stroke", function(d) {
+        return d3.interpolateSpectral(1-(i-1)/count); })
+    	.attr("stroke-width", 5)
+    	.on("mouseover", function(d) {return showDetails(Math.floor(1000*d['y'])/10 + "%",this);})
+      .on("mouseout", function(d) {return hideDetails();})
+  debugger;
+  svg.append("path")
+   // .datum(kde(data_hist[i-1].map(function(d) {return d['y'];})))
+  //	.datum(kde(data_split[i-1])) 
+  	.datum(data_hist[i-1])
+  .attr("class", "line")
+  .style("stroke", function(d) {
+        return d3.interpolateSpectral(1-(i-1)/count); })
+  .style("stroke-width", 5)
+  .attr("d", line);
+  }
+
+	
+
+	function kernelDensityEstimator(kernel, x) {
+  	return function(sample) {
+    	return x.map(function(x) {
+                debugger;
+
+      	return [x, d3.mean(sample, function(v) { 
+          debugger;
+          return kernel(x - v); })];
+    	});
+  	};
+	}
+
+	function epanechnikovKernel(scale) {
+  	return function(u) {
+      debugger;
+    	return Math.abs(u /= scale) <= 1 ? .75 * (1 - u * u) / scale : 0;
+  	};
+	}
+}
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 475;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(data, params) {
+  // an array of the column names in the original data source
+  var columns = Object.keys(data[0]);
+  // set up toolbar
+  $("#vis").prepend("<div id='toolbar'></div>");
+  // create pickers for both the x and y axis
+  var dimensions = ['x', 'y'];
+  var toolbar_labels = ['Property', 'Group by'];
+
+  for(var i_dim in dimensions) {
+    var dim = dimensions[i_dim];
+    var label = toolbar_labels[i_dim];
+    // create the select dropdown
+    $("#toolbar").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+    // populate the dropdown with the columns in the dataset
+    for(i_col in columns) {
+      col_name = columns[i_col];
+      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+    }
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        d3.selectAll("rect").remove()
+        d3.selectAll(".line").remove()
+        d3.select(".x.axis").remove()
+        d3.select(".y.axis").remove()
+        d3.selectAll(".legend").remove()
+        d3.selectAll(".legend_label").remove()
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        draw(data, def_vis_width, def_vis_height, params);
+      }
+    }(dim));
+  }
+  
+  // Create numerical inputs for number of histogram bins.
+  var dim = 'bin';
+  var label = 'Number of bins';
+  params['binaxis'] = 20;
+  // create the select dropdown 
+  $("#toolbar").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><input type='number' min="+0+" max="+1000+" value="+params['binaxis']+" id='"+dim+"-var'>")
+  
+  // handle change to inputs, wrap in anonymous function so the pickers dont clash
+  $("#"+dim+"-var").change(function(dim) {
+    return function() {
+        d3.selectAll("rect").remove()
+        d3.selectAll(".line").remove()
+        d3.select(".x.axis").remove()
+        d3.select(".y.axis").remove()
+        d3.selectAll(".legend").remove()
+        d3.selectAll(".legend_label").remove()
+        var newVar = $("#"+dim+"-var").val();
+      var newVar = $("#"+dim+"-var").val();
+      params[dim+'axis'] = newVar;
+      params[dim+'axislabel'] = newVar;
+      CivisResult.saveParams(params);
+      draw(data, def_vis_width, def_vis_height, params);
+    }
+  }(dim));
+  
+  // Create numerical inputs for KDE smoothness factor.
+  //var dim = 'smooth';
+  //var label = 'KDE Smoothness';
+  // create the select dropdown 
+  //$("#toolbar").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><input type='number' min="+0+" max="+1000+" step="+5+" value="+7+" id='"+dim+"-var'>")
+  //params['smoothaxis'] = 7;
+  // handle change to inputs, wrap in anonymous function so the pickers dont clash
+  //$("#"+dim+"-var").change(function(dim) {
+  //  return function() {
+  //      d3.selectAll("rect").remove()
+  //      d3.selectAll(".line").remove()
+  //      d3.select(".x.axis").remove()
+  //      d3.select(".y.axis").remove()
+  //      var newVar = $("#"+dim+"-var").val();
+  //    var newVar = $("#"+dim+"-var").val();
+  //    params[dim+'axis'] = newVar;
+  //    params[dim+'axislabel'] = newVar;
+  //    CivisResult.saveParams(params);
+  //    draw(data, def_vis_width, def_vis_height, params);
+  //  }
+  //}(dim));
+};
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+
+  var params = config['params'] || {};
+
+  // sizing
+  if('dimensions' in config) {
+    def_vis_width = config['dimensions']['width'];
+    def_vis_height = config['dimensions']['height'];
+  }
+  // tooltips
+  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+  d3.csv(config['dataUrl'], function(error, data) {
+    if(config['mode'] == 'edit') {
+      createToolbar(data, params);
+      def_vis_height = def_vis_height - 50; // account for toolbar
+    }
+    draw(data, def_vis_width, def_vis_height, params);
+  });
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+</script>
+</html>
