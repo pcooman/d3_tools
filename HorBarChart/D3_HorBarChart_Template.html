@@ -82,37 +82,42 @@ body, html { overflow: scroll; height: 100% }
         <div class="tab-pane" id="b_tab">
             <h1>Info</h1>
           	<h2>Introduction</h2>
-          	<p>This section provides a manual for the Word Cloud visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<p>This section provides a manual for the Horizontal Bar Chart visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Toolbar_empty.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Toolbar_empty.png?raw=true">
     				<ul>
-              <li><b>Words:</b> A dropdown menu to select the column in the data table that contains the words.</li>
-              <li><b>Counts:</b> A dropdown menu to select the column in the data table that contains the word count.</li>
-              <li><b>Min Font Size:</b> An input form to specifiy the minimum font size. This will be the font of the least frequent word. This value increments and decrements in steps of size 5 and has been set to 0 by default.</li>
-              <li><b>Max Font Size:</b> An input form to specify the maximum font size. This will be the font size of the most frequent word. This value increments and decrements in steps of size 5 and has been set to 75 pixels by default.</li>
+              <li><b>Property (y):</b> A dropdown menu to select the column in the data table that contains the values for the property you want to plot. These values determine the lengths of the bars. </li>
+              <li><b>Label (x):</b> A dropdown menu to select the column in the data table that contains the names of the categories. There should be one label for each bar.</li>
+              <li><b>Sort by:</b> An input form to specifiy how to sort the data. You may choose to sort the values themselves or their labels. If the labels are strings, they will be sorted alphabetically. You can sort along any column in the data, even if it is not the property selected under <i>Property (y)</i>.</li>
+              <li><b>Orientation:</b> A dropdown menu to choose whether the bars should be oriented horizontally (default) or vertically. In the vertical orientation, the width of each bar will automaticlaly adjust to the width of the screen to ensure all records are displayed. In the horizontal orientation, each bar has a fixed height. The current maximum height has been set to 10000px, allowing for a maximum of 277 bars.</li>
             </ul>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
-          	<p>Each row in the table should correspond to a single word. If a word appears twice, it will be plotted twice. You are responsible for removing duplicate rows. You will need at least one column with words and at least one column with corresponding word counts. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_table.png?raw=true">
+          	<p>The plot will generate a bar for each row of the table. You are responsible for removing duplicate rows. You will need at least one column with category labels and at least one column with corresponding values. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
           	<h2>Known issues</h2>
-          	<p>If you set the font size too large, not all words will be able to fit inside the plotting window. In that case, the template drops the largest, most frequent words. We recoomend that you start by selecting a small Max Font Size and then gradually increase the font size while monitoring the largest words. </p>
+          	<p>Even in the horizontal configuration, the number of bars that can be plotted is limited (currently 277). Possible fix: make def_vis_height dependent on the number of rows in the input data set.</p>
             <bcontent></bcontent>
         </div>
       
       	<div class="tab-pane" id="c_tab">
             <h1>Example</h1>
           	<h2>Introduction</h2>
-          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a word cloud of the 2012 Democratic and Republican Convention speeches. The data can be found either on Platform (schema.table = <i>pcooman.conventions</i> on redshift-general) or here: <i>https://gist.github.com/mollietaylor/3671518</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+          	<p>Here we show an example of what the horizontal bar chart should look like. We will plot the values stored in a sample data set which can be accessed from Platform at pcooman.pos_neg_values.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
-          	<p>In this table, the <i>wordper25k</i> column contains the word we want to plot and the <i>democrats</i> and <i>republicans</i> columns contain the word counts from the 2012 DNC and RNC speecehs respectively. You don't need to worry about data types. D3 reads in all data as strings, so our code automatically converts the word counts to integers.</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_table.png?raw=true">
+          	<p>In this table, the <i>name</i> column contains the bar labels and the <i>value</i> column contains the length (or height) of the bars.</p>
           	<h2>Sample plot</h2>
-          	<p>If everything goes well. Your plot should look something like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example.png?raw=true">
-          	<p>The word cloud layout randomizes the position and rotation of words, so your plot may looks slightly different from the one show above. This is fine, just make sure the largest words ("Obama" for <i>Democrats</i> or "Romney" for <i>Republicans</i>) have been included.</p>
-            <p>If you hover over a word (in your own D3 plot, not in the static sample image shown above), a tooltip should pop up, indicating the word and its word count. This is a handy way to check the counts of less frequent, barely visible words.The following image shows ane xample of this tooltip:</p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Tooltip.png?raw=true">
+          	<p>After selecting <i>value</i> and <i>name</i> from the <i>Property (y)</i> and <i>Label (x)</i> drop down menus repsectively, your plot should look something like this:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_unSorted.png?raw=true">
+           <p>Bold, white labels located at the end of each bar show the height of the bar (= value)</p>
+           <p>We can sort the bars according to their values,</p>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Sorted_value.png?raw=true">
+           <p>or according to their labels (alphabetically):<p>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Sorted_name.png?raw=true">
+           <p>Finally, we can change the orientation of the bars:</p>
+           <img src = "https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Vertical.png?raw=true">
+           <p>Note that the width of the bars has been adjusted automatically such that the figure uses the entire width of the screen and shows all records in the data set.</p>
             <ccontent></ccontent>
         </div>
       
