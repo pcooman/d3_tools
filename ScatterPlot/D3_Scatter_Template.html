@@ -83,38 +83,40 @@ body, html { overflow: scroll; height: 100% }
         <div class="tab-pane" id="b_tab">
             <h1>Info</h1>
           	<h2>Introduction</h2>
-          	<p>This section provides a manual for the Word Cloud visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<p>This section provides a manual for the Scatter/Bubble visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Toolbar_empty.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_Toolbar_empty.png?raw=true">
     				<ul>
-              <li><b>Words:</b> A dropdown menu to select the column in the data table that contains the words.</li>
-              <li><b>Counts:</b> A dropdown menu to select the column in the data table that contains the word count.</li>
-              <li><b>Min Font Size:</b> An input form to specifiy the minimum font size. This will be the font of the least frequent word. This value increments and decrements in steps of size 5 and has been set to 0 by default.</li>
-              <li><b>Max Font Size:</b> An input form to specify the maximum font size. This will be the font size of the most frequent word. This value increments and decrements in steps of size 5 and has been set to 75 pixels by default.</li>
+              <li><b>X axis:</b> A dropdown menu to select the column in the data table that contains the values to be plotted along the X axis.</li>
+              <li><b>Y axis:</b> A dropdown menu to select the column in the data table that contains the values to be plotted along the Y axis.</li>
+              <li><b>Bubble:</b> A dropdown menu to select the column in the data tabe whose values define the size of the bubbles. If no column is selected, the bubbles will have a default radius of 5px</li>
+              <li><b>Color:</b> A dropdown menu to select the column in the data tabe whose values define the color of the bubbles. Both numerical and categorical variables are supported.</li>
             </ul>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
-          	<p>Each row in the table should correspond to a single word. If a word appears twice, it will be plotted twice. You are responsible for removing duplicate rows. You will need at least one column with words and at least one column with corresponding word counts. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_table.png?raw=true">
+          	<p>The graph will plot a bubble for each row in the table. You are responsible for removing duplicate rows. You will need at least two columns with numerical variables for the <i>X axis</i> and <i>Y axis</i>. The <i>Bubble</i> variable needs to be numerical, whereas the <i>Color</i> variable can be numerical or categorical. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
           	<h2>Known issues</h2>
-          	<p>If you set the font size too large, not all words will be able to fit inside the plotting window. In that case, the template drops the largest, most frequent words. We recoomend that you start by selecting a small Max Font Size and then gradually increase the font size while monitoring the largest words. </p>
+          	<p>Needs a legend when using the <i>Color</i> variable.</p>
             <bcontent></bcontent>
         </div>
       
       	<div class="tab-pane" id="c_tab">
             <h1>Example</h1>
           	<h2>Introduction</h2>
-          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a word cloud of the 2012 Democratic and Republican Convention speeches. The data can be found either on Platform (schema.table = <i>pcooman.conventions</i> on redshift-general) or here: <i>https://gist.github.com/mollietaylor/3671518</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the iris data set. The data can be found either on Platform (schema.table = <i>pcooman.iris</i> on redshift-general) or here: <i>http://www.idvbook.com/teaching-aid/data-sets/the-iris-data-set/</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
-          	<p>In this table, the <i>wordper25k</i> column contains the word we want to plot and the <i>democrats</i> and <i>republicans</i> columns contain the word counts from the 2012 DNC and RNC speecehs respectively. You don't need to worry about data types. D3 reads in all data as strings, so our code automatically converts the word counts to integers.</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_table.png?raw=true">
           	<h2>Sample plot</h2>
-          	<p>If everything goes well. Your plot should look something like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example.png?raw=true">
-          	<p>The word cloud layout randomizes the position and rotation of words, so your plot may looks slightly different from the one show above. This is fine, just make sure the largest words ("Obama" for <i>Democrats</i> or "Romney" for <i>Republicans</i>) have been included.</p>
-            <p>If you hover over a word (in your own D3 plot, not in the static sample image shown above), a tooltip should pop up, indicating the word and its word count. This is a handy way to check the counts of less frequent, barely visible words.The following image shows ane xample of this tooltip:</p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Tooltip.png?raw=true">
-            <ccontent></ccontent>
+          	<p>first, we only select a <i>X axis</i> and a <i>Y axis</i> variable:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_standard.png?raw=true">
+           <p>Next, we add a <i>Bubble</i> variable to set the size of the bubbles:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_bubble.png?raw=true">
+           <p>Finally, we add a <i>Color</i> variable to better separate the three iris classes:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_color.png?raw=true">
+           <p>Hovering over a bubble should bring up a tooltip, listing the X axis, Y axis, Bubble and Color values:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_tooltip.png?raw=true">
+          	 <ccontent></ccontent>
         </div>
       
     </div>
@@ -162,7 +164,7 @@ draw = function(data, vis_width, vis_height, params) {
     .domain(d3.extent(data, function(d) { return parseFloat(d[params['xaxis']]); })).nice();
   
   var y = d3.scale.linear()
-    .range([height, 0])
+    .range([height, 50])
     .domain(d3.extent(data, function(d) { return parseFloat(d[params['yaxis']]); })).nice();
   
   var bubble = d3.scale.linear()
@@ -185,15 +187,25 @@ draw = function(data, vis_width, vis_height, params) {
       .attr("class", "circle")
       .attr("cx", function(d) { return x(parseFloat(d[params['xaxis']])); })
       .attr("cy", function(d) { return y(parseFloat(d[params['yaxis']])); })
-      .attr("r", function(d) { return bubble(parseFloat(d[params['baxis']])); })
+      .attr("r", function(d) { return params['baxis'].length > 0 ? bubble(parseFloat(d[params['baxis']])) : 5; })
       .style("fill", function(d) {return d3.interpolateSpectral(1 -(classes.indexOf(d[params['caxis']])/count)); })
   		.on("mouseover", function(d) {
+    				d3.select(this)
+          		.transition().duration(200)
+          		.style("fill-opacity", 1)
+    					.style("stroke", "black")
+    
     				var label = params['xaxis']+": "+d[params['xaxis']] + "<br/>" +
     										params['yaxis']+": "+d[params['yaxis']] + "<br/>" +
                 				params['baxis']+": "+d[params['baxis']] + "<br/>" +
     										params['caxis']+": "+d[params['caxis']];
             return showDetails(label,this);})
-      .on("mouseout", function(d) {return hideDetails();})
+      .on("mouseout", function(d) {
+    				d3.select(this)
+          		.transition().duration(200)
+          		.style("fill-opacity", 0.5)
+    					.style("stroke", "white")
+    				return hideDetails();})
    
   svg.append("g")
       .attr("class", "x axis")
@@ -256,6 +268,8 @@ var createToolbar = function(data, params) {
       return function() {
         d3.selectAll(".circle").remove()
         d3.selectAll("text").remove()
+        d3.selectAll(".tick").remove()
+        d3.selectAll(".axis").remove()
         var newVar = $("#"+dim+"-var").val();
         params[dim+'axis'] = newVar;
         params[dim+'axislabel'] = newVar;
