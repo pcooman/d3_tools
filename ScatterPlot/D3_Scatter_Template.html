@@ -250,7 +250,9 @@ var createToolbar = function(data, params) {
   // create pickers for both the x and y axis
   var dimensions = ['x', 'y', 'b', 'c'];
   var toolbar_labels = ['X axis', 'Y axis', 'Bubble', 'Color'];
-
+	
+  params['caxis'] = {};
+  params['baxis'] = {};
   for(var i_dim in dimensions) {
     var dim = dimensions[i_dim];
     var label = toolbar_labels[i_dim];
