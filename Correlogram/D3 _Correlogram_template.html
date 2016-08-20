@@ -84,7 +84,7 @@ body, html { overflow: scroll; height: 100% }
         <div class="tab-pane" id="b_tab">
             <h1>Info</h1>
           	<h2>Introduction</h2>
-          	<p>This section provides a manual for the Scatter/Bubble visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<p>This section provides a manual for the Correlogram visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_Toolbar_empty.png?raw=true">
     				<ul>
@@ -263,6 +263,7 @@ draw = function(data_full, vis_width, vis_height, params) {
     })
     .append("circle")
     .attr("r", function(d) {return (width / (num * 2)) * Math.abs(d.value);})
+    .attr("stroke","black")
     .style("fill", function(d){
       if (d.value === 1) {
         return "#000";
