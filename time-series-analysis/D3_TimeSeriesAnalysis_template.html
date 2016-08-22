@@ -81,21 +81,29 @@ body, html { overflow: scroll; height: 100% }
         <div class="tab-pane" id="b_tab">
             <h1>Info</h1>
           	<h2>Introduction</h2>
-          	<p>This section provides a manual for the Word Cloud visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<p>This section provides a manual for the Time Series Analysis visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Toolbar_empty.png?raw=true">
-    				<ul>
-              <li><b>Words:</b> A dropdown menu to select the column in the data table that contains the words.</li>
-              <li><b>Counts:</b> A dropdown menu to select the column in the data table that contains the word count.</li>
-              <li><b>Min Font Size:</b> An input form to specifiy the minimum font size. This will be the font of the least frequent word. This value increments and decrements in steps of size 5 and has been set to 0 by default.</li>
-              <li><b>Max Font Size:</b> An input form to specify the maximum font size. This will be the font size of the most frequent word. This value increments and decrements in steps of size 5 and has been set to 75 pixels by default.</li>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_Toolbar_empty.png?raw=true">
+            <p>You don't need to fill in all of the input fields. Only <i>Time</i> and <i><Values/i> are required, the others are optional and will depend on your use case. </p>
+    		 <ul>
+              <li><b>Time:</b> A dropdown menu to select the column in the data table that contains the timestamps. For basic plotting, these do not have to be sorted, however if you are plotting the results of an intervention analysis and you want to plot a marker at the start (and/or end) of the intervention, you will need to sort these in ascending order first.</li>
+              <li><b>Values:</b> A drop down menu to selec the column in the data table that contains the time series values.</li>
+              <li><b>Start Y axis at 0:</b> A checkbox to specify whether Y=0 should be included in the chart. By default, the plot will range from the minimum to the maximum of <i>Values</i>. If this range does not include 0 and you want to show it in the plot, check the box.</li>
+              <li><b>Predicted trend:</b> A dropdown menu to select the column in the data table that contains the predicted trend. This predicted trend will be drawn as a dashed blue line.</li>
+              <li><b>Lower limit:</b> A dropdown menu to select the column in the data table that contains the lower end of the confidence interval for either the <i>Predicted trend</i>, the <i>Pointwise effect</i> or the <i>Cumulative effect.</i></li>
+              <li><b>Upper limit:</b> A dropdown menu to select the column in the data table that contains the upper end of the confidence interval for either the <i>Predicted trend</i>, the <i>Pointwise effect</i> or the <i>Cumulative effect</i>.</li>
+              <li><b>Pointwise effect:</b> A dropdown menu to select the column in the data table that contains the Pointwise effect. In intervention analysis, this is the difference between original trend (<i>Values</i>) and the <i>Predicted trend</i> at each timestamp.</li>
+              <li><b>Cumulative effect:</b> A dropdown menu to select the column in the data table that contains the Cumulative effect. In intervention analysis, this is the cumulative difference between the original trend (<i>Values</i>) and the <i>Predicted trend</i> over time.</li>
+              <li><b>Intervention:</b> A dropdown menu to select the column in the data table that contains flags specifying whether the intervention is in effect or not. The script detects change points and draws markers signifying the start (and end) of an intervention.</li>
             </ul>
           	<h2>Data table</h2>
-          	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
-          	<p>Each row in the table should correspond to a single word. If a word appears twice, it will be plotted twice. You are responsible for removing duplicate rows. You will need at least one column with words and at least one column with corresponding word counts. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_Table.png?raw=true">
+          	<p>Each row in the table should correspond to a instance in time. These instances should be at regular intervals, any missing values will result in gaps in the plot. This is a great way to check if your time series data is complete!</p>
+           <p>The <i>intervention</i> column should contain only 0's and 1's.</p>
           	<h2>Known issues</h2>
-          	<p>If you set the font size too large, not all words will be able to fit inside the plotting window. In that case, the template drops the largest, most frequent words. We recoomend that you start by selecting a small Max Font Size and then gradually increase the font size while monitoring the largest words. </p>
+          	<p>The confidence band in the first plot is drawn twice, once with respect to the the original trend and once with respect to the predicted trend. This causes the confidence band to have a darker shade compared to the confidence bands in the second and third plot.</p>
+           <p>Legend labels connected to the ends of the lines get cut off.</p>
             <bcontent></bcontent>
         </div>
       
