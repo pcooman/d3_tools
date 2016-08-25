@@ -106,16 +106,19 @@ body, html { overflow: scroll; height: 100% }
       	<div class="tab-pane" id="c_tab">
             <h1>Example</h1>
           	<h2>Introduction</h2>
-          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a word cloud of the 2012 Democratic and Republican Convention speeches. The data can be found either on Platform (schema.table = <i>pcooman.conventions</i> on redshift-general) or here: <i>https://gist.github.com/mollietaylor/3671518</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the flow of refugees between different regions of the world. The data can be found either on Platform (schema.table = <i>pcooman.refugees</i> on redshift-general) or here: <i>http://www.global-migration.info/</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
-          	<p>In this table, the <i>wordper25k</i> column contains the word we want to plot and the <i>democrats</i> and <i>republicans</i> columns contain the word counts from the 2012 DNC and RNC speecehs respectively. You don't need to worry about data types. D3 reads in all data as strings, so our code automatically converts the word counts to integers.</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Table.png?raw=true">
+          	<p>In this table, the <i>origin</i> and <i>destination</i> columns respectively contain the countries of origin of refugees and their ultimate. The <i>count</i> column conatins the total number of refugees that followed each path.</p>
           	<h2>Sample plot</h2>
           	<p>If everything goes well. Your plot should look something like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example.png?raw=true">
-          	<p>The word cloud layout randomizes the position and rotation of words, so your plot may looks slightly different from the one show above. This is fine, just make sure the largest words ("Obama" for <i>Democrats</i> or "Romney" for <i>Republicans</i>) have been included.</p>
-            <p>If you hover over a word (in your own D3 plot, not in the static sample image shown above), a tooltip should pop up, indicating the word and its word count. This is a handy way to check the counts of less frequent, barely visible words.The following image shows ane xample of this tooltip:</p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Tooltip.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Toolbar_full.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Example_full.png?raw=true">
+            <p>If you hover over a segment of the outer circle, a tooltip should appear. This indicates the total number of refugees that originated from this region:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Tooltip_group.png?raw=true">
+            <p>You can also hover over a chord to bring up a tooltip listing the number of refugees moving along that path:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Tooltip_chord.png?raw=true">
+            <p>The color of each chord corresponds to the region of origin.</p>
             <ccontent></ccontent>
         </div>
       
@@ -219,10 +222,13 @@ draw = function(data, vis_width, vis_height, params) {
         g = _.where(mmap, {id: d.index });
         m.gname = g[0].name;
         m.gdata = g[0].data;
-        m.gvalue = d.value;
+        m.value_out = d.value;
       }
+      debugger;
       m.mtotal = _.reduce(matrix, function (m1, n1) { 
-        return m1 + _.reduce(n1, function (m2, n2) { return m2 + n2}, 0);
+        return m1 + _.reduce(n1, function (m2, n2) { 
+            debugger;            
+            return m2 + n2}, 0);
       }, 0);
       return m;
     }
@@ -308,18 +314,20 @@ draw = function(data, vis_width, vis_height, params) {
         return "Chord Info:<br/>"
         +  d.sname + " to " + d.tname
         + ": " + p(d.svalue) + "<br/>"
-        + d.tname + " to " + d.sname
-        + ": " + p(d.tvalue) + "<br/>";
+        //+ d.tname + " to " + d.sname
+        //+ ": " + p(d.tvalue) + "<br/>";
         }
           
     function groupTip (d) {
+        debugger;
         var p = d3.format(".1f"), q = d3.format(",.2r")
         return "Group Info:<br/>"
-        + d.gname + " : " + p(d.gvalue) + "<br/>";
+        + d.gname + "<br/>"
+        + "Outgoing: " + p(d.value_out) + "<br/>"
+        + "Incoming:" + p(d.value_out);
         }
 
     function mouseover_path(d, i) {
-      debugger;
         d3.select("#tooltip")
         .style("visibility", "visible")
         .html(groupTip(rdr(d)))
