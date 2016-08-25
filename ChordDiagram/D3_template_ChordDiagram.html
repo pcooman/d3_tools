@@ -76,6 +76,7 @@ body, html { overflow: scroll; height: 100% }
         <div class="tab-pane active" id="a_tab">
             <h1>Graph</h1>
             <acontent><div id='vis'>
+              <div id="tooltip"></div>
               <svg class='chart-outer'><g class="chart"></g></svg>
             </div>
             </acontent>
@@ -84,21 +85,21 @@ body, html { overflow: scroll; height: 100% }
         <div class="tab-pane" id="b_tab">
             <h1>Info</h1>
           	<h2>Introduction</h2>
-          	<p>This section provides a manual for the Word Cloud visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<p>This section provides a manual for theChord Diagram visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Toolbar_empty.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Toolbar_empty.png?raw=true">
     				<ul>
-              <li><b>Words:</b> A dropdown menu to select the column in the data table that contains the words.</li>
-              <li><b>Counts:</b> A dropdown menu to select the column in the data table that contains the word count.</li>
-              <li><b>Min Font Size:</b> An input form to specifiy the minimum font size. This will be the font of the least frequent word. This value increments and decrements in steps of size 5 and has been set to 0 by default.</li>
-              <li><b>Max Font Size:</b> An input form to specify the maximum font size. This will be the font size of the most frequent word. This value increments and decrements in steps of size 5 and has been set to 75 pixels by default.</li>
+              <li><b>Origins:</b> A dropdown menu to select the column in the data table that contains the origins of the flows you want to visualize. This should be a categorical variable.</li>
+              <li><b>Destinations:</b> A dropdown menu to select the column in the data table that contains the destinations of the flows. These should cover the same categories as specified in the <i>Origins</i>.</li>
+              <li><b>Counts:</b> A dropdown menu to select the column in the data table that contains the magnitude of the flow. This can be any numerical value, reflecting an absolute value or a percentage.</li>
+              <li><b>Reset graph</b> A button that allows the user to reset the graph. Whenever you hover over a category, it will fade out all flows that do not start or end in that category. Hovering over a different category selects the related flows to that new category. If you want to bring back the view that shows all flows for all categories, press the <i>Reset Graph</i> button.</li>
             </ul>
           	<h2>Data table</h2>
-          	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
-          	<p>Each row in the table should correspond to a single word. If a word appears twice, it will be plotted twice. You are responsible for removing duplicate rows. You will need at least one column with words and at least one column with corresponding word counts. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Table.png?raw=true">
+          	<p>Each row in the table should correspond to a single flow from an origin to a destination. You can have multiple columns for each category (<i>Origins</i>, <i>Destinations</i> and <i>Counts</i>. The toolbar will let you select the columns that are relevant to the plot. You do not need to include every possible origin to destination combination. For example, if your data contains (origin:A, destination:B, count:X), but not the reverse path (origin:B, destination:A, count:Y), the visualization will still work (automatically sets Y = 0).</p>
           	<h2>Known issues</h2>
-          	<p>If you set the font size too large, not all words will be able to fit inside the plotting window. In that case, the template drops the largest, most frequent words. We recoomend that you start by selecting a small Max Font Size and then gradually increase the font size while monitoring the largest words. </p>
+          	<p>No known issues at this time.</p>
             <bcontent></bcontent>
         </div>
       
@@ -290,28 +291,35 @@ draw = function(data, vis_width, vis_height, params) {
         .style("fill", function(d) { 
           return d3.interpolateSpectral(d.source.index/14.0); })
         .attr("d", d3.svg.chord().radius(r0))
-        //.on("mouseover", mouseover_chord)
+        .on("mouseover", function (d) {
+                  d3.select("#tooltip")
+                    .style("visibility", "visible")
+                    .html(chordTip(rdr(d)))
+                    .style("top", function () { return (d3.event.pageY - 170)+"px"})
+                    .style("left", function () { return (d3.event.pageX - 100)+"px";})
+                })
         .on("mouseout", function (d) {
           // d3.selectAll(".chord.fade").attr("class","chord")
           d3.select("#tooltip").style("visibility", "hidden") 
         });
 
     function chordTip (d) {
-        var p = d3.format(".1%"), q = d3.format(",.2r")
+        var p = d3.format(".1f"), q = d3.format(",.2r")
         return "Chord Info:<br/>"
-        +  d.sname + " → " + d.tname
+        +  d.sname + " to " + d.tname
         + ": " + p(d.svalue) + "<br/>"
-        + d.tname + " → " + d.sname
+        + d.tname + " to " + d.sname
         + ": " + p(d.tvalue) + "<br/>";
         }
           
     function groupTip (d) {
-        var p = d3.format(".1%"), q = d3.format(",.2r")
+        var p = d3.format(".1f"), q = d3.format(",.2r")
         return "Group Info:<br/>"
         + d.gname + " : " + p(d.gvalue) + "<br/>";
         }
 
     function mouseover_path(d, i) {
+      debugger;
         d3.select("#tooltip")
         .style("visibility", "visible")
         .html(groupTip(rdr(d)))
@@ -341,18 +349,6 @@ draw = function(data, vis_width, vis_height, params) {
     drawChords(mpr.getMatrix(), mpr.getMap());
   }
 }
-
-var showDetails = function(data, element) {
-  pos = $(element).position()
-  $("#chart-tooltip").html(data)
-  width = $("#chart-tooltip").width()
-  height = $("#chart-tooltip").height()
-  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
-  $("#chart-tooltip").show()
-};
-var hideDetails = function() {
-  $("#chart-tooltip").hide()
-};
 
 //////////////////////////////////////////////////////////
 // Chart Edit Toolbar Code
@@ -397,6 +393,28 @@ var createToolbar = function(data, params) {
       }
     }(dim));
   }
+  
+  $("#toolbar").append("<div id='buttons' style='height:75px;'>")
+  
+  svg = d3.select("#buttons").append('svg').attr('height', 600).attr('width', 200)
+	rect = svg.append('rect').attr('width', 100)
+                .attr('height', 50)
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('rx', 20)
+                .attr('ry', 20)
+                .style('fill', 'rgb(31,119,180)')
+                //.attr('stroke', 'black')
+  							.on("click", function() {d3.selectAll(".chord.fade").attr("class","chord");})
+  							
+	text = svg.append('text').text('Reset Graph')
+                .attr('x', 50)
+                .attr('y', 30)
+                .style('fill', 'white')
+  							.style("font-weight", "bold")
+  							.style("font-size", "12px")
+  							.attr("text-anchor", "middle")
+  							.on("click", function() {d3.selectAll(".chord.fade").attr("class","chord");})
 };
 // Handle config blob, download the csv from the url, create the toolbar
 // and init the graph with the resulting parameters.
@@ -411,8 +429,7 @@ var prepChart = function(config) {
   }
   def_vis_height = 1200;
   // tooltips
-  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
-  $("#chart-tooltip").hide();
+  
   d3.csv(config['dataUrl'], function(error, data) {
     if(config['mode'] == 'edit') {
       createToolbar(data, params);
