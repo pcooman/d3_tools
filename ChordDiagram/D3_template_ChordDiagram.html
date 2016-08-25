@@ -114,7 +114,7 @@ body, html { overflow: scroll; height: 100% }
           	<p>If everything goes well. Your plot should look something like this:</p>
             <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Toolbar_full.png?raw=true">
             <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Example_full.png?raw=true">
-            <p>If you hover over a segment of the outer circle, a tooltip should appear. This indicates the total number of refugees that originated from this region:</p>
+            <p>If you hover over a segment of the outer circle, a tooltip should appear. This indicates the total number of incoming and outgoing refugees for the selected region:</p>
             <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Tooltip_group.png?raw=true">
             <p>You can also hover over a chord to bring up a tooltip listing the number of refugees moving along that path:</p>
             <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Tooltip_chord.png?raw=true">
@@ -223,6 +223,8 @@ draw = function(data, vis_width, vis_height, params) {
         m.gname = g[0].name;
         m.gdata = g[0].data;
         m.value_out = d.value;
+        m.value_in = _.reduce(matrix, function (m1, n1) { 
+        return m1 + n1[d.index]}, 0);
       }
       debugger;
       m.mtotal = _.reduce(matrix, function (m1, n1) { 
@@ -324,7 +326,7 @@ draw = function(data, vis_width, vis_height, params) {
         return "Group Info:<br/>"
         + d.gname + "<br/>"
         + "Outgoing: " + p(d.value_out) + "<br/>"
-        + "Incoming:" + p(d.value_out);
+        + "Incoming: " + p(d.value_in);
         }
 
     function mouseover_path(d, i) {
