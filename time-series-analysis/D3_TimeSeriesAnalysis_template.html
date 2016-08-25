@@ -84,7 +84,7 @@ body, html { overflow: scroll; height: 100% }
           	<p>This section provides a manual for the Time Series Analysis visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_Toolbar_empty.png?raw=true">
-            <p>You don't need to fill in all of the input fields. Only <i>Time</i> and <i><Values</i> are required, the others are optional and will depend on your use case. </p>
+            <p>You don't need to fill in all of the input fields. Only <i>Time</i> and <i>Values</i> are required, the others are optional and will depend on your use case. </p>
     		 <ul>
               <li><b>Time:</b> A dropdown menu to select the column in the data table that contains the timestamps. For basic plotting, these do not have to be sorted, however if you are plotting the results of an intervention analysis and you want to plot a marker at the start (and/or end) of the intervention, you will need to sort these in ascending order first.</li>
               <li><b>Values:</b> A drop down menu to selec the column in the data table that contains the time series values.</li>
@@ -122,7 +122,6 @@ body, html { overflow: scroll; height: 100% }
            <p>Here, including 0 on the Y axis obscures the trend in our data, so we will keep the default for now.</p>
            <p>Next, we include our predicted trend. This is an output from the CausalImpact package, along with the lower and upper boundaries of the 95% confidence band. Note that here, the predicted trend corresponds to the counterfactual (what would ahve happened int he absence of the intervention), but we can just as easily plot predictions of the extrapolated trend.</p>
            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_PredNoIntervention.png?raw=true">
-            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example.png?raw=true">
            <p>We can add a marker signifying when the intervention started by specifying the <i>Intervention</i> variable. This variable should only take 0 and 1 values. The script detectes transitions and puts a 'Start of intervention' marker when the intervention variable transitions from 0 to 1, and a 'End of intervention' marker when the intervention transitions from 1 to 0.</p>
             <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_PredIntervention.png?raw=true">          	
             <p>The second plot shows the pointwise effect of the intervention. This is simply the difference between the original trend and the predicted trend at each time point.</p>

@@ -8,8 +8,126 @@
 <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+
+<style>
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+  
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  width: 140px;
+}
+.chart {
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+
+#tooltip {
+  color: white;
+  opacity: .9;
+  background: #333;
+  padding: 5px;
+  border: 1px solid lightgrey;
+  border-radius: 5px;
+  position: absolute;
+  z-index: 10;
+  visibility: hidden;
+  white-space: nowrap;
+  pointer-events: none;
+}
+      
+#circle circle {
+        fill: none;
+        pointer-events: all;
+      }
+      .group path {
+        fill-opacity: .8;
+      }
+      .chord {
+        fill-opacity: .8;
+        stroke-width: .25px;
+      }
+      
+#circle:hover path.fade {
+        display: none;
+}
+  
+text {
+  font-weight: bold;
+  font-size: 12px;
+}  
+  
+body, html { overflow: scroll; height: 100% }
+  
+</style>  
+  
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+      
+        <div class="tab-pane active" id="a_tab">
+            <h1>Graph</h1>
+            <acontent><div id='vis'>
+              <svg class='chart-outer'><g class="chart"></g></svg>
+            </div>
+            </acontent>
+        </div>
+      
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<h2>Introduction</h2>
+          	<p>This section provides a manual for the Word Cloud visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<h2>Inputs</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Toolbar_empty.png?raw=true">
+    				<ul>
+              <li><b>Words:</b> A dropdown menu to select the column in the data table that contains the words.</li>
+              <li><b>Counts:</b> A dropdown menu to select the column in the data table that contains the word count.</li>
+              <li><b>Min Font Size:</b> An input form to specifiy the minimum font size. This will be the font of the least frequent word. This value increments and decrements in steps of size 5 and has been set to 0 by default.</li>
+              <li><b>Max Font Size:</b> An input form to specify the maximum font size. This will be the font size of the most frequent word. This value increments and decrements in steps of size 5 and has been set to 75 pixels by default.</li>
+            </ul>
+          	<h2>Data table</h2>
+          	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
+          	<p>Each row in the table should correspond to a single word. If a word appears twice, it will be plotted twice. You are responsible for removing duplicate rows. You will need at least one column with words and at least one column with corresponding word counts. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<h2>Known issues</h2>
+          	<p>If you set the font size too large, not all words will be able to fit inside the plotting window. In that case, the template drops the largest, most frequent words. We recoomend that you start by selecting a small Max Font Size and then gradually increase the font size while monitoring the largest words. </p>
+            <bcontent></bcontent>
+        </div>
+      
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+          	<h2>Introduction</h2>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a word cloud of the 2012 Democratic and Republican Convention speeches. The data can be found either on Platform (schema.table = <i>pcooman.conventions</i> on redshift-general) or here: <i>https://gist.github.com/mollietaylor/3671518</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+            <h2>Data table</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
+          	<p>In this table, the <i>wordper25k</i> column contains the word we want to plot and the <i>democrats</i> and <i>republicans</i> columns contain the word counts from the 2012 DNC and RNC speecehs respectively. You don't need to worry about data types. D3 reads in all data as strings, so our code automatically converts the word counts to integers.</p>
+          	<h2>Sample plot</h2>
+          	<p>If everything goes well. Your plot should look something like this:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example.png?raw=true">
+          	<p>The word cloud layout randomizes the position and rotation of words, so your plot may looks slightly different from the one show above. This is fine, just make sure the largest words ("Obama" for <i>Democrats</i> or "Romney" for <i>Republicans</i>) have been included.</p>
+            <p>If you hover over a word (in your own D3 plot, not in the static sample image shown above), a tooltip should pop up, indicating the word and its word count. This is a handy way to check the counts of less frequent, barely visible words.The following image shows ane xample of this tooltip:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Tooltip.png?raw=true">
+            <ccontent></ccontent>
+        </div>
+      
+    </div>
+</div>
 
 <script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+
 draw = function(data, vis_width, vis_height, params) {
   /////////////////////////////////////////////
   // chart margin/sizing setup
@@ -113,7 +231,7 @@ draw = function(data, vis_width, vis_height, params) {
   //  DRAW THE CHORD DIAGRAM
   //*******************************************************************
   function drawChords (matrix, mmap) {
-    var w = 500, h = 500, r1 = h / 2, r0 = r1 - 110;
+    var w = 700, h = 700, r1 = h / 2, r0 = r1 - 120;
 
     var chord = d3.layout.chord()
         .padding(.02)
@@ -124,7 +242,7 @@ draw = function(data, vis_width, vis_height, params) {
         .innerRadius(r0)
         .outerRadius(r0 + 20);
 
-    var svg = d3.select(".chart").append("svg:svg")
+    var svg = d3.select(".chart-outer").append("svg:svg")
         .attr("width", w)
         .attr("height", h)
         .append("svg:g")
@@ -141,8 +259,11 @@ draw = function(data, vis_width, vis_height, params) {
         .data(chord.groups())
         .enter().append("svg:g")
         .attr("class", "group")
-        .on("mouseover", mouseover)
-        .on("mouseout", function (d) { d3.select("#tooltip").style("visibility", "hidden") });
+        .on("mouseover", mouseover_path)
+        .on("mouseout", function (d) {
+          //d3.selectAll(".chord.fade").attr("class","chord")
+          d3.select("#tooltip").style("visibility", "hidden") 
+        });
 
     g.append("svg:path")
         .style("stroke", "grey")
@@ -153,7 +274,6 @@ draw = function(data, vis_width, vis_height, params) {
         .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
         .attr("dy", ".35em")
         .style("font-family", "helvetica, arial, sans-serif")
-        .style("font-size", "9px")
         .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
         .attr("transform", function(d) {
             return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
@@ -168,17 +288,13 @@ draw = function(data, vis_width, vis_height, params) {
         .attr("class", "chord")
         .style("stroke", "grey")
         .style("fill", function(d) { 
-          debugger;
           return d3.interpolateSpectral(d.source.index/14.0); })
         .attr("d", d3.svg.chord().radius(r0))
-        .on("mouseover", function (d) {
-            d3.select("#tooltip")
-            .style("visibility", "visible")
-            .html(chordTip(rdr(d)))
-            .style("top", function () { return (d3.event.pageY - 100)+"px"})
-            .style("left", function () { return (d3.event.pageX - 100)+"px";})
-        })
-        .on("mouseout", function (d) { d3.select("#tooltip").style("visibility", "hidden") });
+        //.on("mouseover", mouseover_chord)
+        .on("mouseout", function (d) {
+          // d3.selectAll(".chord.fade").attr("class","chord")
+          d3.select("#tooltip").style("visibility", "hidden") 
+        });
 
     function chordTip (d) {
         var p = d3.format(".1%"), q = d3.format(",.2r")
@@ -195,7 +311,7 @@ draw = function(data, vis_width, vis_height, params) {
         + d.gname + " : " + p(d.gvalue) + "<br/>";
         }
 
-    function mouseover(d, i) {
+    function mouseover_path(d, i) {
         d3.select("#tooltip")
         .style("visibility", "visible")
         .html(groupTip(rdr(d)))
@@ -244,7 +360,7 @@ var hideDetails = function() {
 // WARNING, editing the code below may cause your chart to break.
 //
 var def_vis_width = 700;
-var def_vis_height = 475;
+var def_vis_height = 1000;
 // create a toolbar at the top that allows the user to interact with the chart
 // currently just supports x and y axis variable selection
 var createToolbar = function(data, params) {
@@ -254,7 +370,7 @@ var createToolbar = function(data, params) {
   $("#vis").prepend("<div id='toolbar'></div>");
   // create pickers for both the x and y axis
   var dimensions = ['x', 'y','z'];
-  var toolbar_labels = ['origins', 'destinations', 'counts'];
+  var toolbar_labels = ['Origins', 'Destinations', 'Counts'];
 
   for(var i_dim in dimensions) {
     var dim = dimensions[i_dim];
@@ -293,6 +409,7 @@ var prepChart = function(config) {
     def_vis_width = config['dimensions']['width'];
     def_vis_height = config['dimensions']['height'];
   }
+  def_vis_height = 1200;
   // tooltips
   $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
   $("#chart-tooltip").hide();
@@ -313,57 +430,4 @@ CivisResult.init(prepChart);
 //////////////////////////////////////////////////////////
 </script>
 
-<style>
-.form-group {
-  display: inline-block;
-  margin-left: 10px;
-  margin-right: 10px;
-}
-  
-.form-control {
-  display: inline-block;
-  margin-left: 10px;
-  width: 140px;
-}
-.chart {
-  font-family: Lato, Verdana, Arial, sans-serif;
-}
-
-#tooltip {
-  color: white;
-  opacity: .9;
-  background: #333;
-  padding: 5px;
-  border: 1px solid lightgrey;
-  border-radius: 5px;
-  position: absolute;
-  z-index: 10;
-  visibility: hidden;
-  white-space: nowrap;
-  pointer-events: none;
-}
-      
-#circle circle {
-  fill: none;
-  pointer-events: all;
-}
-      
-path.group {
-  fill-opacity: .8;
-}
-      
-path.chord {
-  fill-opacity: .8;
-  stroke: #000;
-  stroke-width: .25px;
-}
-      
-#circle:hover path.fade {
-  display: none;
-}
-</style>
-
-<div id='vis'>
-  <svg class='chart-outer'><g class="chart"></g></svg>
-</div>
 </html>
