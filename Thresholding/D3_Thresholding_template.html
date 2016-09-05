@@ -152,7 +152,7 @@ body, html { overflow: scroll; height: 100% }
             the threshold that mazimizes payout and the lowest threshold such that the expected number of 
             positive cases does not exceed the user's capacity to process them in a timely fashion. This manual explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Toolbar_empty.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_Toolbar_empty.png?raw=true">
     				<ul>
               <li><b>Truth:</b> A dropdown menu to select the column in the data table that contains the truth labels. The labels should be binary, 1 for 'Yes', 0 for 'No'.</li>
               <li><b>Predictions:</b> A dropdown menu to select the column in the data table that contains the predicted probabilities corresponding to the positive class. These values are continuous within the range [0,1]. </li>
@@ -171,10 +171,10 @@ body, html { overflow: scroll; height: 100% }
             Low thresholds are likely to be suboptimal: even thoug we capture a lot of potential clients/churners, we needed to spend a lot of money to contact a large group of people. At high thresholds, the payout is likely to be suboptimal as well, because by limiting oursleves only to the most surest of cases, we may have missed a lot of people.</p>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_table.png?raw=true">
           	<p>Each row in the table should correspond to a single prediction. The template requires that at least one column contains a binary flag (0 or 1)  and one column that contains a continuous probability (full range of values between 0 and 1). The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
           	<h2>Known issues</h2>
-          	<p>If the optimal (or maximum) thresholds are very high or very low, the label text may get cut off by the edge of the plot window.</p>
+          	<p>NaNs are not plotted. The precision and payout may become undefined at high thresholds (dividing by 0).</p>
             <bcontent></bcontent>
         </div>
       
@@ -183,20 +183,26 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the case of preventing churn in mobile phone customers. The data can be found either on Platform (schema.table = <i>pcooman.churn</i> on redshift-general) or here: <i>insert_url_to_data_here</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_table.png?raw=true">
           	<p>In this table, the <i>truth</i> column contains the truth labels and the <i>pred</i> column contains the prediced probabilities of belonging to the positive class.</p>
           	<h2>Sample plot</h2>
           	<p>We'll start by filling in the Truth and Prediction fields:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example.png?raw=true">
-            <p>Without values for the other inputs, our plot only shows the queue rate, precision and recall rates at each threshold.</p> 
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_qpr.png?raw=true">
+            <p>Without values for the other inputs, our plot only shows the confusion matrix, ROC and the queue rate, precision and recall rates at each threshold.</p> 
             <p>Next, we can fill out the maximum number of leads (e.g., 1000) and the bandwidth (e.g. 100). This will put a marker at the minimum threshold given the user's capacity to process leads.</p>
-            <p>Adding information on payouts in the case of a success and the cost of each action, allows us to plot the payout graph, indicating the threshold that maximizes payout.</p>
-            <p>In this example, we find that the optimal threshold would result in a payout of $X. However, the minimum threshold is higher than the optimal threshold, meaning that the company and its current staffed cannot process the number of positive cases at the optimal threshold. The company could use this information to decide whetehr or not to hire additional staff.</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_min_queue.png?raw=true">
+            <p>Adding information on payouts in the case of a success (e.g., $100) and the cost of each action (e.g., $20), allows us to plot the payout graph, indicating the threshold that maximizes payout.</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_full.png?raw=true">
+            <p>In this example, we find that the optimal threshold would result in a payout of $8503. However, the minimum threshold is higher than the optimal threshold, meaning that the company as it's current staffed cannot process the number of positive cases at the optimal threshold. The company could use this information to decide whetehr or not to hire additional staff.</p>
             <p>Alternatively, we could have omitted the Bandwidth input, only specifying the total number of leads, success payout and cost per action. That would have resulted in the following graph, showing the optimal threshold, but not the minimum threshold.</p>        	
-            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Tooltip.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_opt_only.png?raw=true">
+            <p>Hovering over the Queue rate, Precision, Recall plot brings up a tooltip indicating the respective values at the selected threshold. The other figures will adapt to the selected threshold. In the confusion matrix plot, the radius of the circlaes and the numbers will change to reflect the true positive, false positive, false negative and true negative at the new classification threshold. 
+            In the ROC plot and the payout curve, a highlight will show the corresponding values for the selected threshold:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_Tooltip_qpr.png?raw=true">
+            <p>Hovering over any part of the payout plot also brings up a tooltip and corresponding changes to the other plots.</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_Tooltip_pay.png?raw=true">
             <ccontent></ccontent>
         </div>
-      
     </div>
 </div>
 
