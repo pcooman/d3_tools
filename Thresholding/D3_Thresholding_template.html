@@ -1,0 +1,1081 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="//rawgit.com/jasondavies/d3-cloud/v1.2.1/build/d3.layout.cloud.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+
+<style>
+input {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.vis-group {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+  
+.vis-group-inline {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 130;
+}
+  
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.queue {
+  fill: none;
+  stroke: rgb(224,80,30);
+  stroke-width: 3px;
+}
+.prec {
+  fill: none;
+  stroke: rgb(0,96,130);
+  stroke-width: 3px;
+}
+.rec {
+  fill: none;
+  stroke: rgb(0,170,127);
+  stroke-width: 3px;
+} 
+.payout {
+  fill: none;
+  stroke: rgb(244,168,0);
+  stroke-width: 3px;
+}
+.roc {
+  fill: none;
+  stroke: rgb(77,192,232);
+  stroke-width: 3px;
+}  
+.marker {
+  stroke-width: 3px;
+  stroke-dasharray: (5, 5);
+}
+  
+.chart {
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+
+.label_max {
+  font-size: 10px;
+  font-weight: bold;
+  fill: red;
+}
+
+.label_opt {
+  font-size: 10px;
+  font-weight: bold;
+  fill: grey;
+}  
+
+.matrix_label {
+  fill: grey;
+  text-anchor: middle;
+  font-weight: bold;
+}
+.axis_label {
+  text-anchor: middle
+}
+  
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+  font-size: 10px;
+}
+  
+body, html { overflow: scroll; height: 100% }
+  
+</style>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+      
+        <div class="tab-pane active" id="a_tab" style="width:800px">
+            <h1>Graph</h1>
+            <acontent>
+            <div class='vis-group-inline' id='vis1' style="width:300px">
+              <svg class='chart-outer1'><g class="chart1"></g></svg>
+            </div>
+            <div class='vis-group-inline' id='vis2' style="width:300px">
+              <svg class='chart-outer2'><g class="chart2"></g></svg>
+            </div>
+            <div class='vis-group-inline' id='vis3' style="width:300px;">
+              <svg class='chart-outer3'><g class="chart3"></g></svg>
+            </div>
+              <div class='vis-group-inline' id='vis4' style="width:300px">
+              <svg class='chart-outer4'><g class="chart4"></g></svg>
+            </div>
+            </acontent>
+        </div>
+      
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<h2>Introduction</h2>
+          	<p>This section provides a manual for the Thresholding visualization. Based on a set of truth 
+            labels and predictions, it plots the queue rate, precision, recall and payout at various 
+            classification thresholds. Depending on the information provided, the template also calculates 
+            the threshold that mazimizes payout and the lowest threshold such that the expected number of 
+            positive cases does not exceed the user's capacity to process them in a timely fashion. This manual explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<h2>Inputs</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Toolbar_empty.png?raw=true">
+    				<ul>
+              <li><b>Truth:</b> A dropdown menu to select the column in the data table that contains the truth labels. The labels should be binary, 1 for 'Yes', 0 for 'No'.</li>
+              <li><b>Predictions:</b> A dropdown menu to select the column in the data table that contains the predicted probabilities corresponding to the positive class. These values are continuous within the range [0,1]. </li>
+              <li><b>Total # of leads:</b> A input form to specify the total number of records that are classified in a give period (e.g., weekly, monthly).</li>
+              <li><b>Maximum bandwidth:</b> An input form to specify the number of positive cases the user can address within the same period (e.g., weekly, monthy). How many cases can the user pursue/investigate/take action on? This is an optional input.</li>
+              <li><b>Success payout:</b> An input form to specify the payout (in $) of successfully following up on a positive prediction (e.g., acquiring a new customer, preventing churn).</li>
+              <li><b>Cost per action:</b> An input form to specify the cost (in $) of acting on a positive prediction (e.g., cost of a mailing, incentive to renew contract).</li>
+            </ul>
+           <h2>Interpretation</h2>
+            <p>Given a column of truth and predicted labels, the template will plot queue rate, precision and recall at various classification thresholds. The queue rate signifies the proportion of leads that can be acted upon by the user. 
+            For example, even though at any time 1000 accounts may be at risk of churning, the current customer retention staff may only have enough employees to follow up on 100 each week. This imposes a lower limit on the threshold. 
+            Setting the threshold lower would cause the number of positive predictions to exceed the number of cases that the staff can act on. The precision denotes the proportion of positive predictions that are also true cases (#true positives/#predicted as being positive). Higher precision means that positive predictions are more likely to be correct. 
+            Recall denotes the number of ture positive cases that have been predicted as such. High recall means that the model captures more of the true positive cases. Ideally, a model achieves both high precision and high recall: all true positive cases are predcited as such and all positive predictions turn out to actually be positive cases. In practice, there is often a trade-off between precision and recall. 
+            At high thresholds, we may find that a model is very accurate about a small number of predictions, while missing most of the true positive cases in the overall population. At low classification thresholds, the model may capture all of the psotive cases in the population, but many positive prediction may turn out to be false.
+            For each threshold, we have a queue rate, precision and recall. This will give us an estimate of the number of cases we will act on and how many are actual positive records. If we also know the payout in the case of a successful action (e.g., new customer joins, customer was going to leave but decided to stay) and the cost of each of action, we can determine the expected payout for each classification threshold.
+            Low thresholds are likely to be suboptimal: even thoug we capture a lot of potential clients/churners, we needed to spend a lot of money to contact a large group of people. At high thresholds, the payout is likely to be suboptimal as well, because by limiting oursleves only to the most surest of cases, we may have missed a lot of people.</p>
+          	<h2>Data table</h2>
+          	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
+          	<p>Each row in the table should correspond to a single prediction. The template requires that at least one column contains a binary flag (0 or 1)  and one column that contains a continuous probability (full range of values between 0 and 1). The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<h2>Known issues</h2>
+          	<p>If the optimal (or maximum) thresholds are very high or very low, the label text may get cut off by the edge of the plot window.</p>
+            <bcontent></bcontent>
+        </div>
+      
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+          	<h2>Introduction</h2>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the case of preventing churn in mobile phone customers. The data can be found either on Platform (schema.table = <i>pcooman.churn</i> on redshift-general) or here: <i>insert_url_to_data_here</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+            <h2>Data table</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table.png?raw=true">
+          	<p>In this table, the <i>truth</i> column contains the truth labels and the <i>pred</i> column contains the prediced probabilities of belonging to the positive class.</p>
+          	<h2>Sample plot</h2>
+          	<p>We'll start by filling in the Truth and Prediction fields:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example.png?raw=true">
+            <p>Without values for the other inputs, our plot only shows the queue rate, precision and recall rates at each threshold.</p> 
+            <p>Next, we can fill out the maximum number of leads (e.g., 1000) and the bandwidth (e.g. 100). This will put a marker at the minimum threshold given the user's capacity to process leads.</p>
+            <p>Adding information on payouts in the case of a success and the cost of each action, allows us to plot the payout graph, indicating the threshold that maximizes payout.</p>
+            <p>In this example, we find that the optimal threshold would result in a payout of $X. However, the minimum threshold is higher than the optimal threshold, meaning that the company and its current staffed cannot process the number of positive cases at the optimal threshold. The company could use this information to decide whetehr or not to hire additional staff.</p>
+            <p>Alternatively, we could have omitted the Bandwidth input, only specifying the total number of leads, success payout and cost per action. That would have resulted in the following graph, showing the optimal threshold, but not the minimum threshold.</p>        	
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Tooltip.png?raw=true">
+            <ccontent></ccontent>
+        </div>
+      
+    </div>
+</div>
+
+<script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+
+draw = function(data, vis_width, vis_height, params) {
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+  var margin = {top: 15, right: 35, bottom: 60, left: 110};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
+
+  d3.select('.chart-outer1')
+    .attr("width", vis_width/2)
+    .attr("height", vis_height);
+  d3.select('.chart-outer2')
+    .attr("width", vis_width/2)
+    .attr("height", vis_height);
+  d3.select('.chart-outer3')
+    .attr("width", vis_width/2)
+    .attr("height", vis_height);
+  d3.select('.chart-outer4')
+    .attr("width", vis_width/2)
+    .attr("height", vis_height);
+  var chart = d3.select(".chart3")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  var chart = d3.select(".chart4")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+  var N = data.length;
+  
+  var mydata = [];
+  var n = params['totaxis'];		// # cases
+	var success_payoff = params['successaxis'];
+	var case_cost = params['costaxis'];
+  for (var i=0; i < 101; i++){
+    var all_preds = 0;
+    var all_truths = 0;
+    var tp = 0;
+    var fp = 0;
+    var tn = 0;
+    for (var j=0; j<data.length; j++){
+    	if (data[j][params['yaxis']] >= parseFloat(i)/100) {
+      all_preds =  all_preds+1
+    	}
+      if (data[j][params['xaxis']] == 1) {
+      all_truths =  all_truths+1
+    	}
+      if (data[j][params['yaxis']] >= parseFloat(i)/100 && data[j][params['xaxis']] == 1) {
+      	tp =  tp+1
+    	}
+      if (data[j][params['yaxis']] >= parseFloat(i)/100 && data[j][params['xaxis']] == 0) {
+      	fp =  fp+1
+    	}
+     if (data[j][params['yaxis']] < parseFloat(i)/100 && data[j][params['xaxis']] == 0) {
+      	tn =  tn+1
+    	}
+		var fn = N-tp-fp-tn
+    }
+    var new_datum = {x: parseFloat(i)/100, 
+                     y_queue: parseFloat(tp+fp)/N, 
+                     y_prec: parseFloat(tp)/(tp+fp), 
+                     y_rec: parseFloat(tp)/(tp+fn),
+                    y_fpr: parseFloat(fp)/(fp+tn),
+                    y_payout: n*(parseFloat(tp+fp)/N)*((parseFloat(tp)/(tp+fp))*success_payoff - case_cost),
+                    tp: tp, fp: fp, tn:tn, fn: fn}
+    mydata.push(new_datum)
+  }
+  
+  if (params['xaxis'] != null && params['yaxis'] != null){
+    debugger;
+    var AUC = 0
+    var fpr_old = mydata[0].y_fpr
+    var rec_old = mydata[0].y_rec
+    for (var i=1; i<101; i++){
+      if (mydata[i].y_fpr != fpr_old){
+      AUC = AUC + (fpr_old - mydata[i].y_fpr)*(mydata[i].y_rec + rec_old)/2
+      fpr_old = mydata[i].y_fpr
+      rec_old = mydata[i].y_rec
+      }
+    }
+  }
+  
+  var x1 = d3.scale.linear()
+    .range([0, (width/2)-100])
+    .domain([0,1]);
+  
+  var y1 = d3.scale.linear()
+    .range([height, 50])
+    .domain([0,1]);
+
+  var xAxis1 = d3.svg.axis()
+      .scale(x1)
+      .orient("bottom")
+      .tickSize(0)
+      .tickPadding(6);
+
+  var yAxis1 = d3.svg.axis()
+      .scale(y1)
+      .orient("left");
+  
+  var x2 = d3.scale.linear()
+    .range([0, (width/2)-100])
+    .domain([0,1]);
+  
+  var y2 = d3.scale.linear()
+    .range([height, 50])
+    .domain(d3.extent(mydata, function(d) { return parseFloat(d.y_payout); })).nice();
+  
+  var svg4 = d3.select(".chart-outer4").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      
+  var xAxis2 = d3.svg.axis()
+      .scale(x2)
+      .orient("bottom")
+      .tickSize(0)
+      .tickPadding(6);
+
+  var yAxis2 = d3.svg.axis()
+      .scale(y2)
+      .orient("left");
+  debugger;
+  // --------------------------------------------------------------------------
+	var svg1 = d3.select(".chart-outer1").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+  svg1.append("text")
+      .attr("class","axis_label")
+  	.attr("text-anchor", "middle")
+     .attr("transform","translate(-30,"+(y1(0.5)+5)+") rotate(-90)")
+  	.text("Actual")
+ 
+  svg1.append("text")
+    .attr("class","matrix_label")
+  	.attr("x", x1(0)-15)
+  	.attr("y", y1(0.75)+5)
+  	.text("1")
+  svg1.append("text")
+      .attr("class","matrix_label")
+  	.attr("x", x1(0)-15)
+  	.attr("y", y1(0.25)+5)
+  	.text("0")
+  
+  svg1.append("text")
+      .attr("class","axis_label")
+  	.attr("x", x1(0.5))
+  	.attr("y", y1(0) + 30)
+  	.attr("text-anchor", "middle")
+  	.text("Predicted")
+  
+  svg1.append("text")
+    .attr("class","matrix_label")
+  	.attr("x", x1(0.25))
+  	.attr("y", y1(0)+15)
+  	.text("1")
+  svg1.append("text")
+      .attr("class","matrix_label")
+  	.attr("x", x1(0.75))
+  	.attr("y", y1(0)+15)
+  	.text("0")
+  
+  svg1.append("text")
+  	.attr("x", x1(0.5)-13)
+  	.attr("y", y1(0.5)-5)
+    .attr("class","matrix_label")
+  	.text("TP")
+  svg1.append("text")
+  	.attr("x", x1(0.5)+13)
+  	.attr("y", y1(0.5)-5)
+    .attr("class","matrix_label")
+  	.text("FN") 
+  svg1.append("text")
+  	.attr("x", x1(0.5)-13)
+  	.attr("y", y1(0.5)+15)
+    .attr("class","matrix_label")
+  	.text("FP") 
+  svg1.append("text")
+  	.attr("x", x1(0.5)+13)
+  	.attr("y", y1(0.5)+15)
+    .attr("class","matrix_label")
+  	.text("TN") 
+  
+  svg1.append("line")
+       .attr("y1", y1(0.5))
+       .attr("x1", x1(0))
+       .attr("x2", x1(1))
+       .attr("y2", y1(0.5))
+       .attr("class", "line marker")
+       .style("stroke", "grey")
+	svg1.append("line")
+       .attr("y1", y1(0))
+       .attr("x1", x1(0.5))
+       .attr("x2", x1(0.5))
+       .attr("y2", y1(1))
+       .attr("class", "line marker")
+       .style("stroke", "grey")
+
+  if (params['xaxis'] != null && params['yaxis'] != null) {
+    	svg1.append("circle")
+        .attr("class","circle tp")
+        .attr("cx", x1(0.25))
+        .attr("cy", y1(0.75))
+        .attr("r", x1(parseFloat(mydata[50].tp)/N)/4)
+        .attr("fill","MediumSpringGreen")
+    	svg1.append("text")
+        .attr("class","axis_label tp")
+        .attr("x", x1(0.25))
+        .attr("y", y1(0.75)+5)
+        .text(mydata[50].tp)
+    	svg1.append("circle")
+        .attr("class","circle fn")
+        .attr("cx", x1(0.75))
+        .attr("cy", y1(0.75))
+        .attr("r", x1(parseFloat(mydata[50].fn)/N)/4)
+        .attr("fill","grey")
+      svg1.append("text")
+        .attr("class","axis_label fn")
+        .attr("x", x1(0.75))
+        .attr("y", y1(0.75)+5)
+        .text(mydata[50].fn)
+    	svg1.append("circle")
+        .attr("class","circle fp")
+        .attr("cx", x1(0.25))
+        .attr("cy", y1(0.25))
+        .attr("r", x1(parseFloat(mydata[50].fp)/N)/4)
+        .attr("fill","grey")
+      svg1.append("text")
+        .attr("class","axis_label fp")
+        .attr("x", x1(0.25))
+        .attr("y", y1(0.25)+5)
+        .text(mydata[50].fp)
+    	svg1.append("circle")
+        .attr("class","circle tn")
+        .attr("cx", x1(0.75))
+        .attr("cy", y1(0.25))
+        .attr("r", x1(parseFloat(mydata[50].tn)/N)/4)
+        .attr("fill","MediumSpringGreen")
+      svg1.append("text")
+        .attr("class","axis_label tn")
+        .attr("x", x1(0.75))
+        .attr("y", y1(0.25)+5)
+        .text(mydata[50].tn)
+  }
+
+  // -------------------------------------------------------------------------- 
+  var svg2 = d3.select(".chart-outer2").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")"); 
+
+  svg2.append("text")
+      .attr("class","axis_label")
+  	.attr("text-anchor", "middle")
+     .attr("transform","translate(-30,"+y1(0.5)+") rotate(-90)")
+  	.text("True Positive Rate")   
+  
+  svg2.append("text")
+      .attr("class","axis_label")
+  	.attr("x", x1(0.5))
+  	.attr("y", y1(0) + 30)
+  	.attr("text-anchor", "middle")
+  	.text("False Positive Rate")
+	   
+  svg2.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis1);
+
+  svg2.append("g")
+        .attr("class", "y axis")
+        .call(yAxis1); 
+  
+  var roc = d3.svg.line()
+      .interpolate("basis")   
+      .x(function(d) { return x1(d.y_fpr); })
+      .y(function(d) { return y1(d.y_rec); })
+  
+  svg2.append("path")
+        .datum(mydata)
+        .attr("class", "line roc")
+        .attr("d", roc);
+
+  svg2.append("line")
+       .attr("y1", y1(0))
+       .attr("x1", x1(0))
+       .attr("x2", x1(1))
+       .attr("y2", y1(1))
+       .attr("class", "line marker")
+       .style("stroke", "rgb(77,192,232)")
+       .style("stroke-dasharray", ("3, 3"))
+  
+  svg2.append("rect")
+  	.attr("class","roc_rect")
+    .attr("x", x1(0))
+    .attr("y", y1(1))
+    .attr("width", (x1(1)-x1(0))/100)
+    .attr("height", y1(0) - y1(1))
+    .attr("fill", "transparent")
+  
+  svg2.append("text")
+  	.attr("class","matrix_label")
+  	.attr("x", x1(1)-40)
+  	.attr("y", y1(0)-10)
+  	.attr("text-anchor","right")
+  	.text("AUC: " + Math.round(1000*AUC)/1000)
+  
+  // --------------------------------------------------------------------------
+  var svg3 = d3.select(".chart-outer3").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      
+  
+  svg3.append("text")
+      .attr("class","axis_label")
+  	.attr("x", x1(0.5))
+  	.attr("y", y1(0) + 30)
+  	.attr("text-anchor", "middle")
+  	.text("Threshold")
+	   
+  svg3.append("g")
+      .attr("class", "x axis")
+      //.attr("transform", "translate(0," + height + ")")
+  		.attr("transform", "translate(0," + y1(0) + ")")
+      .call(xAxis1);
+
+   svg3.append("g")
+        .attr("class", "y axis")
+        .call(yAxis1);
+
+   var queue = d3.svg.line()
+      .interpolate("basis")   
+      .x(function(d) { return x1(d.x); })
+      .y(function(d) { return y1(d.y_queue); });
+   var prec = d3.svg.line()
+      .interpolate("basis")   
+      .x(function(d) { return x1(d.x); })
+      .y(function(d) { return y1(d.y_prec); });
+   
+   var rec = d3.svg.line()
+      .interpolate("basis")   
+      .x(function(d) { return x1(d.x); })
+      .y(function(d) { return y1(d.y_rec); });
+	 
+   var legend_labels = ['queue','precision','recall']
+   var legend_colors = ['rgb(224,80,30)','rgb(0,96,130)','rgb(0,170,127)']
+
+   for (var i=0; i<legend_labels.length; i++) {
+     svg3.append("circle")
+       .attr("cx",x1(1)-40)
+       .attr("cy",y1(0.8)+20*i)
+       .attr("r", 5)
+       .attr("fill", legend_colors[i])
+
+     svg3.append("text")
+       .attr("x",x1(1)-30)
+       .attr("y",y1(0.8)+4+20*i)
+       .attr("class","legend_label")
+       .text(legend_labels[i])
+       .style("font-weight", "bold")
+       .style("font-size", "10px")
+       .attr("fill", legend_colors[i])
+       .style("text-anchor","left")
+    }
+  
+   if (params['xaxis'] != null && params['yaxis'] != null){
+     svg3.append("path")
+          .datum(mydata)
+          .attr("class", "line queue")
+          .attr("d", queue);
+     svg3.append("path")
+          .datum(mydata)
+          .attr("class", "line prec")
+          .attr("d", prec);
+      svg3.append("path")
+          .datum(mydata)
+          .attr("class", "line rec")
+          .attr("d", rec);
+
+       for (var i=0; i<101; i++) {
+          svg3.append("rect")
+            .attr("x", x1(i/100))
+            .attr("y", y1(1))
+            .attr("width", (x1(1)-x1(0))/100)
+            .attr("height", y1(0) - y1(1))
+            .attr("fill", "transparent")
+            .attr("index", i)
+            .on("mouseover", function() {
+              this.setAttribute("fill","rgb(244,168,0)")
+              d3.select("circle.tp").attr("r", x1(parseFloat(mydata[this.getAttribute("index")].tp)/N)/4)
+              d3.select("circle.fn").attr("r", x1(parseFloat(mydata[this.getAttribute("index")].fn)/N)/4)
+              d3.select("circle.fp").attr("r", x1(parseFloat(mydata[this.getAttribute("index")].fp)/N)/4)
+              d3.select("circle.tn").attr("r", x1(parseFloat(mydata[this.getAttribute("index")].tn)/N)/4)
+              
+              d3.select(".axis_label.tp").text(mydata[this.getAttribute("index")].tp)
+              d3.select(".axis_label.fn").text(mydata[this.getAttribute("index")].fn)
+              d3.select(".axis_label.fp").text(mydata[this.getAttribute("index")].fp)
+              d3.select(".axis_label.tn").text(mydata[this.getAttribute("index")].tn)
+              debugger;
+              d3.select(".roc_rect")
+              	.attr("x", x1(mydata[this.getAttribute("index")].y_fpr))
+                .attr("fill","rgb(244,168,0)")
+              d3.select(".pay_rect")
+              	.attr("x", x2(mydata[this.getAttribute("index")].x))
+                .attr("fill","rgb(244,168,0)")
+             showDetailsQPR("Threshold: " + mydata[this.getAttribute("index")].x + 
+                        "<br/>Queue rate: " + Math.round(1000*mydata[this.getAttribute("index")].y_queue)/10 + "%" +
+                        "<br/>Precision: " + Math.round(1000*mydata[this.getAttribute("index")].y_prec)/10 + "%" +
+                        "<br/>Recall: " + Math.round(1000*mydata[this.getAttribute("index")].y_rec)/10 + "%", this)
+            })
+            .on("mouseout", function() {
+              this.setAttribute("fill","transparent")
+              d3.select("circle.tp").attr("r", x1(parseFloat(mydata[50].tp)/N)/4)
+              d3.select("circle.fn").attr("r", x1(parseFloat(mydata[50].fn)/N)/4)
+              d3.select("circle.fp").attr("r", x1(parseFloat(mydata[50].fp)/N)/4)
+              d3.select("circle.tn").attr("r", x1(parseFloat(mydata[50].tn)/N)/4)
+              
+              d3.select(".axis_label.tp").text(mydata[50].tp)
+              d3.select(".axis_label.fn").text(mydata[50].fn)
+              d3.select(".axis_label.fp").text(mydata[50].fp)
+              d3.select(".axis_label.tn").text(mydata[50].tn)
+              
+              d3.select(".roc_rect")
+                .attr("fill","transparent")
+              d3.select(".pay_rect")
+                .attr("fill","transparent")
+
+              hideDetails()
+            })
+        }
+   }
+		
+  	if (params['totaxis'] !=null && params['successaxis'] != null && params['costaxis'] != null){ 
+      var payout_array = mydata.map(function(d) {return d.y_payout})
+      var index_payout_max = payout_array.indexOf(d3.max(mydata, function(d) {return d.y_payout}))
+      svg3.append("line")
+       .attr("y1", y1(0))
+       .attr("y2", y1(1))
+       .attr("x1", x1(parseFloat(index_payout_max)/100))
+       .attr("x2", x1(parseFloat(index_payout_max)/100))
+       .attr("class", "line marker")
+       .style("stroke", "grey")
+       .style("stroke-dasharray", ("5, 5"))
+      
+      svg3.append("text")
+       .attr("class","label_opt")
+       .attr("x", x1(parseFloat(index_payout_max)/100))
+       .attr("y", y1(1)-53)
+       .style("text-anchor","middle")
+       .text("Optimal: " + parseFloat(index_payout_max)/100)
+      svg3.append("text")
+       .attr("class","label_opt")
+       .attr("x", x1(parseFloat(index_payout_max)/100))
+       .attr("y", y1(1)-39)
+       .style("text-anchor","middle")
+       .text("Queue rate: " + Math.round(1000*mydata[index_payout_max].y_queue)/10 +"%")
+      svg3.append("text")
+       .attr("class","label_opt")
+       .attr("x", x1(parseFloat(index_payout_max)/100))
+       .attr("y", y1(1)-25)
+       .style("text-anchor","middle")
+  	  .text("Precision: " + Math.round(1000*mydata[index_payout_max].y_prec)/10 + "%")
+      svg3.append("text")
+       .attr("class","label_opt")
+       .attr("x", x1(parseFloat(index_payout_max)/100))
+       .attr("y", y1(1)-11)
+       .style("text-anchor","middle")
+       .text("Recall: " + Math.round(1000*mydata[index_payout_max].y_rec)/10 + "%")
+    }
+    
+    if (params['totaxis'] !=null && params['maxaxis'] != null){ 
+      var queue_array = mydata.map(function(d) {return d.y_queue})
+      var index_queue_max = queue_array.indexOf(queue_array.find(function (el) {
+        return el < parseFloat(params['maxaxis'])/params['totaxis'];}))
+      svg3.append("line")
+       .attr("y1", y1(0))
+       .attr("y2", y1(1))
+       .attr("x1", x1(parseFloat(index_queue_max)/100))
+       .attr("x2", x1(parseFloat(index_queue_max)/100))
+       .attr("class", "line marker")
+       .style("stroke", "red")
+       .style("stroke-dasharray", ("5, 5"))
+      
+      svg3.append("text")
+       .attr("class","label_max")
+       .attr("x", x1(parseFloat(index_queue_max)/100))
+       .attr("y", y1(1)-53)
+       .style("text-anchor","middle")
+       .text("Minimum: " + parseFloat(index_queue_max)/100)
+      svg3.append("text")
+       .attr("class","label_max")
+       .attr("x", x1(parseFloat(index_queue_max)/100))
+       .attr("y", y1(1)-39)
+       .style("text-anchor","middle")
+       .text("Queue rate: " + Math.round(1000*mydata[index_queue_max].y_queue)/10 +"%")
+      svg3.append("text")
+       .attr("class","label_max")
+       .attr("x", x1(parseFloat(index_queue_max)/100))
+       .attr("y", y1(1)-25)
+       .style("text-anchor","middle")
+       .text("Precision: " + Math.round(1000*mydata[index_queue_max].y_prec)/10 + "%")
+      svg3.append("text")
+       .attr("class","label_max")
+       .attr("x", x1(parseFloat(index_queue_max)/100))
+       .attr("y", y1(1)-11)
+       .style("text-anchor","middle")
+       .text("Recall: " + Math.round(1000*mydata[index_queue_max].y_rec)/10 + "%")
+    }
+    
+  svg3.append("rect")
+  	.attr("class","qpr_rect")
+    .attr("x", x1(0))
+    .attr("y", y1(1))
+    .attr("width", (x1(1)-x1(0))/100)
+    .attr("height", y1(0) - y1(1))
+    .attr("fill", "transparent")
+  // ---------------------------------------------
+	   
+  svg4.append("g")
+      .attr("class", "x axis")
+      //.attr("transform", "translate(0," + height + ")")
+  		.attr("transform", (params['xaxis'] != null && params['yaxis'] != null && params['successaxis'] != null && params['costaxis'] != null) ?  "translate(0," + y2(0) + ")" : "translate(0," + height + ")")
+      .call(xAxis2);
+  svg4.append("text")
+      .attr("class","axis_label")
+  	.attr("x", x2(0.5))
+  	.attr("y", y1(0) + 30)
+  	.attr("text-anchor", "middle")
+  	.text("Threshold")
+
+  svg4.append("g")
+      .attr("class", "y axis")
+      .call(yAxis2);
+  
+  var payout = d3.svg.line()
+ 		.interpolate("basis")   
+    .x(function(d) { return x2(d.x); })
+    .y(function(d) { return y2(d.y_payout); });
+ 	
+  svg4.append("path")
+      .datum(mydata)
+      .attr("class", "line payout")
+      .attr("d", payout);
+  if (params['totaxis'] !=null && params['successaxis'] != null && params['costaxis'] != null){ 
+    svg4.append("line")
+     .attr("y1", y2(0))
+     .attr("y2", y1(1))
+     //.attr("y2", y2(d3.max(mydata, function(d) { return d.y_payout; })))
+     .attr("x1", x2(parseFloat(index_payout_max)/100))
+     .attr("x2", x2(parseFloat(index_payout_max)/100))
+     .attr("class", "line marker")
+     .style("stroke", "grey")
+     .style("stroke-dasharray", ("5, 5"))
+    
+    svg4.append("text")
+       .attr("class","label_opt")
+       .attr("x", x2(parseFloat(index_payout_max)/100))
+       .attr("y", y1(1)-25)
+       .style("text-anchor","middle")
+       .text("Optimal: " + parseFloat(index_payout_max)/100)
+    svg4.append("text")
+       .attr("class","label_opt")
+       .attr("x", x2(parseFloat(index_payout_max)/100))
+       .attr("y", y1(1)-11)
+       .style("text-anchor","middle")
+       .text("Payout: $" + Math.round(mydata[index_payout_max].y_payout))
+
+    for (var i=0; i<101; i++) {
+          svg4.append("rect")
+            .attr("x", x1(i/100))
+            .attr("y", y1(1))
+            .attr("width", (x1(1)-x1(0))/100)
+            .attr("height", y1(0) - y1(1))
+            .attr("fill", "transparent")
+            .attr("index", i)
+            .on("mouseover", function() {
+              this.setAttribute("fill","rgb(244,168,0)")
+              d3.select("circle.tp").attr("r", x1(parseFloat(mydata[this.getAttribute("index")].tp)/N)/4)
+              d3.select("circle.fn").attr("r", x1(parseFloat(mydata[this.getAttribute("index")].fn)/N)/4)
+              d3.select("circle.fp").attr("r", x1(parseFloat(mydata[this.getAttribute("index")].fp)/N)/4)
+              d3.select("circle.tn").attr("r", x1(parseFloat(mydata[this.getAttribute("index")].tn)/N)/4)
+              
+              d3.select(".axis_label.tp").text(mydata[this.getAttribute("index")].tp)
+              d3.select(".axis_label.fn").text(mydata[this.getAttribute("index")].fn)
+              d3.select(".axis_label.fp").text(mydata[this.getAttribute("index")].fp)
+              d3.select(".axis_label.tn").text(mydata[this.getAttribute("index")].tn)
+
+              d3.select(".roc_rect")
+              	.attr("x", x1(mydata[this.getAttribute("index")].y_fpr))
+                .attr("fill","rgb(244,168,0)")
+              d3.select(".qpr_rect")
+              	.attr("x", x1(mydata[this.getAttribute("index")].x))
+                .attr("fill","rgb(244,168,0)")
+
+            showDetailsPay("Threshold: " + mydata[this.getAttribute("index")].x + 
+                        "<br/>Payout: $" + Math.round(mydata[this.getAttribute("index")].y_payout)
+                        , this)
+            
+            })
+            .on("mouseout", function() {
+              this.setAttribute("fill","transparent")
+              d3.select("circle.tp").attr("r", x1(parseFloat(mydata[50].tp)/N)/4)
+              d3.select("circle.fn").attr("r", x1(parseFloat(mydata[50].fn)/N)/4)
+              d3.select("circle.fp").attr("r", x1(parseFloat(mydata[50].fp)/N)/4)
+              d3.select("circle.tn").attr("r", x1(parseFloat(mydata[50].tn)/N)/4)
+              
+              d3.select(".axis_label.tp").text(mydata[50].tp)
+              d3.select(".axis_label.fn").text(mydata[50].fn)
+              d3.select(".axis_label.fp").text(mydata[50].fp)
+              d3.select(".axis_label.tn").text(mydata[50].tn)
+              
+              d3.select(".roc_rect")
+                .attr("fill","transparent")
+              d3.select(".qpr_rect")
+                .attr("fill","transparent")
+
+              hideDetails()
+            })
+        }
+
+    svg4.append("rect")
+  	 .attr("class","pay_rect")
+      .attr("x", x2(0))
+      .attr("y", y1(1))
+      .attr("width", (x1(1)-x1(0))/100)
+      .attr("height", y1(0) - y1(1))
+      .attr("fill", "transparent")
+  }
+  
+  svg4.append("circle")
+      .attr("cx",x2(1)-40)
+      .attr("cy",y1(0.8))
+      .attr("r", 5)
+      .attr("fill", "rgb(244,168,0)")
+        
+  svg4.append("text")
+      .attr("x",x2(1)-30)
+      .attr("y",y1(0.8)+4)
+  		.attr("class","legend_label")
+      .text("payout")
+      .style("font-weight", "bold")
+      .style("font-size", "10px")
+      .attr("fill", "rgb(244,168,0)")
+      .style("text-anchor","left")
+  
+  if (params['totaxis'] !=null && params['maxaxis'] != null && 
+      params['successaxis'] != null && params['costaxis'] != null){ 
+      svg4.append("line")
+       .attr("y1", y2(0))
+       .attr("y2", y1(1))
+       //.attr("y2", y2(d3.max(mydata, function(d) { return d.y_payout; })))
+       .attr("x1", x2(parseFloat(index_queue_max)/100))
+       .attr("x2", x2(parseFloat(index_queue_max)/100))
+       .attr("class", "line marker")
+       .style("stroke", "red")
+       .style("stroke-dasharray", ("5, 5"))
+      if (params['successaxis'] !=null && params['costaxis'] != null){
+        svg4.append("text")
+         .attr("class","label_max")
+         .attr("x", x2(parseFloat(index_queue_max)/100))
+         .attr("y", y1(1)-25)
+         .style("text-anchor","middle")
+         .text("Minimum: " + parseFloat(index_queue_max)/100)
+        svg4.append("text")
+         .attr("class","label_max")
+         .attr("x", x2(parseFloat(index_queue_max)/100))
+         .attr("y", y1(1)-11)
+         .style("text-anchor","middle")
+         .text("Payout: $" + Math.round(mydata[index_queue_max].y_payout))
+      }
+    }
+  
+  	if (index_queue_max < index_payout_max) {
+        d3.selectAll(".label_max")
+            .style("text-anchor","end")
+        d3.selectAll(".label_opt")
+            .style("text-anchor","start")    
+    }
+    if (index_queue_max > index_payout_max) {
+        d3.selectAll(".label_max")
+            .style("text-anchor","start")
+        d3.selectAll(".label_opt")
+            .style("text-anchor","end")    
+    }
+  
+  
+}
+
+var showDetailsQPR = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top - 75)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var showDetailsPay = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top - 42)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 475;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(data, params) {
+  // an array of the column names in the original data source
+  var columns = Object.keys(data[0]);
+  // set up toolbar
+  $("#vis1").prepend("<div id='toolbar1'  style='width:800px;'></div>");
+  // create pickers for both the x and y axis
+  var dimensions = ['x', 'y'];
+  var toolbar_labels = ['Truth', 'Predictions'];
+
+  for(var i_dim in dimensions) {
+    var dim = dimensions[i_dim];
+    var label = toolbar_labels[i_dim];
+    // create the select dropdown
+    $("#toolbar1").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+    // populate the dropdown with the columns in the dataset
+    for(i_col in columns) {
+      col_name = columns[i_col];
+      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+    }
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        d3.selectAll("#vis3 .line").remove()
+        d3.selectAll("#vis3 .axis").remove()
+        d3.selectAll("#vis4 .line").remove()
+        d3.selectAll("#vis4 .axis").remove()
+        d3.selectAll(".marker").remove()
+        d3.selectAll(".label_max").remove()
+        d3.selectAll(".label_opt").remove()
+        d3.selectAll(".legend_label").remove()
+	  		d3.selectAll("circle").remove()
+	  		d3.selectAll(".axis_label").remove()
+	  		d3.selectAll(".matrix_label").remove()
+
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        draw(data, def_vis_width, def_vis_height, params);
+      }
+    }(dim));
+  }
+  
+  // ------------------------------------------------------
+  
+  // set up toolbar
+  $("#toolbar1").append("<div id='toolbar2'  style='width:800px;'></div>");
+  // Create numerical inputs for minimum and maximum font size
+  var dimensions_size = ['tot','max'];
+  var toolbar_labels = ['Total # of leads','Maximum bandwidth (optional)'];
+  
+  for(var i_dim in dimensions_size) {
+    var dim = dimensions_size[i_dim];
+    var label = toolbar_labels[i_dim];
+    // create the select dropdown 
+    $("#toolbar2").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><input type='number' id='"+dim+"-var'>")    
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        // remove old word cloud whenever user changes the inputs
+        d3.selectAll("#vis4 .line").remove()
+        d3.selectAll("#vis4 .axis").remove()
+        d3.selectAll(".marker").remove()
+				d3.selectAll(".label_max").remove()
+        d3.selectAll(".label_opt").remove()
+        d3.selectAll(".legend_label").remove()
+        d3.selectAll("circle").remove()
+	 		  d3.selectAll(".axis_label").remove()
+	  		d3.selectAll(".matrix_label").remove()
+
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        draw(data, def_vis_width, def_vis_height, params);
+      }
+    }(dim));
+  }
+  
+  // ------------------------------------------------------
+  
+  // set up toolbar
+  $("#toolbar2").append("<div id='toolbar3'  style='width:800px;'></div>");
+  // Create numerical inputs for minimum and maximum font size
+  var dimensions_size = ['success','cost'];
+  var toolbar_labels = ['Success payout', 'Cost per action'];
+  
+  for(var i_dim in dimensions_size) {
+    var dim = dimensions_size[i_dim];
+    var label = toolbar_labels[i_dim];
+    // create the select dropdown 
+    $("#toolbar3").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><input type='number' id='"+dim+"-var'>$")    
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        // remove old word cloud whenever user changes the inputs
+        d3.selectAll("#vis4 .line").remove()
+        d3.selectAll("#vis4 .axis").remove()
+        d3.selectAll(".marker").remove()
+        d3.selectAll(".label_max").remove()
+        d3.selectAll(".label_opt").remove()
+        d3.selectAll(".legend_label").remove()
+        d3.selectAll("circle").remove()
+	  		d3.selectAll(".axis_label").remove()
+	  		d3.selectAll(".matrix_label").remove()
+
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        draw(data, def_vis_width, def_vis_height, params);
+      }
+    }(dim));
+  }
+};
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+
+  // var params = config['params'] || {};
+  params = {};
+  
+  // sizing
+  if('dimensions' in config) {
+    def_vis_width = config['dimensions']['width'];
+    def_vis_height = config['dimensions']['height'];
+  }
+  def_vis_width = 745;
+  def_vis_height = 375;
+  
+  // tooltips
+  $("#vis3").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+  d3.csv(config['dataUrl'], function(error, data) {
+    if(config['mode'] == 'edit') {
+      createToolbar(data, params);
+      def_vis_height = def_vis_height - 50; // account for toolbar
+    }
+    draw(data, def_vis_width, def_vis_height, params);
+  });
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+</script>
+</html>
