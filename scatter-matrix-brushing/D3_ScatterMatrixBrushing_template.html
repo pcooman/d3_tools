@@ -108,41 +108,43 @@ body, html { overflow: scroll; height: 100% }
         <div class="tab-pane" id="b_tab">
             <h1>Info</h1>
           	<h2>Introduction</h2>
-          	<p>This section provides a manual for the Correlogram visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<p>This section provides a manual for the Scatter Matrix with Brushing visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_empty.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Toolbar_empty.png?raw=true">
     		 <ul>
               <li><b>Add Variable:</b> A button to generate additional Property dropdown forms.</li>
-              <li><b>Property:</b> A dropdown menu to select the variable to include in the plot.</li>
+              <li><b>Property:</b> A dropdown menu to select a new variable to include in the plot.</li>
+              <li><b>Color:</b> A dropdown menu to select the variable that signifies class membership. The number of different colors equals the number of unique classes.</li>
             </ul>
           	<h2>Data table</h2>
-          	<p>The template calculates the Pearson correlation coefficient for all pairwise combinations of the selected variables. The values in the selected columns need to be numerical. In the following table, each column can be selected and potted, with exception of the last colum <i>car_name</i> because it is a categorical variable:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Table.png?raw=true">
-          	<p>The graph will plot a matrix with the column names on the diagonal, the correlation coefficient in the lower left triangle and filled circles in the upper right triangle. The color and size of the circles depends on the correlation coefficient. Negative correlation coefficients are displayed as red circles and positive correlation coefficients are displayed as blue circles. The higher the absolute value of the correlation coefficient, the deeper the color intensity and radius of the circle.</p>
-          	<p>The <i>Add Variable</i> button allows you to gradually build up the correlogram. A variable can be "removed" from the plot by changing that variable to one that is already plotted.</p>
+          	<p>The template plots the scatter plot for all pairwise combinations of the selected variables. The values in the selected <i>Property</i> columns need to be numerical. The variable selected for the <i>Color</i> menu can be a categorical or numerical, provided that there are a limited number of unique values. In the following table, all columns can be selected as the <i>Color</i> variable, but only the first four column can be selected as <i>Property</i> variables:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Table.png?raw=true">
+          	<p>The graph will plot a matrix with the column names in the left ahnd corner of the cells that form the diagonal. Each data point is plotted as a circle. These circles have a fixed radius, but their color is determined by the <i>Color</i> value of its corresponding data point.</p>
+          	<p>The <i>Add Variable</i> button allows you to gradually build up the graph. A variable can be "removed" from the plot by changing that variable to one that has already been plotted.</p>
+           <p>Holding down the mouse button and drawing a rectangle ("brushing") highlights the data points that fall within the rectangle, not only in the current cell, but in all cells of the matrix. You can adjust the size of the brush by moving its edges or its corners. You can also translate the brush by clicking inside the rectangle and dragging it. Finally, to clear the brush, simply click anywehere outside of the rectangular area.</p>
            <h2>Known issues</h2>
-          	<p>Move the labels from the diagonal to the left and top of the plot. When many variables need to be plotted, this would prevent the labels from bleeding over into the adjacent cells.</p>
+          	<p>There is a remaining issue with the brushing feature. When brushing, the unselected data points should appear as light grey filled circles, at the moment they disappear from the plot.</p>
             <bcontent></bcontent>
         </div>
       
       	<div class="tab-pane" id="c_tab">
             <h1>Example</h1>
           	<h2>Introduction</h2>
-          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the cars data set. The data can be found either on Platform (schema.table = <i>pcooman.cars</i> on redshift-general) or here: <i>https://archive.ics.uci.edu/ml/datasets/Auto+MPG</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the iris data set. The data can be found either on Platform (schema.table = <i>pcooman.iris</i> on redshift-general) or here: <i>http://www.idvbook.com/teaching-aid/data-sets/the-iris-data-set/</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Table.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Table.png?raw=true">
           	<h2>Sample plot</h2>
-          	<p>We start by clicking the <i>Add Variable</i> button multiple times and filling in the variables we want to include int he plot:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_allbutone.png?raw=true">
-           <p>This should generate a correlogram that looks like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_allbutone.png?raw=true">
-           <p>Clicking the <i>Add Variable</i> again, creates a new dropdown menu at the top of the list:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlgram_Toolbar_lastempty.png?raw=true">
-           <p>Creating this new dropdown menu, but leaving it empty for now, will create placeholder cells in the correlogram:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_lastempty.png?raw=true">
-           <p>Once we choose a variable from the newly created dropdown menu, the empty correlogram cells will be filled in:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_full.png?raw=true">
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_full.png?raw=true">
+          	<p>We start by clicking the <i>Add Variable</i> button. This brings up a first <i>Property</i> input and the <i>Color</i> input. The <i>Color</i> input is only added the first time, subsequently clicking the <i>Add Variable</i> button only adds a new <i>Property</i> input:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Toolbar_empty.png?raw=true">
+           <p>For now, we will only fill in <i>Property</i> and leave the <i>Color</i> input empty:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Toolbar_nocolor.png?raw=true">
+           <p>For the inputs listed above, the plot should look as follows:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Example_nocolor.png?raw=true">
+           <p>Filling in the <i>Color</i> variable changes the fill color of the data points accordingly. A legend in the top right corner shows which color corresponds to each class:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Toolbar_full.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Example_color.png?raw=true">
+           <p>Finally, drawing a rectangle on one of the cells highlights the selected data points in the current cells and the corresponding data points in all other cells:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Example_brushing.png?raw=true">
           	 <ccontent></ccontent>
         </div>
       
