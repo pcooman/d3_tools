@@ -1,0 +1,513 @@
+<html>
+<script src="https://rawgit.com/jashkenas/underscore/1.8.3/underscore-min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://rawgit.com/jashkenas/underscore/master/underscore-min.js"></script>  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="https://rawgit.com/jstat/jstat/1.5.3/dist/jstat.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+
+<style>
+input {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+  
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 130;
+}
+  
+svg {
+  font: 10px sans-serif;
+  padding: 10px;
+}
+
+.axis,
+.frame {
+  shape-rendering: crispEdges;
+}
+
+.axis line {
+  stroke: #ddd;
+}
+
+.axis path {
+  display: none;
+}
+
+.cell text {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.frame {
+  fill: none;
+  stroke: #aaa;
+}
+
+circle {
+  fill-opacity: .7;
+}
+
+
+circle.hidden {
+  fill: grey !important;
+}
+  
+.extent {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #fff;
+}
+
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+  
+body, html { overflow: scroll; height: 100% }
+  
+</style>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+      
+        <div class="tab-pane active" id="a_tab">
+            <h1>Graph</h1>
+            <acontent>
+            <div id='buttons' style="height:75px;"></div>
+            <div id='vis'>
+              <svg class='chart-outer'><g class="chart"></g></svg>
+            </div>
+            </acontent>
+        </div>
+      
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<h2>Introduction</h2>
+          	<p>This section provides a manual for the Correlogram visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<h2>Inputs</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_empty.png?raw=true">
+    		 <ul>
+              <li><b>Add Variable:</b> A button to generate additional Property dropdown forms.</li>
+              <li><b>Property:</b> A dropdown menu to select the variable to include in the plot.</li>
+            </ul>
+          	<h2>Data table</h2>
+          	<p>The template calculates the Pearson correlation coefficient for all pairwise combinations of the selected variables. The values in the selected columns need to be numerical. In the following table, each column can be selected and potted, with exception of the last colum <i>car_name</i> because it is a categorical variable:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Table.png?raw=true">
+          	<p>The graph will plot a matrix with the column names on the diagonal, the correlation coefficient in the lower left triangle and filled circles in the upper right triangle. The color and size of the circles depends on the correlation coefficient. Negative correlation coefficients are displayed as red circles and positive correlation coefficients are displayed as blue circles. The higher the absolute value of the correlation coefficient, the deeper the color intensity and radius of the circle.</p>
+          	<p>The <i>Add Variable</i> button allows you to gradually build up the correlogram. A variable can be "removed" from the plot by changing that variable to one that is already plotted.</p>
+           <h2>Known issues</h2>
+          	<p>Move the labels from the diagonal to the left and top of the plot. When many variables need to be plotted, this would prevent the labels from bleeding over into the adjacent cells.</p>
+            <bcontent></bcontent>
+        </div>
+      
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+          	<h2>Introduction</h2>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the cars data set. The data can be found either on Platform (schema.table = <i>pcooman.cars</i> on redshift-general) or here: <i>https://archive.ics.uci.edu/ml/datasets/Auto+MPG</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+            <h2>Data table</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Table.png?raw=true">
+          	<h2>Sample plot</h2>
+          	<p>We start by clicking the <i>Add Variable</i> button multiple times and filling in the variables we want to include int he plot:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_allbutone.png?raw=true">
+           <p>This should generate a correlogram that looks like this:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_allbutone.png?raw=true">
+           <p>Clicking the <i>Add Variable</i> again, creates a new dropdown menu at the top of the list:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlgram_Toolbar_lastempty.png?raw=true">
+           <p>Creating this new dropdown menu, but leaving it empty for now, will create placeholder cells in the correlogram:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_lastempty.png?raw=true">
+           <p>Once we choose a variable from the newly created dropdown menu, the empty correlogram cells will be filled in:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_full.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_full.png?raw=true">
+          	 <ccontent></ccontent>
+        </div>
+      
+    </div>
+</div>
+
+<script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+
+draw = function(data_full, vis_width, vis_height, params) {
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+  var margin = {top: 10, right: 20, bottom: 60, left: 75};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", vis_width)
+    .attr("height", vis_height);
+  var chart = d3.select(".chart")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+  var count = params['count'];
+  var width = 750;
+  var size = width/(count+1);
+  var padding = 20;
+  
+  var data = [];
+  for (var i=0; i<data_full.length; i++){
+    var new_data = {};
+    for (var j=0; j<count+1; j++) {
+      new_data[params['xaxis'+j]] = data_full[i][params['xaxis'+j]]
+    }
+    if (params['caxis'] != null && params['caxis'].length > 0) {
+    new_data[params['caxis']] = data_full[i][params['caxis']]    
+    }
+    data.push(new_data)
+  }  
+
+  var x = d3.scale.linear()
+      .range([padding / 2, size - padding / 2]);
+
+  var y = d3.scale.linear()
+      .range([size - padding / 2, padding / 2]);
+
+  var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom")
+      .ticks(6);
+
+  var yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left")
+      .ticks(6);
+  
+  var domainByTrait = {},
+      traits = Object.keys(data[0]).filter(function(d) { return d !== "class"; }),
+      n = traits.length;
+  
+  traits.forEach(function(trait) {
+    domainByTrait[trait] = d3.extent(data, function(d) { return d[trait]; });
+  });
+
+  xAxis.tickSize(size * n);
+  yAxis.tickSize(-size * n);
+
+  var svg = d3.select(".chart").append("svg")
+      .attr("width", 150 + size * n + padding)
+      .attr("height", size * n + padding)
+    .append("g")
+      .attr("transform", "translate(" + padding + "," + padding / 2 + ")");
+
+  svg.selectAll(".x.axis")
+      .data(traits)
+    .enter().append("g")
+      .attr("class", "x axis")
+      .attr("transform", function(d, i) { return "translate(" + (20 + (n - i - 1) * size) + ",0)"; })
+      .each(function(d) { x.domain(domainByTrait[d]); d3.select(this).call(xAxis); });
+
+  svg.selectAll(".y.axis")
+      .data(traits)
+    .enter().append("g")
+      .attr("class", "y axis")
+      .attr("transform", function(d, i) { return "translate(20," + i * size + ")"; })
+      .each(function(d) { y.domain(domainByTrait[d]); d3.select(this).call(yAxis); });
+  
+  if (params['caxis'] != null && params['caxis'].length > 0) {
+    var classes = _.uniq(data_full.map(function(d) {return d[params['caxis']];}));
+    var N_colors = classes.length;
+  }
+
+  var cell = svg.selectAll(".cell")
+      .data(cross(traits, traits))
+    .enter().append("g")
+      .attr("class", "cell")
+      .attr("transform", function(d) { return "translate(" + (20 + (n - d.i - 1) * size) + "," + d.j * size + ")"; })
+      .each(plot);
+
+  // Titles for the diagonal.
+  cell.filter(function(d) { return d.i === d.j; }).append("text")
+      .attr("class","diag_label")
+      .attr("x", padding)
+      .attr("y", padding)
+      .attr("dy", ".71em")
+      .text(function(d) { return d.x; });
+
+  var brush = d3.svg.brush()
+      .x(x)
+      .y(y)
+      .on("brushstart", brushstart)
+      .on("brush", brushmove)
+      .on("brushend", brushend);
+ 
+  cell.call(brush);
+  
+  if (params['caxis'] != null && params['caxis'].length > 0) {
+    for (var i=0; i<classes.length; i++) {
+      debugger;
+    svg.append("circle")
+       .attr("class","legend_circle")
+       .attr("cx", 20 + size * n + padding )
+       .attr("cy", 10+20*i)
+       .attr("r", 5)
+       .attr("fill", d3.interpolateSpectral(1 - parseFloat(i)/N_colors))
+
+     svg.append("text")
+       .attr("x", 20 + size * n + padding + 15)
+       .attr("y", 14+20*i)
+       .attr("class","legend_label")
+       .text(classes[i])
+       .style("font-weight", "bold")
+       .style("font-size", "12px")
+       .attr("fill", d3.interpolateSpectral(1 - parseFloat(i)/N_colors))
+       .style("text-anchor","left")
+    }
+  }
+
+  function plot(p) {
+    var cell = d3.select(this);
+
+    x.domain(domainByTrait[p.x]);
+    y.domain(domainByTrait[p.y]);
+
+    cell.append("rect")
+        .attr("class", "frame")
+        .attr("x", padding / 2)
+        .attr("y", padding / 2)
+        .attr("width", size - padding)
+        .attr("height", size - padding);
+
+    cell.selectAll("circle")
+        .data(data)
+      .enter().append("circle")
+        .attr("cx", function(d) { return x(d[p.x]); })
+        .attr("cy", function(d) { return y(d[p.y]); })
+        .attr("r", 4)
+        .style("fill", function(d) { return (params['caxis'] != null && params['caxis'].length > 0) ? d3.interpolateSpectral(1 -parseFloat(classes.indexOf(d[params['caxis']]))/N_colors) : "rgb(0,96,130)"; });
+}
+ 
+var brushCell;
+
+// Clear the previously-active brush, if any.
+function brushstart(p) {
+if (brushCell !== this) {
+    d3.select(brushCell).call(brush.clear());
+    x.domain(domainByTrait[p.x]);
+    y.domain(domainByTrait[p.y]);
+    brushCell = this;
+  }
+}
+
+// Highlight the selected circles.
+function brushmove(p) {
+  var e = brush.extent();
+  svg.selectAll("circle").classed("hidden", function(d) {
+    return e[0][0] > d[p.x] || d[p.x] > e[1][0]
+        || e[0][1] > d[p.y] || d[p.y] > e[1][1];
+  });
+}
+
+// If the brush is empty, select all circles.
+function brushend() {
+  if (brush.empty()) {
+    svg.selectAll(".hidden").classed("hidden", false);
+  }
+};
+
+function cross(a, b) {
+      var c = [], n = a.length, m = b.length, i, j;
+      for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
+      return c;
+  }    
+}
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 475;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(data, params) {
+  // an array of the column names in the original data source
+  var columns = Object.keys(data[0]);
+  var count = params['count']
+
+  if (count == 0){
+    var dim = 'c';
+    $("#vis").prepend("<div class='form-group'><label for='c-var'> Color:</label><select class='form-control' id='c-var'><option></option></select></div>")
+    // populate the dropdown with the columns in the dataset
+    for(i_col in columns) {
+      col_name = columns[i_col];
+      $("#c-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+    }
+    // set picker to saved param values
+    $("#c-var").val(params['caxis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#c-var").change(function(dim) {
+      return function() {
+        d3.selectAll('circle').remove()
+        d3.selectAll('.diag_label').remove()
+        d3.selectAll("line").remove()
+        d3.selectAll(".tick").remove()
+	      d3.selectAll(".frame").remove()
+	      d3.selectAll(".legend_circle").remove()
+	      d3.selectAll(".legend_label").remove()
+
+        var newVar = $("#c-var").val();
+        params['caxis'] = newVar;
+        params['caxislabel'] = newVar;
+        CivisResult.saveParams(params);
+        draw(data, def_vis_width, def_vis_height, params);
+      }
+    }(dim))
+  }
+
+  // -----------------------------------------------------------------------
+  // set up toolbar
+  $("#vis").prepend("<div id='toolbar'></div>");
+  
+  // 1. create the Property selector dropdown
+  dim = 'xaxis'+count
+  $("#toolbar").append("<div class='form-group'><label for='x-var"+count+"'> Property:</label><select class='form-control' id='x-var"+count+"'><option></option></select></div>")
+  // populate the dropdown with the columns in the dataset
+  for(i_col in columns) {
+    col_name = columns[i_col];
+    $("#x-var"+count).append("<option value='"+col_name+"'>"+col_name+"</option>");
+  }
+  // set picker to saved param values
+  $("#x-var"+count).val(params['xaxis'+count]);
+  // handle change to select, wrap in anonymous function so the pickers dont clash
+  $("#x-var"+count).change(function(dim) {
+    return function() {
+      d3.selectAll('circle').remove()
+      d3.selectAll('.diag_label').remove()
+      d3.selectAll("line").remove()
+      d3.selectAll(".tick").remove()
+      d3.selectAll(".frame").remove()
+	    d3.selectAll(".legend_circle").remove()
+	    d3.selectAll(".legend_label").remove()
+      
+      var newVar = $("#x-var"+count).val();
+      params['xaxis'+count] = newVar;
+      params['xaxislabel'+count] = newVar;
+      CivisResult.saveParams(params);
+      //d3.select("input#z-var0").attr("type","number")
+      draw(data, def_vis_width, def_vis_height, params);
+    }
+  }(dim))
+};
+
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+
+  //var params = config['params'] || {};
+  // start with a clean slate (otherwise, params are saved between runs)
+  var params = {};
+  
+  // sizing
+  if('dimensions' in config) {
+    def_vis_width = config['dimensions']['width'];
+    def_vis_height = config['dimensions']['height'];
+  }
+	def_vis_height = 10000;
+  def_vis_width = 1000;
+  // tooltips
+  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+  
+  // make a button and set onclick() to count = count + 1 --> createToolbar --> draw
+  params["count"] = -1
+  svg = d3.select("#buttons").append('svg').attr('height', 600).attr('width', 300)
+	rect = svg.append('rect').attr('width', 200)
+                .attr('height', 50)
+                .attr('x', 0)
+                .attr('y', 0)
+                .attr('rx', 20)
+                .attr('ry', 20)
+                .style('fill', 'rgb(31,119,180)')
+                //.attr('stroke', 'black')
+  							.on("click", function() {
+    								d3.selectAll('circle').remove()
+                    d3.selectAll(".diag_label").remove()
+                    d3.selectAll("line").remove()
+      							d3.selectAll(".tick").remove()
+      							d3.selectAll(".frame").remove()
+	      						d3.selectAll(".legend_circle").remove()
+	      						d3.selectAll(".legend_label").remove()
+        
+    								params["count"] = params["count"] + 1
+                    CivisResult.saveParams(params);
+                    d3.csv(config['dataUrl'], function(error, data) {
+                      createToolbar(data, params);
+                      draw(data, def_vis_width, def_vis_height, params);
+                      })
+                 });
+  							
+	text = svg.append('text').text('Add Variable')
+                .attr('x', 100)
+                .attr('y', 30)
+                .style('fill', 'white')
+  							.style("font-weight", "bold")
+  							.style("font-size", "20px")
+  							.attr("text-anchor", "middle")
+  							.on("click", function() {
+          					d3.selectAll('circle').remove()
+                    d3.selectAll(".diag_label").remove()
+                    d3.selectAll("line").remove()
+                    d3.selectAll(".tick").remove()
+      							d3.selectAll(".frame").remove()
+                    d3.selectAll(".legend_circle").remove()
+                    d3.selectAll(".legend_label").remove()
+                    
+    								params["count"] = params["count"] + 1
+                    CivisResult.saveParams(params);
+                    d3.csv(config['dataUrl'], function(error, data) {
+                      createToolbar(data, params);
+                      draw(data, def_vis_width, def_vis_height, params);
+                      })
+                 });
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+</script>
+</html>
