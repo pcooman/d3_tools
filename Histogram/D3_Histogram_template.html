@@ -8,6 +8,7 @@
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
 <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<script src="https://s3.amazonaws.com/civis-console/javascript-client/v0.3.0/civis_client.min.js"></script>  
 
 <style>
 input {
@@ -146,10 +147,8 @@ draw = function(data, vis_width, vis_height, params) {
     .attr("height", vis_height);
   var chart = d3.select(".chart")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  
- // var data = [79,54,74,62,85,55,88,85,51,85,54,84,78,47,83,52,62,84,52,79,51,47,78,69,74,83,55,76,78,79,73,77,66,80,74,52,48,80,59,90,80,58,84,58,73,83,64,53,82,59,75,90,54,80,54,83,71,64,77,81,59,84,48,82,60,92,78,78,65,73,82,56,79,71,62,76,60,78,76,83,75,82,70,65,73,88,76,80,48,86,60,90,50,78,63,72,84,75,51,82,62,88,49,83,81,47,84,52,86,81,75,59,89,79,59,81,50,85,59,87,53,69,77,56,88,81,45,82,55,90,45,83,56,89,46,82,51,86,53,79,81,60,82,77,76,59,80,49,96,53,77,77,65,81,71,70,81,93,53,89,45,86,58,78,66,76,63,88,52,93,49,57,77,68,81,81,73,50,85,74,55,77,83,83,51,78,84,46,83,55,81,57,76,84,77,81,87,77,51,78,60,82,91,53,78,46,77,84,49,83,71,80,49,75,64,76,53,94,55,76,50,82,54,75,78,79,78,78,70,79,70,54,86,50,90,54,54,77,79,64,75,47,86,63,85,82,57,82,67,74,54,83,73,73,88,80,71,83,56,79,78,84,58,83,43,60,75,81,46,90,46,74];
-  
-  if (params['yaxis'].length > 0) {
+    
+  if (params['yaxis'] != null) {
     var classes = d3.set(data.map(function(d) { return d[params['yaxis']];})).values();
 	  var count = classes.length;
   } else {
@@ -167,9 +166,9 @@ draw = function(data, vis_width, vis_height, params) {
     .scale(x)
     .orient("bottom");
 
-	var histogram = d3.layout.histogram()
+  var histogram = d3.layout.histogram()
     .frequency(false)
-    .bins(x.ticks(params['binaxis']));  
+    .bins(x.ticks(parseInt(params['binaxis'])));  
     
   var data_split = [];
   var data_hist = [];
@@ -408,8 +407,12 @@ var createToolbar = function(data, params) {
 // Handle config blob, download the csv from the url, create the toolbar
 // and init the graph with the resulting parameters.
 var prepChart = function(config) {
+  // use the startRefreshApiToken method to get a new api key
+  client = new CivisClient(config.apiKey)
+  client.startRefreshApiToken(config.reportId)
 
-  var params = config['params'] || {};
+  // var params = config['params'] || {};
+  var params = {};    
 
   // sizing
   if('dimensions' in config) {
