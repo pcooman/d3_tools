@@ -100,14 +100,23 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>This section provides a manual for the Histogram visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Toolbar_empty.png?raw=true">
+           <img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Metatoolbar_empty_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second toolbar should appear:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Toolbar_empty_JS.png?raw=true">
     				<ul>
               <li><b>Property:</b> A dropdown menu to select the column in the data table that contains the property for which you want to plot the histogram.</li>
               <li><b>Group by:</b> A dropdown menu to select the column in the data table that contains classes. The graph will split the data according to these classes and show a histogram for each class.</li>
               <li><b>Number of bins:</b> An input form to specifiy the (total) number of histogram bins.</li>
+              <li><b>Draw Graph:</b> Once you have selected the variable for which you want to plot the histogram and the classes to split them by (optionally), click this button to retrieve the necessary data and to start drawing the graph.</p>
             </ul>
           	<h2>Data table</h2>
-          	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
+          	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_table.png?raw=true">
           	<p>Each row in the table should correspond to a unique record. You are responsible for removing duplicate rows. The table can contain multiple rows, each covering a different property. The 'Property' table should contain numerical values. The 'Group by' column can contain either numerical or categorical values.</p>
           	<h2>Known issues</h2>
@@ -124,12 +133,12 @@ body, html { overflow: scroll; height: 100% }
           	<p>In this table, the <i>petal_length</i>, <i>petal_width</i>, <i>sepal_length</i> and <i>petal_width</i> are properties we want to plot as histograms. The <i>class</i> column contains the species of iris, which we can use to group the histograms.</p>
           	<h2>Sample plot</h2>
           	<p>If we don't specify a 'Group by' column, the plot will show the histogram for the entire data set. For <i>petal_length</i>, your plot should look something like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Example_univariate.png?raw=true">
-          	<p>Next, we select <i>class</i> as the 'Group by' option. Now, the plot should show three histograms, each summing up to 100%:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Example_byclass.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Example_univariate_JS.png?raw=true">
+          	<p>Next, we select <i>class</i> as the 'Group by' option. Now, the plot should show three histograms:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Example_byclass_JS.png?raw=true">
             <p>We can clearly see that Iris Setosa has a shorter sepal length than both Versicolor and Virginica irises.</p>
-            <p>If you hover over a bar (in your own D3 plot, not in the static sample image shown above), a tooltip should pop up, indicating the percentage of records that fall into that bin.  The following image shows an example of this tooltip:</p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_tooltip.png?raw=true">
+            <p>If you hover over a bar (in your own D3 plot, not in the static sample image shown above), a tooltip should pop up, indicating the number of records that fall into that bin.  The following image shows an example of this tooltip:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Tooltip_JS.png?raw=true">
             <ccontent></ccontent>
         </div>
       
