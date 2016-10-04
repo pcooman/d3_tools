@@ -2,20 +2,16 @@
 <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
 <script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
-<script src="//rawgit.com/jasondavies/d3-cloud/v1.2.1/build/d3.layout.cloud.js"></script>
+<script src="//d3js.org/d3.v4.min.js"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
 <script src="https://d3js.org/d3-color.v1.min.js"></script>
 <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
-<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
 <script src="https://s3.amazonaws.com/civis-console/javascript-client/v0.3.0/civis_client.min.js"></script>  
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
 
 <style>
-input {
-  margin-left: 5px;
-  margin-right: 5px;
-}
-  
 .form-group {
   display: inline-block;
   margin-left: 10px;
@@ -28,31 +24,19 @@ input {
   width: 100px;
   height: 34px;
 }
-  
 .chart {
   font-family: Lato, Verdana, Arial, sans-serif;
 }
-  
-rect {
-  shape-rendering: crispEdges;
-  fill-opacity: 0.5;
-}
-
-.line {
-  fill: none;
-  stroke: #000;
-  stroke-width: 1.5px;
-}
-
 .axis path,
 .axis line {
+  stroke: #999;
   fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
 }
-
-.y.axis path {
+.x.axis path {
   display: none;
+}
+.tick {
+  fill: #999;
 }
 
 .tooltip {
@@ -65,9 +49,25 @@ rect {
   z-index: 1;
   font-family: Lato, Verdana, Arial, sans-serif;
 }
-  
-body, html { overflow: scroll; height: 100% }
 
+path {
+  fill: #ccc;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
+body, html { overflow: scroll; height: 100% }
+  
+.q0-9 { fill:rgb(247,251,255); }
+.q1-9 { fill:rgb(222,235,247); }
+.q2-9 { fill:rgb(198,219,239); }
+.q3-9 { fill:rgb(158,202,225); }
+.q4-9 { fill:rgb(107,174,214); }
+.q5-9 { fill:rgb(66,146,198); }
+.q6-9 { fill:rgb(33,113,181); }
+.q7-9 { fill:rgb(8,81,156); }
+.q8-9 { fill:rgb(8,48,107); }
+  
 .loader {
     transform-origin: center center;
     animation: spin 2s linear infinite;
@@ -77,6 +77,8 @@ body, html { overflow: scroll; height: 100% }
     0% {transform: rotate(0deg); }
     100% {transform: rotate(360deg); }
 }  
+
+}
 </style>
 
 <div class="tabbable">
@@ -92,50 +94,60 @@ body, html { overflow: scroll; height: 100% }
             <acontent><div id='vis'>
               <svg class='chart-outer'><g class="chart"></g></svg>
             </div>
+            <div id='legend'></div>
             </acontent>
         </div>
       
         <div class="tab-pane" id="b_tab">
             <h1>Info</h1>
           	<h2>Introduction</h2>
-          	<p>This section provides a manual for the Histogram visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<p>This section provides a manual for the Choropleth Map visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Toolbar_empty.png?raw=true">
-    				<ul>
-              <li><b>Property:</b> A dropdown menu to select the column in the data table that contains the property for which you want to plot the histogram.</li>
-              <li><b>Group by:</b> A dropdown menu to select the column in the data table that contains classes. The graph will split the data according to these classes and show a histogram for each class.</li>
-              <li><b>Number of bins:</b> An input form to specifiy the (total) number of histogram bins.</li>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_Metabar_empty.png?raw=true">
+    		<ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second toolbar should appear:</p>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_Toolbar_empty.png?raw=true">
+           <ul>
+              <li><b>GEO type:</b> A dropdown menu to select the geographical level of the map. Currently, the template supporst states, counties and congressional districts.</li>
+              <li><b>GEO id:</b> A dropdown menu to select the column in the data table that represents the id of the geography. These are the 2-digit, 4-digit and 5-digit fips codes for states, congressional districts and coounties respectively.</li>
+              <li><b>Var:</b> A dropdown menu to select the column in the data table that contains the values you want to plot.</li>
             </ul>
           	<h2>Data table</h2>
-          	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_table.png?raw=true">
-          	<p>Each row in the table should correspond to a unique record. You are responsible for removing duplicate rows. The table can contain multiple rows, each covering a different property. The 'Property' table should contain numerical values. The 'Group by' column can contain either numerical or categorical values.</p>
+          	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_table.png?raw=true">
+          	<p>Each row in the table should correspond to a single geographical location. If a location appears twice, only its last instance will be plotted. You are responsible for removing duplicate rows. You will need at least one column with geographical fips codes and at least one column with corresponding numerical values. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
           	<h2>Known issues</h2>
-          	<p>None. </p>
+          	<p>When making multiple plots from different source tables in the same session, the second toolbar creeps to the right.</p>
             <bcontent></bcontent>
         </div>
       
       	<div class="tab-pane" id="c_tab">
             <h1>Example</h1>
           	<h2>Introduction</h2>
-          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot histograms for the iris data set. The data can be found either on Platform (schema.table = <i>pcooman.iris</i> on redshift-general) or here: <i>http://www.idvbook.com/teaching-aid/data-sets/the-iris-data-set/</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a choropleth map of 2012 election results at the congressional district level. The data can be found either on Platform (schema.table = <i>pcooman.congress_outcomes</i> on redshift-general) or here: <i>http://www.dailykos.com/story/2012/11/19/1163009/-Daily-Kos-Elections-presidential-results-by-congressional-district-for-the-2012-2008-elections</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_table.png?raw=true">
-          	<p>In this table, the <i>petal_length</i>, <i>petal_width</i>, <i>sepal_length</i> and <i>petal_width</i> are properties we want to plot as histograms. The <i>class</i> column contains the species of iris, which we can use to group the histograms.</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_table.png?raw=true">
+          	<p>In this table, the first column conatins the fips codes of each congressional district. The second column conatins the difference in percent of the vote between Obama and Romney. A positive value means that Obama got more votes, while a negative value means that Romney got more votes. The third column contains the differences for the 2008 election (Obama vs McCain).</p>
           	<h2>Sample plot</h2>
-          	<p>If we don't specify a 'Group by' column, the plot will show the histogram for the entire data set. For <i>petal_length</i>, your plot should look something like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Example_univariate.png?raw=true">
-          	<p>Next, we select <i>class</i> as the 'Group by' option. Now, the plot should show three histograms, each summing up to 100%:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_Example_byclass.png?raw=true">
-            <p>We can clearly see that Iris Setosa has a shorter sepal length than both Versicolor and Virginica irises.</p>
-            <p>If you hover over a bar (in your own D3 plot, not in the static sample image shown above), a tooltip should pop up, indicating the percentage of records that fall into that bin.  The following image shows an example of this tooltip:</p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Histogram/Histogram_tooltip.png?raw=true">
+          	<p>If everything goes well. Your plot should look something like this:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_example_congress.png?raw=true">
+            <p>If you hover over a geographical location, a tooltip should pop up, indicating the fips code and value of that location. The following image shows ane xample of this tooltip:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_example_tooltip.png?raw=true">
+            <p>We can also make maps of the rate of unemployment at the state level, by choosing as inputs (redshift-general, pcooman, unemployment_by_state, state, state_id and rate):</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_example_state.png?raw=true">            
+            <p>Or plot unemployment rates at the county level with inputs (redshift-general, pcooman, unemployment, counties, fips, rate):</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_example_counties.png?raw=true">
             <ccontent></ccontent>
         </div>
       
     </div>
 </div>
-
+  
 <script>
 $.ajaxSetup ({
                 // Disable caching of AJAX responses
@@ -143,203 +155,54 @@ $.ajaxSetup ({
                 cache: false
             });
 
-draw_graph = function(data,def_vis_width,def_vis_height,params){
-/////////////////////////////////////////////
-  // chart margin/sizing setup
-  // deviate slightly from Bostock's convention
-  //   http://bl.ocks.org/mbostock/3019563
-  // because we don't want to add a new group each time
-  var margin = {top: 10, right: 20, bottom: 60, left: 75};
-  var width = def_vis_width - margin.left - margin.right,
-      height = def_vis_height - margin.top - margin.bottom;
+var client = null  
+
+draw_map = function(vis_width, vis_height,params) {
+	var margin = {top: 10, right: 20, bottom: 0, left: 75};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
   d3.select('.chart-outer')
-    .attr("width", def_vis_width)
-    .attr("height", def_vis_height);
-  var chart = d3.select(".chart")
+    .attr("width", width)
+    .attr("height", height);
+  var chart = d3.select(".chart-outer")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                             if (params['yaxis'] != null) {
-                                var classes = d3.set(data.map(function(d) { return d['class'];})).values();
-                            	  var count = classes.length;
-                              } else {
-                                var classes = [params['xaxis']];
-                                var count = 1
-                              }
+	var path = d3.geo.path();
 
-                          var x = d3.scale.linear()
-                            .domain([
-                             d3.min(data, function(d) {return parseFloat(d['bin']);}),
-                        	 d3.max(data, function(d) {return parseFloat(d['bin']) + parseFloat(d['bin_width']);})])
-                            .range([0, width]);
-                        
-                          var xAxis = d3.svg.axis()
-                            .scale(x)
-                            .orient("bottom");
+	var svg = d3.select(".chart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+	
+  if (params['gaxis'] == 'counties') {
+    d3.json("https://rawgit.com/pcooman/d3_tools/master/Geographies/us.json", function(error, topology) {
+      if (error) throw error;
 
-                          var max_hist = d3.max(data.map(function(d) {return parseInt(d['count']);}))
-
-                          var y = d3.scale.linear()
-                            .domain([
-                              0,
-                              max_hist])
-                            .range([height, 0]);
-
-
-                          var yAxis = d3.svg.axis()
-                            .scale(y)
-                            .orient("left")
-
-                          var line = d3.svg.line()
-                          	.interpolate("basis")
-                            .x(function(d) { return x(parseFloat(d['bin']) + parseFloat(d['bin_width'])/2); })
-                            .y(function(d) { return y(parseInt(d['count'])); });
-                        
-                          var svg = d3.select(".chart-outer").append("svg")
-                            .attr("width", width + margin.left + margin.right)
-                            .attr("height", height + margin.top + margin.bottom)
-                           .append("g")
-                            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-                         svg.append("g")
-                            .attr("class", "x axis")
-                            .attr("transform", "translate(0," + height + ")")
-                            .call(xAxis)
-                          .append("text")
-                            .attr("class", "label")
-                            .attr("x", width)
-                            .attr("y", -6)
-                            .style("text-anchor", "end")
-
-                         svg.append("g")
-                            .attr("class", "y axis")
-                            .call(yAxis);
-
-                         svg.selectAll(".legend")
-                              .data(classes)  
-                            .enter().insert("circle", ".legend")
-                              .attr("class", "legend")
-                              .attr("cx", width - 170)
-                              .attr("cy", function (d,i) { return 5 + 30*i;})
-                              .attr("r", 10)
-                              .style("fill", function(d,i) {return d3.interpolateSpectral(1-(i/count)); })
-                            
-                          svg.selectAll(".legend_label")
-                           		.data(classes)
-                           	.enter().insert("text")
-                              .attr("class", "legend_label")
-                              .attr("x", width - 145)
-                              .attr("y", function (d,i) { return 12 + 30*i;})
-                              .style("text-anchor", "left")
-                           		.style("font-weight", "bold")
-                           		.style("font-size", "20px")
-                           		.style("fill", function(d,i) {return d3.interpolateSpectral(1-(i/count)); })
-                          		.text(function(d) {return d;})
-
-                          svg.selectAll(".bar")
-                              .data(data)  
-                            .enter().insert("rect", ".axis")
-                              .attr("class", "bar")
-                              .attr("x", function(d) { return x(parseFloat(d['bin'])) + 1; })
-                              .attr("y", function(d) { return y(parseFloat(d['count'])); })
-                              .attr("width", function(d) { return x(parseFloat(d['bin_width'])+parseFloat(d['bin'])) - x(parseFloat(d['bin']));})
-                              .attr("height", function(d) { return height - y(parseFloat(d['count'])); })
-                              .attr("fill", function(d) {
-                                var class_index = classes.indexOf(d['class'])
-                                return d3.interpolateSpectral(1-(class_index/count)); })
-                              .attr("stroke", function(d) {
-                                var class_index = classes.indexOf(d['class'])
-                                return d3.interpolateSpectral(1-(class_index/count)); })
-                            	.attr("stroke-width", 5)
-                            	.on("mouseover", function(d) {
-                            		var left = d['bin']
-                                var right = parseFloat(d['bin'])+parseFloat(d['bin_width'])
-                            		return showDetails(d['count']+" members" +"</br>between "+left+"</br>and "+right,this);})
-                              .on("mouseout", function(d) {return hideDetails();})
-
-                          for (var i=1; i<=count ;i++){
-                          svg.append("path")
-                              	.datum(data.filter(function(d) {
-                                    if (count > 1) {return d['class'] == classes[i-1]}
-                                    else {return d;}}))
-                              .attr("class", "line")
-                              .style("stroke", function(d) {
-                                    if (count > 1) {
-                                        var class_index = classes.indexOf(d[0]['class']);
-                                    } else {
-                                        var class_index = 0;                                    
-                                    }
-                                    return d3.interpolateSpectral(1-(class_index/count)); })
-                              .style("stroke-width", 5)
-                              .attr("d", line);
-                            }
+      svg.selectAll("path")
+          .data(topojson.feature(topology, topology.objects.counties).features)
+        .enter().append("path")
+          .attr("class", function(d) {return "fips_"+d.id;})
+          .attr("d", path)
+    });
+  } else if (params['gaxis'] == 'states') {
+    d3.json("https://rawgit.com/pcooman/d3_tools/master/Geographies/us.json", function(error, topology) {
+      if (error) throw error;
+      svg.selectAll("path")
+          .data(topojson.feature(topology, topology.objects.states).features)
+        .enter().append("path")
+          .attr("class", function(d) {return "fips_"+d.id;})
+          .attr("d", path)
+    });
+  } else if (params['gaxis'] == 'congress') {
+    d3.json("https://rawgit.com/pcooman/d3_tools/master/Geographies/us-congress-113.json", function(error, topology) {
+      if (error) throw error;
+      svg.selectAll("path")
+          .data(topojson.feature(topology, topology.objects.districts).features)
+        .enter().append("path")
+          .attr("class", function(d) {return "fips_"+d.id;})
+          .attr("d", path)
+    });
+  }
 }
-  
-query_data = function(client,data,def_vis_width,def_vis_height,params) {
-  
-  if (params['xaxis'] != null) {
-    
-    start_loader(150,300,175)
-    
-    if (params['yaxis'] != null) {
-        var q = "with minmax as (select max("+params['xaxis']+"), min("+params['xaxis']+") from "+params['saxis']+"."+params['taxis']+") " +
-                "select "+params['yaxis']+", " +
-                "floor("+params['binaxis']+"*("+params['xaxis']+" - min)/(max - min))*((max - min)/"+params['binaxis']+")+min as bin, " +
-                "(max - min)/"+params['binaxis']+" as bin_width , " +
-                "count(*) from " +
-                "(select a."+params['yaxis']+", a."+params['xaxis']+", b.* from "+params['saxis']+"."+params['taxis']+" a " +
-                "left join " +
-                "minmax as b " +
-                "on 1=1 " +
-                ") " +
-                "group by 1,2,3 order by 1,2,3"
-    } else {
-        var q = "with minmax as (select max("+params['xaxis']+"), min("+params['xaxis']+") from "+params['saxis']+"."+params['taxis']+") " +
-                "select floor("+params['binaxis']+"*("+params['xaxis']+" - min)/(max - min))*((max - min)/"+params['binaxis']+")+min as bin, " +
-                "(max - min)/"+params['binaxis']+" as bin_width , " +
-                "count(*) from " +
-                "(select a."+params['xaxis']+", b.* from "+params['saxis']+"."+params['taxis']+" a " +
-                "left join " +
-                "minmax as b " +
-                "on 1=1 " +
-                ") " +
-                "group by 1,2 order by 1,2"
-    }
-    
-    client.request("/scripts/"+params['scriptId'],{
-          method: "PATCH",
-          data: {
-              'sql': q
-               }
-          }).then(function(result) {
-            var scriptId = result.data.id;
-            
-            client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
-                           .then(function(result){
-                             return result.data.output[0].path;
-                           }).then(function(dataUrl) {
-              			  d3.csv(dataUrl, function(error, data){
-                                params['url'] = dataUrl;
-                                CivisReport.saveParams(params);
-                             stop_loader();
-                             draw_graph(data,def_vis_width,def_vis_height,params);
-                            
-                                })
-                        })
-            })
-    }
-}
-
-var showDetails = function(data, element) {
-  pos = $(element).position()
-  $("#chart-tooltip").html(data)
-  width = $("#chart-tooltip").width()
-  height = $("#chart-tooltip").height()
-  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
-  $("#chart-tooltip").show()
-};
-var hideDetails = function() {
-  $("#chart-tooltip").hide()
-};
 
 start_loader = function(size,Xpos,Ypos) {
     d3.select(".chart").append("image")
@@ -355,6 +218,144 @@ stop_loader = function() {
     
 }
 
+add_var = function(client,data,def_vis_width,def_vis_height,params) {
+  if (params['xaxis'] != null && params['yaxis'] != null) {
+    
+    start_loader(150,400,175)
+    
+    client.request("/scripts/"+params['scriptId'],{
+          method: "PATCH",
+          data: {
+              'sql': "select "+params['xaxis']+", "+params['yaxis']+" from "+params['saxis']+"."+params['taxis']
+               }
+          }).then(function(result) {
+            var scriptId = result.data.id;
+            
+            client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                           .then(function(result){
+                             return result.data.output[0].path;
+                           }).then(function(dataUrl) {
+              			  d3.csv(dataUrl, function(error, data){
+                                  
+                                  var max_val = d3.max(data.map(function(d) {return parseFloat(d[params['yaxis']])}))
+                                  var min_val = d3.min(data.map(function(d) {return parseFloat(d[params['yaxis']])}))
+                                  max_all = d3.max([Math.abs(max_val), Math.abs(min_val)])
+                                  debugger;
+                                  var num_steps = 5;
+
+                                  var x = d3.scale.linear()
+                                    .range([25, def_vis_width-25])
+                                    .domain([0,max_all]);
+
+                                  var svg = d3.select("#legend").append("svg")
+                                    .attr("width", def_vis_width)
+                                    .attr("height", 100);
+
+                                  for (var i=1; i<num_steps+1; i++) {
+                                    if (max_val > 0){
+                                    svg.append("rect")
+                                        .attr("class","legend_rect")
+                                        .attr("width",(def_vis_width-50)/num_steps)
+                                        .attr("height", 25)
+                                        .attr("x", x(max_all*(i-1)/num_steps))
+                                        .attr("y", 20)
+                                        .attr("fill", d3.interpolateBlues(i/num_steps))
+                                    }
+                                    if (min_val < 0) {
+                                    svg.append("rect")
+                                        .attr("class","legend_rect")
+                                        .attr("width",(def_vis_width-50)/num_steps)
+                                        .attr("height", 25)
+                                        .attr("x", x(max_all*(i-1)/num_steps))
+                                        .attr("y", 50)
+                                        .attr("fill", d3.interpolateReds(i/num_steps))
+                                    }
+                                  }
+                                  for (var i=0; i<num_steps+1; i++) {
+                                    if (max_val > 0) {
+                                    svg.append("text")
+                                        .attr("class","legend_tick")
+                                        .attr("x", x(max_all*i/num_steps))
+                                        .attr("y", 13)
+                                        .style("text-anchor","middle")
+                                        .text(+Math.floor(100*max_all*i/num_steps)/100)
+                                    }
+                                    if (min_val < 0) {
+                                    svg.append("text")
+                                        .attr("class","legend_tick")
+                                        .attr("x", x(max_all*i/num_steps))
+                                        .attr("y", 90)
+                                        .style("text-anchor","middle")
+                                        .text(+Math.floor(-100*max_all*i/num_steps)/100)
+                                    }
+                                  }
+
+                                  for (var i=0; i<data.length; i++) {
+                                        debugger;
+                                    	d3.select("path.fips_"+data[i][params['xaxis']])
+                                      	//.attr("class", "fips_"+data[i][params['xaxis']]+" "+quantize(data[i][params['yaxis']]))
+                                       .style("fill", data[i][params['yaxis']] > 0 
+                                            ? d3.interpolateBlues(Math.ceil(data[i][params['yaxis']]*num_steps/max_all)/num_steps) 
+                                            : d3.interpolateReds(Math.ceil(-data[i][params['yaxis']]*num_steps/max_all)/num_steps)) 
+
+                                       .on("mouseover", function() {
+                                          if (params['gaxis'] == 'states'){
+                                            var this_fips = this.getAttribute("class").slice(5,7)
+                                            if (this_fips[1] == " ") {
+                                              this_fips = this_fips.slice(0,1) 
+                                          	}
+                                      		}
+                                          if (params['gaxis'] == 'counties'){
+                                            var this_fips = this.getAttribute("class").slice(5,10)
+                                            if (this_fips[4] == " ") {
+                                              this_fips = this_fips.slice(0,4) 
+                                          	}
+                                      		}
+                                          if (params['gaxis'] == 'congress'){
+                                            var this_fips = this.getAttribute("class").slice(5,9)
+                                            if (this_fips[3] == " ") {
+                                              this_fips = this_fips.slice(0,3) 
+                                          	}
+                                      		}
+                                        var all_fips = data.map(function(d) {return d[params['xaxis']]})
+                                        var id = all_fips.indexOf(this_fips)
+
+                                        showDetails("ID: " + data[id][params['xaxis']] + 
+                                                    "<br/>Value: " + parseFloat(parseInt(1000*data[id][params['yaxis']]))/1000, this)
+                                     
+                                        })
+                                      .on("mouseout", function() {
+                                        hideDetails();
+                                        });
+                                  }
+                                  d3.select(".loader").remove()
+                             })
+          })
+        })
+    }
+}
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 960;
+var def_vis_height = 2000;
+
+// create a toolbar at the top that allows the user to interact with the chart
 var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) {
    client.request("/databases", {method: "GET"}).then(function(result) {       
        $("#vis").prepend("<div class='form-group' id='metatoolbar'></div>");
@@ -379,8 +380,19 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
         // handle change to select, wrap in anonymous function so the pickers dont clash
         $("#"+dim+"-var").change(function(dim) {
           return function() {
-            d3.select("#s-var").html("");
-            d3.select("#t-var").html("");
+            d3.select("#s-var").empty();
+            d3.select("#t-var").empty();
+            d3.selectAll(".label_toolbar").remove()
+            d3.select("#g-var").remove();
+            d3.select("#x-var").remove();
+            d3.select("#y-var").remove();
+            d3.selectAll("path").remove();
+            d3.selectAll(".legend_rect").remove();
+            d3.selectAll(".legend_tick").remove();
+            
+            delete params.gaxis;
+            delete params.xaxis;
+            delete params.yaxis;
 
             var newVar = $("#"+dim+"-var").val();
             params[dim+'axis'] = newVar;
@@ -411,7 +423,18 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
          // handle change to select, wrap in anonymous function so the pickers dont clash
          $("#"+dim+"-var").change(function(dim) {
            return function() {
-             d3.select("#t-var").html("");
+             d3.select("#t-var").empty();
+             d3.selectAll(".label_toolbar").remove()
+             d3.select("#g-var").remove();
+             d3.select("#x-var").remove();
+             d3.select("#y-var").remove();
+             d3.selectAll("path").remove();
+             d3.selectAll(".legend_rect").remove();
+             d3.selectAll(".legend_tick").remove();
+ 
+             delete params.gaxis;
+             delete params.xaxis;
+             delete params.yaxis;
 
              var newVar = $("#"+dim+"-var").val();
              params[dim+'axis'] = newVar;
@@ -450,6 +473,18 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
          // handle change to select, wrap in anonymous function so the pickers dont clash
          $("#"+dim+"-var").change(function(dim) {
            return function() {
+             d3.selectAll(".label_toolbar").remove()
+             d3.select("#g-var").remove();
+             d3.select("#x-var").remove();
+             d3.select("#y-var").remove();
+             d3.selectAll("path").remove();
+             d3.selectAll(".legend_rect").remove();
+             d3.selectAll(".legend_tick").remove();
+
+             delete params.gaxis;
+             delete params.xaxis;
+             delete params.yaxis;
+
              var newVar = $("#"+dim+"-var").val();
              params[dim+'axis'] = newVar;
              params[dim+'axislabel'] = newVar;
@@ -474,26 +509,20 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
       .style('fill', 'rgb(31,119,180)')
       .on("click",  function()  {
         d3.selectAll("label.label_toolbar").remove()
-        d3.select("#x-var").html("");
-        d3.select("#y-var").html("");
-        d3.select("#bin-var").html("");
+        d3.select("#g-var").empty();
+        d3.select("#x-var").empty();
+        d3.select("#y-var").empty();
+        d3.select("#g-var").remove();
         d3.select("#x-var").remove();
         d3.select("#y-var").remove();
-        d3.select("#bin-var").remove();
+        d3.selectAll("path").remove();
+        d3.selectAll(".legend_rect").remove();
+        d3.selectAll(".legend_tick").remove();
+        delete params['gaxis']
         delete params['xaxis']
         delete params['yaxis']
-        delete params['binaxis']
-        d3.selectAll(".toolbar_rect").remove()
-        d3.selectAll(".toolbar_text").remove()
-        d3.select("#toolbar").remove()
 
-        d3.selectAll("circle.legend").remove()
-        d3.selectAll(".legend_label").remove()
-        d3.selectAll("rect.bar").remove()
-        d3.selectAll(".line").remove() 
-        d3.selectAll(".axis").remove()
-
-        createToolbar(client,def_vis_width, def_vis_height, params);
+        createGeoToolbar(client,def_vis_width, def_vis_height, params);
         })
   							
     svg.append('text').text('Get Table')
@@ -505,46 +534,65 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
       .attr("text-anchor", "middle")
       .on("click", function()  {
         d3.selectAll("label.label_toolbar").remove()
-        d3.select("#x-var").html("");
-        d3.select("#y-var").html("");
-        d3.select("#bin-var").html("");
+        d3.select("#g-var").empty();
+        d3.select("#x-var").empty();
+        d3.select("#y-var").empty();
+        d3.select("#g-var").remove();
         d3.select("#x-var").remove();
         d3.select("#y-var").remove();
-        d3.select("#bin-var").remove();
+        d3.selectAll("path").remove();
+        d3.selectAll(".legend_rect").remove();
+        d3.selectAll(".legend_tick").remove();
+        delete params['gaxis']
         delete params['xaxis']
         delete params['yaxis']
-        delete params['binaxis']
-        d3.selectAll(".toolbar_rect").remove()
-        d3.selectAll(".toolbar_text").remove()
-        d3.select("#toolbar").remove()
 
-        d3.selectAll("circle.legend").remove()
-        d3.selectAll(".legend_label").remove()
-        d3.selectAll("rect.bar").remove()
-        d3.selectAll(".line").remove() 
-        d3.selectAll(".axis").remove()
         
-        createToolbar(client,def_vis_width, def_vis_height, params);
+        createGeoToolbar(client,def_vis_width, def_vis_height, params);
         })
      
    })
 }
 
-//////////////////////////////////////////////////////////
-// Chart Edit Toolbar Code
-//
-// WARNING, editing the code below may cause your chart to break.
-//
-var def_vis_width = 700;
-var def_vis_height = 475;
-// create a toolbar at the top that allows the user to interact with the chart
-// currently just supports x and y axis variable selection
+var createGeoToolbar = function(client,def_vis_width, def_vis_height, params) {
+  	var GEO_OPTIONS = ['counties','states','congress'];
+  	$("#metatoolbar").append("<div id='geotoolbar'></div>");
+  	var dim = "g"
+    var label = "GEO_type"
+    $("#geotoolbar")
+      .append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>"+label+": </label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+      .attr("selected",GEO_OPTIONS[0])
+    // populate the dropdown with the geography types
+    for(i_label in GEO_OPTIONS) {
+      geo_type = GEO_OPTIONS[i_label];
+      $("#"+dim+"-var").append("<option value='"+geo_type+"'>"+geo_type+"</option>");
+    }
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        d3.selectAll(".legend_rect").remove();
+        d3.selectAll(".legend_tick").remove();
+        delete params.xaxis;
+        delete params.yaxis;
+
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisReport.saveParams(params);
+        d3.selectAll("path").remove()
+        delete params.xaxis;
+        delete params.yaxis;
+        draw_map(def_vis_width, def_vis_height, params);
+     }
+   }(dim));
+  
+   createToolbar(client,def_vis_width,def_vis_height,params)
+}
 
 var createToolbar = function(client,def_vis_width,def_vis_height,params) {
-
-    start_loader(50,400,12.5);
-    $("#metatoolbar").append("<div id='toolbar'></div>");
-
+  start_loader(50,400,12.5);
   // Create script to get data table metadata
   client.defaultCredential().then(function(credential) {
       client.request("/scripts/sql",{
@@ -553,7 +601,7 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                   'name': 'test script 1234',
                   'remoteHostId': parseInt(params['dbaxis']),
                   'credentialId': credential.id,
-                  'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 1"
+                  'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 10"
               }
               }).then(function(result) {
               
@@ -570,14 +618,14 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                       
                                       // create pickers for both the x and y axis
                                       var dimensions = ['x', 'y'];
-                                      var toolbar_labels = ['Variable', 'Class'];
+                                      var toolbar_labels = ['GEO id', 'Var'];
                                       
                                       for(var i_dim in dimensions) {
                                         var dim = dimensions[i_dim];
                                         var label = toolbar_labels[i_dim];
                                         
                                         // create the select dropdown
-                                        $("#toolbar").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>"+label+": </label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+                                        $("#geotoolbar").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>"+label+": </label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
                                         // populate the dropdown with the columns in the dataset
                                         for(i_col in columns) {
                                           col_name = columns[i_col];
@@ -588,80 +636,22 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                         // handle change to select, wrap in anonymous function so the pickers dont clash
                                         $("#"+dim+"-var").change(function(dim) {
                                           return function() {
+                                            d3.selectAll(".legend_rect").remove();
+                                            d3.selectAll(".legend_tick").remove();
                                             var newVar = $("#"+dim+"-var").val();
                                             params[dim+'axis'] = newVar;
                                             params[dim+'axislabel'] = newVar;
                                             CivisReport.saveParams(params);
+                                            add_var(client,data,def_vis_width,def_vis_height,params);
                                          }
                                      		}(dim));
                                       }
-
-                                    // Create numerical inputs for number of histogram bins.
-                                      var dim = 'bin';
-                                      var label = 'Number of bins';
-                                      params['binaxis'] = 20;
-                                      // create the select dropdown 
-                                      $("#toolbar").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>"+label+":</label><input type='number' min="+0+" max="+1000+" value="+params['binaxis']+" id='"+dim+"-var'>")
-                                      
-                                      // handle change to inputs, wrap in anonymous function so the pickers dont clash
-                                      $("#"+dim+"-var").change(function(dim) {
-                                        return function() {
-                                            var newVar = $("#"+dim+"-var").val();
-                                          var newVar = $("#"+dim+"-var").val();
-                                          params[dim+'axis'] = newVar;
-                                          params[dim+'axislabel'] = newVar;
-                                          CivisResult.saveParams(params);
-                                        }
-                                      }(dim));
-
-                                    var svg = d3.select("#toolbar").append("svg")
-                                      .attr("width", def_vis_width)
-                                      .attr("height", 60);
-                                
-                                     svg.append('rect')
-                                      .attr("transform","translate(0,0)")
-                                   	 .attr('class','form-group toolbar_rect')
-                                      .attr('width', 150)
-                                      .attr('height', 45)
-                                      .attr('x', 20)
-                                      .attr('y', 0)
-                                      .attr('rx', 20)
-                                      .attr('ry', 20)
-                                      .style('fill', 'rgb(31,119,180)')
-                                      .on("click",  function()  {
-                                        d3.selectAll("circle.legend").remove()
-                                        d3.selectAll(".legend_label").remove()
-                                        d3.selectAll("rect.bar").remove()
-                                        d3.selectAll(".line").remove() 
-                                        d3.selectAll(".axis").remove()
-
-                                        query_data(client,data,def_vis_width, def_vis_height, params);
-                                        })
-                                  							
-                                    svg.append('text').text('Draw Graph')
-                                      .attr('class', 'toolbar_text')
-                                      .attr('x', 95)
-                                      .attr('y', 30)
-                                      .style('fill', 'white')
-                                      .style("font-weight", "bold")
-                                      .style("font-size", "16px")
-                                      .attr("text-anchor", "middle")
-                                      .on("click", function()  {
-                                        d3.selectAll("circle.legend").remove()
-                                        d3.selectAll(".legend_label").remove()
-                                        d3.selectAll("rect.bar").remove()
-                                        d3.selectAll(".line").remove() 
-                                        d3.selectAll(".axis").remove()
-
-                                        query_data(client,data,def_vis_width, def_vis_height, params);
-                                        })
                                   stop_loader();    
                                   })
                                })
               })
       })
 };
-
 // Handle config blob, download the csv from the url, create the toolbar
 // and init the graph with the resulting parameters.
 var prepChart = function(config) {
@@ -669,44 +659,28 @@ var prepChart = function(config) {
   client = new CivisClient(config.apiKey)
   client.startRefreshApiToken(config.reportId)
 
-  var params = config['params'] || {};
-  delete params['dbaxis']
-  delete params['saxis']
-  delete params['taxis']
-
+  //var params = config['params'] || {};
+  var params = {}
+  
   // sizing
   if('dimensions' in config) {
     def_vis_width = config['dimensions']['width'];
     def_vis_height = config['dimensions']['height'];
   }
-
-  var margin = {top: 10, right: 20, bottom: 0, left: 75};
-  var width = def_vis_width - margin.left - margin.right,
-      height = def_vis_height - margin.top - margin.bottom;
-  d3.select('.chart-outer')
-    .attr("width", width)
-    .attr("height", height);
-  var chart = d3.select(".chart-outer")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+  def_vis_height = 550;
+  // tooltips
   $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
   $("#chart-tooltip").hide();
-
-  var svg = d3.select(".chart").append("svg")
-    .attr("width", width)
-    .attr("height", height);
   
   createMetaToolbar(client, def_vis_width, def_vis_height, params);
-
-  if (params['url'] != null && params['url'].length > 0) {
-    d3.csv(params['url'], function(error, data){
-       draw_graph(data,def_vis_width,def_vis_height,params);
-    })
-  }
+  draw_map(def_vis_width, def_vis_height,params);
 };
 
 //Init report
-CivisResult.init(prepChart);
+CivisReport.init(prepChart);
 
+//
+// END toolbar edit code
+//////////////////////////////////////////////////////////
 </script>
 </html>
