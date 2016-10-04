@@ -171,7 +171,15 @@ body, html { overflow: scroll; height: 100% }
             the threshold that mazimizes payout and the lowest threshold such that the expected number of 
             positive cases does not exceed the user's capacity to process them in a timely fashion. This manual explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_Toolbar_empty.png?raw=true">
+           <img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_Metatoolbar_empty_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second set of toolbars should appear:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Thresholding/Thresholding_Toolbar_empty_JS.png?raw=true">
     				<ul>
               <li><b>Truth:</b> A dropdown menu to select the column in the data table that contains the truth labels. The labels should be binary, 1 for 'Yes', 0 for 'No'.</li>
               <li><b>Predictions:</b> A dropdown menu to select the column in the data table that contains the predicted probabilities corresponding to the positive class. These values are continuous within the range [0,1]. </li>
@@ -179,6 +187,7 @@ body, html { overflow: scroll; height: 100% }
               <li><b>Maximum bandwidth:</b> An input form to specify the number of positive cases the user can address within the same period (e.g., weekly, monthy). How many cases can the user pursue/investigate/take action on? This is an optional input.</li>
               <li><b>Success payout:</b> An input form to specify the payout (in $) of successfully following up on a positive prediction (e.g., acquiring a new customer, preventing churn).</li>
               <li><b>Cost per action:</b> An input form to specify the cost (in $) of acting on a positive prediction (e.g., cost of a mailing, incentive to renew contract).</li>
+              <li><b>Draw Graph:</b> Once you have selected the variable for which you want to plot the histogram and the classes to split them by (optionally), click this button to retrieve the necessary data and to start drawing the graph.</p>            
             </ul>
            <h2>Interpretation</h2>
             <p>Given a column of truth and predicted labels, the template will plot queue rate, precision and recall at various classification thresholds. The queue rate signifies the proportion of leads that can be acted upon by the user. 
