@@ -36,6 +36,10 @@ input {
   stroke: red;
   stroke-width: 3;
 }
+
+.brush_pan:hover {
+    cursor: move
+}
   
 .circle {
   fill-opacity: 0.5;
@@ -60,6 +64,7 @@ input {
   
 .chart {
   font-family: Lato, Verdana, Arial, sans-serif;
+  stroke: black;
 }
 
 .tooltip {
@@ -176,7 +181,7 @@ draw = function(data, vis_width, vis_height, params) {
 
   // Zoom icon
   d3.select(".chart-outer").append("image")
-    .attr("xlink:href","https://civisanalytics.com/assets/civis_logos/Civis-symbol-d4d7147a1bb51c1b53d98f76e1a7ffce.png")    
+    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_zoom.png?raw=true")    
     .attr("width", 40)
     .attr("height", 40)
     .attr("x", 8)
@@ -200,7 +205,7 @@ draw = function(data, vis_width, vis_height, params) {
 
   // Pan icon
   d3.select(".chart-outer").append("image")
-    .attr("xlink:href","https://civisanalytics.com/assets/civis_logos/Civis-symbol-d4d7147a1bb51c1b53d98f76e1a7ffce.png")    
+    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_pan.png?raw=true")    
     .attr("width", 40)
     .attr("height", 40)
     .attr("x", 8)
@@ -229,11 +234,11 @@ draw = function(data, vis_width, vis_height, params) {
 
   // Select icon
   d3.select(".chart-outer").append("image")
-    .attr("xlink:href","https://civisanalytics.com/assets/civis_logos/Civis-symbol-d4d7147a1bb51c1b53d98f76e1a7ffce.png")    
-    .attr("width", 40)
-    .attr("height", 40)
-    .attr("x", 8)
-    .attr("y", 114)
+    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_select.png?raw=true")    
+    .attr("width", 30)
+    .attr("height", 30)
+    .attr("x", 13)
+    .attr("y", 119)
   d3.select(".chart-outer").append("rect")
     .attr('class', 'icon_zoom')
     .attr("width", 50)
@@ -306,7 +311,6 @@ draw = function(data, vis_width, vis_height, params) {
     				.style("stroke", "white")
     				return hideDetails();})
           .on("click", function(d) {
-                debugger;
                 d3.select(this)
                     .attr("selected", 1 - parseInt(this.getAttribute("selected")))
                     .attr("class", parseInt(this.getAttribute("selected")) ? "circle_selected" : "circle")
@@ -339,6 +343,33 @@ draw = function(data, vis_width, vis_height, params) {
           .attr("cx", function(d) { return x(parseFloat(d[params['xaxis']])); })
           .attr("cy", function(d) { return y(parseFloat(d[params['yaxis']])); });
     }
+
+    function get_nearest(input,element) {
+        console.log(input);
+        console.log(element);
+    debugger;    
+    }
+
+    // Create numerical inputs for number of histogram bins.
+    $("#vis").append("<div id='select_toolbar'></div>");
+    var dim = 'scope';
+    params['scopeaxis'] = 20;
+    // create the input 
+    $("#select_toolbar").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>Include nearest </label><input type='number' min="+0+" max="+1000+" value="+params['scopeaxis']+" id='"+dim+"-var'><label class='label_toolbar' for='"+dim+"-var'> nodes.</label>")
+                                      
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+
+        d3.selectAll(".circle_selected")
+            .each(function(d) {get_nearest(data,d)})
+      }
+    }(dim));
 }
 
 var showDetails = function(data, element) {

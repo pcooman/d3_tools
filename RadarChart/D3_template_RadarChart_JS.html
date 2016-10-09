@@ -1,0 +1,882 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="https://rawgithub.com/jashkenas/underscore/1.8.3/underscore-min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<script src="https://s3.amazonaws.com/civis-console/javascript-client/v0.3.0/civis_client.min.js"></script>  
+
+<style>
+  
+body, html { 
+  overflow: scroll; 
+  height: 100% }  
+    
+.chart { 
+	font-family: Lato, Verdana, Arial, sans-serif;
+  overflow: scroll; 
+  height: 100%;
+} 
+  
+.chart-outer { 
+  overflow: scroll; 
+  height: 100%;
+} 
+  
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  width: 140px;
+}
+
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+
+body, html { overflow: scroll; height: 100% }
+
+.loader {
+    transform-origin: center center;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {transform: rotate(0deg); }
+    100% {transform: rotate(360deg); }
+}  
+</style>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+      
+        <div class="tab-pane active" id="a_tab">
+            <h1>Graph</h1>
+            <acontent><div id='vis'>
+              <svg class='chart-outer'><g class="chart"></g></svg>
+            </div>
+            </acontent>
+        </div>
+      
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<h2>Introduction</h2>
+          	<p>This section provides a manual for the Radar Chart visualization. It explains the meaning of the inputs, the correct specification of the input data table and some known issues.</p>
+          	<h2>Inputs</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/RadarChart/RadarChart_Toolbar_empty.png?raw=true">
+        	<ul>
+              <li><b>Properties:</b> A dropdown menu to select the column in the data table that contains the properties. These will form the axes of the radar chart.</li>
+              <li><b>Values:</b> A dropdown menu to select the column in the data table that contains the values for each property. These values determine the extents along the property axes.</li>
+              <li><b>Classes:</b> A dropdown menu to select the column in the data table that contains the classes. The radar chart will contain one outline for each distinct class.</li>
+              <li><b>Show general population:</b> A checkbox to specify whether the property values of the general population should be included (not supported yet). Eventually, this will allow for comparisons between some group and the general population based on a set of hard-coded property values.</li>
+            </ul>
+          	<h2>Data table</h2>
+          	<p>To get the correct visualization, the data table needs to be organized as follows:							follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/RadarChart/RadarChart_Table.png?raw=true">
+          	<p>Each row in the table should correspond to a unique class and property combination. Values should be normalized to [0,1].</p>
+          	<h2>Known issues</h2>
+          	<p>Hovering over the nodes on a blob correctly brings up a tooltip, but they are not linked to the blob. Hovering over nodes from a blob in the background causes overlapping blobs to cover it up.</p>
+            <bcontent></bcontent>
+        </div>
+      
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+          	<h2>Introduction</h2>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a radar chart of a smartphone survey. The data in this example represents reasons current users of iPhone, Samsung or Nokia smartphones find important in choosing their next phone. The data can be found on Platform (schema.table = <i>pcooman.phones</i> on redshift-general).</p>
+            <h2>Data table</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/RadarChart/RadarChart_Table.png?raw=true">
+          	<p>In this table, the <i>property</i> column contains the Properties we want to plot (= axes of the radar chart), the <i>value</i> column contains the property values and <i>phones</i> contains the classes (here: Apple, Nokia or Samsung).</p>
+          	<h2>Sample plot</h2>
+          	<p>If everything goes well. Your plot should look something like this:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/RadarChart/RadarChart_Example.png?raw=true">
+           <p>Hovering over a blob makes that blob a solid color, while the other blobs become transparent. The figure below shows an example:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/RadarChart/RadarChart_hover.png?raw=true"> 
+           <p>Hovering over a node, located at the intersections of property axes and the class blobs, should bring up a tooltip indicating the value as a percentage. The following image shows an example of this tooltip:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/RadarChart/RadarChart_Tooltip.png?raw=true">
+            <ccontent></ccontent>
+        </div>
+      
+    </div>
+</div>
+
+<script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+
+draw_graph = function(data,def_vis_width,def_vis_height,params) {
+  /////////////////////////////////////////////////////////
+  /////////////// The Radar Chart Function ////////////////
+  /////////////// Written by Nadieh Bremer ////////////////
+  ////////////////// VisualCinnamon.com ///////////////////
+  /////////// Inspired by the code of alangrafu ///////////
+  /////////////////////////////////////////////////////////
+
+  function RadarChart(id, data, options) {
+
+    var cfg = {
+     w: 700,				//Width of the circle
+     h: 700,				//Height of the circle
+     margin: {top: 20, right: 20, bottom: 20, left: 20}, //The margins of the SVG
+     levels: 3,				//How many levels or inner circles should there be drawn
+     maxValue: 0, 			//What is the value that the biggest circle will represent
+     labelFactor: 1.25, 	//How much farther than the radius of the outer circle should the labels be placed
+     wrapWidth: 100, 		//The number of pixels after which a label needs to be given a new line
+     opacityArea: 0.8, 	//The opacity of the area of the blob
+     dotRadius: 4, 			//The size of the colored circles of each blog
+     opacityCircles: 0.1, 	//The opacity of the circles of each blob
+     strokeWidth: 2, 		//The width of the stroke around each blob
+     roundStrokes: false,	//If true the area and stroke will follow a round path (cardinal-closed)
+     color: d3.interpolateSpectral(),	//Color function
+     colorLevels: data.length // Number of different colors
+    };
+
+    //Put all of the options into a variable called cfg
+    if('undefined' !== typeof options){
+      for(var i in options){
+      if('undefined' !== typeof options[i]){ cfg[i] = options[i]; }
+      }//for i
+    }//if
+
+    //If the supplied maxValue is smaller than the actual one, replace by the max in the data
+    var maxValue = Math.max(cfg.maxValue, d3.max(data, function(i){return d3.max(i.map(function(o){return o.value;}))}));
+
+    var allAxis = (data[0].map(function(i, j){return i.axis})),	//Names of each axis
+      total = allAxis.length,					//The number of different axes
+      radius = Math.min(cfg.w/2, cfg.h/2), 	//Radius of the outermost circle
+      Format = d3.format('%'),			 	//Percentage formatting
+      angleSlice = Math.PI * 2 / total;		//The width in radians of each "slice"
+
+    //Scale for the radius
+    var rScale = d3.scale.linear()
+      .range([0, radius])
+      .domain([0, maxValue]);
+
+    /////////////////////////////////////////////////////////
+    //////////// Create the container SVG and g /////////////
+    /////////////////////////////////////////////////////////
+
+    //Remove whatever chart with the same id/class was present before
+    d3.select(id).select("svg").remove();
+
+    //Initiate the radar chart SVG
+    var svg = d3.select(id).append("svg")
+        .attr("width",  cfg.w + cfg.margin.left + cfg.margin.right)
+        .attr("height", cfg.h + cfg.margin.top + cfg.margin.bottom)
+        .attr("class", "radar"+id);
+    //Append a g element		
+    var g = svg.append("g")
+        .attr("transform", "translate(" + (cfg.w/2 + cfg.margin.left) + "," + (cfg.h/2 + cfg.margin.top) + ")");
+
+    /////////////////////////////////////////////////////////
+    ////////// Glow filter for some extra pizzazz ///////////
+    /////////////////////////////////////////////////////////
+
+    //Filter for the outside glow
+    var filter = g.append('defs').append('filter').attr('id','glow'),
+      feGaussianBlur = filter.append('feGaussianBlur').attr('stdDeviation','2.5').attr('result','coloredBlur'),
+      feMerge = filter.append('feMerge'),
+      feMergeNode_1 = feMerge.append('feMergeNode').attr('in','coloredBlur'),
+      feMergeNode_2 = feMerge.append('feMergeNode').attr('in','SourceGraphic');
+
+    /////////////////////////////////////////////////////////
+    /////////////// Draw the Circular grid //////////////////
+    /////////////////////////////////////////////////////////
+
+    //Wrapper for the grid & axes
+    var axisGrid = g.append("g").attr("class", "axisWrapper");
+
+    //Draw the background circles
+    axisGrid.selectAll(".levels")
+       .data(d3.range(1,(cfg.levels+1)).reverse())
+       .enter()
+      .append("circle")
+      .attr("class", "gridCircle")
+      .attr("r", function(d, i){return radius/cfg.levels*d;})
+      .style("fill", "#CDCDCD")
+      .style("stroke", "#CDCDCD")
+      .style("fill-opacity", cfg.opacityCircles)
+      .style("filter" , "url(#glow)");
+
+    //Text indicating at what % each level is
+    axisGrid.selectAll(".axisLabel")
+       .data(d3.range(1,(cfg.levels+1)).reverse())
+       .enter().append("text")
+       .attr("class", "axisLabel")
+       .attr("x", 4)
+       .attr("y", function(d){return -d*radius/cfg.levels;})
+       .attr("dy", "0.4em")
+       .style("font-size", "10px")
+       .attr("fill", "#737373")
+       .text(function(d,i) { return Format(maxValue * d/cfg.levels); });
+
+    /////////////////////////////////////////////////////////
+    //////////////////// Draw the axes //////////////////////
+    /////////////////////////////////////////////////////////
+
+    //Create the straight lines radiating outward from the center
+    var axis = axisGrid.selectAll(".axis")
+      .data(allAxis)
+      .enter()
+      .append("g")
+      .attr("class", "axis");
+    //Append the lines
+    axis.append("line")
+      .attr("x1", 0)
+      .attr("y1", 0)
+      .attr("x2", function(d, i){ return rScale(maxValue*1.1) * Math.cos(angleSlice*i - Math.PI/2); })
+      .attr("y2", function(d, i){ return rScale(maxValue*1.1) * Math.sin(angleSlice*i - Math.PI/2); })
+      .attr("class", "line")
+      .style("stroke", "white")
+      .style("stroke-width", "2px");
+
+    //Append the labels at each axis
+    axis.append("text")
+      .attr("class", "legend")
+      .style("font-size", "11px")
+    	.style("font-weight", "bold")
+      .attr("text-anchor", "middle")
+      .attr("dy", "0.35em")
+      .attr("x", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.cos(angleSlice*i - Math.PI/2); })
+      .attr("y", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.sin(angleSlice*i - Math.PI/2); })
+      .text(function(d){return d})
+      .call(wrap, cfg.wrapWidth);
+
+    /////////////////////////////////////////////////////////
+    ///////////// Draw the radar chart blobs ////////////////
+    /////////////////////////////////////////////////////////
+
+    //The radial line function
+    var radarLine = d3.svg.line.radial()
+      .interpolate("linear-closed")
+      .radius(function(d) { return rScale(d.value); })
+      .angle(function(d,i) {	return i*angleSlice; });
+
+    if(cfg.roundStrokes) {
+      radarLine.interpolate("cardinal-closed");
+    }
+
+    //Create a wrapper for the blobs	
+    var blobWrapper = g.selectAll(".radarWrapper")
+      .data(data)
+      .enter().append("g")
+      .attr("class", "radarWrapper");
+
+    //Append the backgrounds	
+    blobWrapper
+      .append("path")
+      .attr("class", "radarArea")
+      .attr("d", function(d,i) { return radarLine(d); })
+      .style("fill", function(d,i) { 
+      return d3.interpolateSpectral(1 - i/cfg.colorLevels); })
+      .style("fill-opacity", cfg.opacityArea)
+      .on('mouseover', function (d,i){
+        //Dim all blobs
+        d3.selectAll(".radarArea")
+          .transition().duration(200)
+          .style("fill-opacity", 0.1); 
+        //Bring back the hovered over blob
+        d3.select(this)
+          .transition().duration(200)
+          .style("fill-opacity", 0.7);	
+      })
+      .on('mouseout', function(){
+        //Bring back all blobs
+        d3.selectAll(".radarArea")
+          .transition().duration(200)
+          .style("fill-opacity", cfg.opacityArea);
+      });
+
+    //Create the outlines	
+    blobWrapper.append("path")
+      .attr("class", "radarStroke")
+      .attr("d", function(d,i) { return radarLine(d); })
+      .style("stroke-width", cfg.strokeWidth + "px")
+      .style("stroke", function(d,i) { return d3.interpolateSpectral(1 - i/cfg.colorLevels); })
+      .style("fill", "none")
+      .style("filter" , "url(#glow)");		
+
+    //Append the circles
+    blobWrapper.selectAll(".radarCircle")
+      .data(function(d,i) { return d; })
+      .enter().append("circle")
+      .attr("class", "radarCircle")
+      .attr("r", cfg.dotRadius)
+      .attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
+      .attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
+      .style("fill", function(d,i,j) { return d3.interpolateSpectral(1 - j/cfg.colorLevels); })
+      .style("fill-opacity", 0.8);
+
+    /////////////////////////////////////////////////////////
+    //////// Append invisible circles for tooltip ///////////
+    /////////////////////////////////////////////////////////
+
+    //Wrapper for the invisible circles on top
+    var blobCircleWrapper = g.selectAll(".radarCircleWrapper")
+      .data(data)
+      .enter().append("g")
+      .attr("class", "radarCircleWrapper");
+
+    //Append a set of invisible circles on top for the mouseover pop-up
+    blobCircleWrapper.selectAll(".radarInvisibleCircle")
+      .data(function(d,i) { return d; })
+      .enter().append("circle")
+      .attr("class", "radarInvisibleCircle")
+      .attr("r", cfg.dotRadius*1.5)
+      .attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
+      .attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
+      .style("fill", "none")
+      .style("pointer-events", "all")
+      .on("mouseover", function(d) {return showDetails(Math.round(d.value*1000)/10+"%",this);})
+      .on("mouseout", function(d) {return hideDetails();});
+
+    //Set up the small tooltip for when you hover over a circle
+    var tooltip = g.append("text")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
+    /////////////////////////////////////////////////////////
+    ///////////////////// Add legend ////////////////////////
+    /////////////////////////////////////////////////////////
+    for (i=0; i<options.classes.length; i++) {
+      d3.select(".chart-outer").append("text")
+      .attr("class","legendlabel")
+      .style("font-size", "20px")
+    	.style("font-weight", "bold")
+      .attr("text-anchor", "left")
+      .attr("dy", "0.35em")
+      .attr("x", 10)
+      .attr("y", 50+25*i)
+      .text(options.classes[i])
+      .attr("fill", d3.interpolateSpectral(1 - i/cfg.colorLevels))
+    }
+
+    /////////////////////////////////////////////////////////
+    /////////////////// Helper Function /////////////////////
+    /////////////////////////////////////////////////////////
+
+    //Taken from http://bl.ocks.org/mbostock/7555321
+    //Wraps SVG text	
+    function wrap(text, width) {
+      text.each(function() {
+      var text = d3.select(this),
+        words = text.text().split(/\s+/).reverse(),
+        word,
+        line = [],
+        lineNumber = 0,
+        lineHeight = 1.4, // ems
+        y = text.attr("y"),
+        x = text.attr("x"),
+        dy = parseFloat(text.attr("dy")),
+        tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+
+      while (word = words.pop()) {
+        line.push(word);
+        tspan.text(line.join(" "));
+        if (tspan.node().getComputedTextLength() > width) {
+        line.pop();
+        tspan.text(line.join(" "));
+        line = [word];
+        tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+        }
+      }
+      });
+    }//wrap	
+
+  }
+
+    var showDetails = function(data, element) {
+      pos = $(element).position()
+      $("#chart-tooltip").html(data)
+      width = $("#chart-tooltip").width()
+      height = $("#chart-tooltip").height()
+      $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+      $("#chart-tooltip").show()
+    };
+    var hideDetails = function() {
+      $("#chart-tooltip").hide()
+    };
+  //RadarChart
+  
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+  if (params['xaxis'] != null & params['yaxis'] != null & params['zaxis'] != null) {
+    var margin = {top: 55, right: 20, bottom: 75, left: 75};
+    var width = def_vis_width - margin.left - margin.right,
+        height = def_vis_height - margin.top - margin.bottom;
+    d3.select('.chart-outer')
+      .attr("width", def_vis_width)
+      .attr("height", def_vis_height);
+    var chart = d3.select(".chart")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var mydata = new Array();
+    var classes = _.chain(data).pluck('class').unique().value()
+    for (i_class in classes) {
+      var c = classes[i_class]
+      var data_c = _.filter(data, function(d){ return d['class'] === c;})
+      var mydata2 = new Array();
+      for (i=0; i<data_c.length; i++) {
+        mydata2[i] = {axis: data_c[i]['property'], value: data_c[i]['value']}
+      }
+      mydata[i_class] = mydata2
+    }
+    ////////////////////////////////////////////////////////////// 
+    //////////////////// Draw the Chart ////////////////////////// 
+    ////////////////////////////////////////////////////////////// 
+    //var color = d3.scale.ordinal()
+    //  .range(["#EDC951","#CC333F","#00A0B0"]);
+		var color = d3.interpolateSpectral();
+    
+    var radarChartOptions = {
+      w: width,
+      h: 375,    			// adjust this value to set the radius of the outer circle
+      margin: margin,
+      maxValue: 0.5,
+      levels: 5,
+      roundStrokes: true,
+      color: color,
+      classes: classes
+    };
+    //Call function to draw the Radar chart
+    RadarChart(".chart-outer", mydata, radarChartOptions);
+  }
+}
+
+query_data = function(client,data,def_vis_width,def_vis_height,params) {
+  
+  if (params['xaxis'] != null && params['yaxis'] != null && params['zaxis'] != null) {
+    
+    start_loader(150,300,175)
+    
+    var q = "select "+params['xaxis']+" as property, "+
+            params['yaxis']+" as value, "+
+            params['zaxis']+" as class " +
+            "from " +params['saxis']+"."+params['taxis']
+    
+    client.request("/scripts/"+params['scriptId'],{
+          method: "PATCH",
+          data: {
+              'sql': q
+               }
+          }).then(function(result) {
+            var scriptId = result.data.id;
+            
+            client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                           .then(function(result){
+                             return result.data.output[0].path;
+                           }).then(function(dataUrl) {
+              			  d3.csv(dataUrl, function(error, data){
+                                params['url'] = dataUrl;
+                                CivisReport.saveParams(params);
+                             stop_loader();
+                             draw_graph(data,def_vis_width,def_vis_height,params);
+                            
+                                })
+                        })
+            })
+    }
+}
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+start_loader = function(size,Xpos,Ypos) {
+    d3.select(".chart").append("image")
+    .attr("xlink:href","https://civisanalytics.com/assets/civis_logos/Civis-symbol-d4d7147a1bb51c1b53d98f76e1a7ffce.png")    
+    .attr("class","loader")
+    .attr("width", size)
+    .attr("height", size)
+    .attr("x", Xpos)
+    .attr("y", Ypos)
+}
+stop_loader = function() {
+    d3.select(".loader").remove()
+    
+}
+
+var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) {
+   client.request("/databases", {method: "GET"}).then(function(result) {       
+       $("#vis").prepend("<div class='form-group' id='metatoolbar'></div>");
+     	   var db_options = result.data.map(function(d) {return d.name;});
+        var db_id_options = result.data.map(function(d) {return d.id;});
+        var dim = "db"
+        var label = "Source Database"
+        
+        $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option value='32' selected>redshift-general</option></select></div>")
+        // populate the dropdown with the geography types
+        for(i_label in db_options) {
+          db_type = db_options[i_label];
+          db_id_type = db_id_options[i_label];
+          if (db_type != "redshift-general" ){
+          	$("#"+dim+"-var").append("<option value='"+db_id_type+"'>"+db_type+"</option>");
+          }
+        }
+        
+        // set picker to saved param values
+        $("#"+dim+"-var").val(params[dim+'axis']);
+        // handle change to select, wrap in anonymous function so the pickers dont clash
+        $("#"+dim+"-var").change(function(dim) {
+          return function() {
+            d3.select("#s-var").html("");
+            d3.select("#t-var").html("");
+
+            var newVar = $("#"+dim+"-var").val();
+            params[dim+'axis'] = newVar;
+            params[dim+'axislabel'] = newVar;
+            CivisReport.saveParams(params);
+            client.request("/databases/"+params['dbaxis']+"/schemas", {method: "GET"}).then(function(result) {
+                var s_options = result.data.map(function(d) {return d.schema;});
+                for(i_label in s_options) {
+                  s_type = s_options[i_label];
+                  $("#s-var").append("<option value='"+s_type+"'>"+s_type+"</option>");
+                }
+            })
+           }
+         }(dim));
+       
+       var dimensions = ['s'];
+       var toolbar_labels = ['Source Schema'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             d3.select("#t-var").html("");
+
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+             CivisReport.saveParams(params);
+             client.request("/tables", {method: "GET", 
+                                        params:{
+                                                databaseId: params['dbaxis'],
+                                                schema: params['saxis'],
+                                                limit: 50
+                                                }
+                                        })
+            .then(function(result) {
+                var t_options = result.data.map(function(d) {if (d.databaseId == params['dbaxis'] && d.schema == params['saxis']) return d.name;});
+                for(i_label in t_options) {
+                  t_type = t_options[i_label];
+                  $("#t-var").append("<option value='"+t_type+"'>"+t_type+"</option>");
+                }
+             })
+           }
+         }(dim));
+       }
+
+       var dimensions = ['t'];
+       var toolbar_labels = ['Source Table'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+             CivisReport.saveParams(params);
+           }
+         }(dim));
+       }
+     
+     var svg = d3.select("#metatoolbar").append("svg")
+      .attr("width", def_vis_width)
+      .attr("height", 60);
+
+     svg.append('rect')
+      .attr("transform","translate(0,0)")
+   	 .attr('class','form-group')
+      .attr('width', 150)
+      .attr('height', 45)
+      .attr('x', 20)
+      .attr('y', 0)
+      .attr('rx', 20)
+      .attr('ry', 20)
+      .style('fill', 'rgb(31,119,180)')
+      .on("click",  function()  {
+        d3.selectAll("path").remove()
+        d3.selectAll("circle").remove()
+        d3.selectAll("line").remove()
+        d3.selectAll(".axislabel").remove()
+        d3.selectAll(".legendlabel").remove()
+        d3.selectAll(".legend").remove()
+
+        d3.select("#x-var").html("");
+        d3.select("#y-var").html("");
+        d3.select("#z-var").html("");
+        d3.select("#x-var").remove();
+        d3.select("#y-var").remove();
+        d3.select("#z-var").remove();
+        delete params['xaxis']
+        delete params['yaxis']
+        delete params['zaxis']
+        d3.selectAll(".toolbar_rect").remove()
+        d3.selectAll(".toolbar_text").remove()
+        d3.select("#toolbar").remove()
+
+        createToolbar(client,def_vis_width, def_vis_height, params);
+        })
+  							
+    svg.append('text').text('Get Table')
+      .attr('x', 95)
+      .attr('y', 30)
+      .style('fill', 'white')
+      .style("font-weight", "bold")
+      .style("font-size", "16px")
+      .attr("text-anchor", "middle")
+      .on("click", function()  {
+        d3.selectAll("path").remove()
+        d3.selectAll("circle").remove()
+        d3.selectAll("line").remove()
+        d3.selectAll(".axislabel").remove()
+        d3.selectAll(".legendlabel").remove()
+        d3.selectAll(".legend").remove()
+
+        d3.select("#x-var").html("");
+        d3.select("#y-var").html("");
+        d3.select("#z-var").html("");
+        d3.select("#x-var").remove();
+        d3.select("#y-var").remove();
+        d3.select("#z-var").remove();
+        delete params['xaxis']
+        delete params['yaxis']
+        delete params['zaxis']
+        d3.selectAll(".toolbar_rect").remove()
+        d3.selectAll(".toolbar_text").remove()
+        d3.select("#toolbar").remove()
+
+        createToolbar(client,def_vis_width, def_vis_height, params);
+        })
+     
+   })
+}
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 700;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(client,def_vis_width, def_vis_height, params) {
+
+
+    start_loader(50,400,12.5);
+    $("#metatoolbar").append("<div id='toolbar'></div>");
+
+  // Create script to get data table metadata
+  client.defaultCredential().then(function(credential) {
+      client.request("/scripts/sql",{
+              method: "POST",
+              data: {
+                  'name': 'test script 1234',
+                  'remoteHostId': parseInt(params['dbaxis']),
+                  'credentialId': credential.id,
+                  'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 1"
+              }
+              }).then(function(result) {
+                var scriptId = result.data.id;
+        				params['scriptId'] = scriptId;
+                
+                client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                               .then(function(result){
+                                 return result.data.output[0].path;
+                               }).then(function(dataUrl) {
+                  			  d3.csv(dataUrl, function(error, data){
+
+                                      // an array of the column names in the original data source
+                                      var columns = Object.keys(data[0]);
+
+                                      // create pickers for both the x and y axis
+                                      var dimensions = ['x', 'y', 'z'];
+                                      var toolbar_labels = ['Properties', 'Values','Classes'];
+                                    
+                                      for(var i_dim in dimensions) {
+                                        var dim = dimensions[i_dim];
+                                        var label = toolbar_labels[i_dim];
+                                        // create the select dropdown
+                                        $("#toolbar").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+                                        // populate the dropdown with the columns in the dataset
+                                        for(i_col in columns) {
+                                          col_name = columns[i_col];
+                                          $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                        }
+                                        // set picker to saved param values
+                                        $("#"+dim+"-var").val(params[dim+'axis']);
+                                        // handle change to select, wrap in anonymous function so the pickers dont clash
+                                        $("#"+dim+"-var").change(function(dim) {
+                                          return function() {
+                                            var newVar = $("#"+dim+"-var").val();
+                                            params[dim+'axis'] = newVar;
+                                            CivisResult.saveParams(params);
+                                          }
+                                        }(dim));
+                                      }
+                                      
+                                      d3.select("#toolbar")
+                                      	.append('label')
+                                        	.text('Show general population ')
+                                    		.append("input")
+                                        	.attr("checked", false)
+                                        	.attr("type", "checkbox")
+                                        	.attr("id", "check");
+                                        	//.attr("onClick", "change(this)");
+
+                                    var svg = d3.select("#toolbar").append("svg")
+                                      .attr("width", def_vis_width)
+                                      .attr("height", 60);
+                                
+                                     svg.append('rect')
+                                      .attr("transform","translate(0,0)")
+                                   	 .attr('class','form-group toolbar_rect')
+                                      .attr('width', 150)
+                                      .attr('height', 45)
+                                      .attr('x', 20)
+                                      .attr('y', 0)
+                                      .attr('rx', 20)
+                                      .attr('ry', 20)
+                                      .style('fill', 'rgb(31,119,180)')
+                                      .on("click",  function()  {
+                                        d3.selectAll("path").remove()
+                                        d3.selectAll("circle").remove()
+                                        d3.selectAll("line").remove()
+                                        d3.selectAll(".axislabel").remove()
+                                        d3.selectAll(".legendlabel").remove()
+                                        d3.selectAll(".legend").remove()
+
+                                        query_data(client,data,def_vis_width, def_vis_height, params);
+                                        })
+                                  							
+                                    svg.append('text').text('Draw Graph')
+                                      .attr('class', 'toolbar_text')
+                                      .attr('x', 95)
+                                      .attr('y', 30)
+                                      .style('fill', 'white')
+                                      .style("font-weight", "bold")
+                                      .style("font-size", "16px")
+                                      .attr("text-anchor", "middle")
+                                      .on("click", function()  {
+                                        d3.selectAll("path").remove()
+                                        d3.selectAll("circle").remove()
+                                        d3.selectAll("line").remove()
+                                        d3.selectAll(".axislabel").remove()
+                                        d3.selectAll(".legendlabel").remove()
+                                        d3.selectAll(".legend").remove()
+
+                                        query_data(client,data,def_vis_width, def_vis_height, params);
+                                        })
+
+                                  stop_loader();    
+                                  })
+                               })
+              })
+      })
+};
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+
+  // use the startRefreshApiToken method to get a new api key
+  client = new CivisClient(config.apiKey)
+  client.startRefreshApiToken(config.reportId)
+
+  var params = config['params'] || {};
+  delete params['dbaxis']
+  delete params['saxis']
+  delete params['taxis']
+  
+  // sizing
+  if('dimensions' in config) {
+    def_vis_width = config['dimensions']['width'];
+    def_vis_height = config['dimensions']['height'];
+  }
+
+  var margin = {top: 10, right: 20, bottom: 0, left: 75};
+  var width = def_vis_width - margin.left - margin.right,
+      height = def_vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", width)
+    .attr("height", height);
+  var chart = d3.select(".chart-outer")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+
+  var svg = d3.select(".chart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  createMetaToolbar(client, def_vis_width, def_vis_height, params);
+
+  if (params['url'] != null && params['url'].length > 0) {
+    d3.csv(params['url'], function(error, data){
+       draw_graph(data,def_vis_width,def_vis_height,params);
+    })
+  }
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+//
+// END toolbar edit code
+//////////////////////////////////////////////////////////
+</script>
+
+</html>
