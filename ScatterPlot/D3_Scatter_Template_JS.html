@@ -95,12 +95,21 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>This section provides a manual for the Scatter/Bubble visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_Toolbar_empty.png?raw=true">
-    				<ul>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_Metatoolbar_empty_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second toolbar should appear:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_Toolbar_empty_JS.png?raw=true">
+    		  <ul>
               <li><b>X axis:</b> A dropdown menu to select the column in the data table that contains the values to be plotted along the X axis.</li>
               <li><b>Y axis:</b> A dropdown menu to select the column in the data table that contains the values to be plotted along the Y axis.</li>
               <li><b>Bubble:</b> A dropdown menu to select the column in the data tabe whose values define the size of the bubbles. If no column is selected, the bubbles will have a default radius of 5px</li>
               <li><b>Color:</b> A dropdown menu to select the column in the data tabe whose values define the color of the bubbles. Both numerical and categorical variables are supported.</li>
+              <li><b>Draw Graph:</b> Once you have selected the variables for which you want to plot the scatter plot, click this button to retrieve the necessary data and to start drawing the graph.</p>
             </ul>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
