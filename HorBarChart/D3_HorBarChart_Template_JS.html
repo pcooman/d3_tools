@@ -94,12 +94,21 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>This section provides a manual for the Horizontal Bar Chart visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Toolbar_empty.png?raw=true">
-    				<ul>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Metatoolbar_empty_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second toolbar should appear:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Toolbar_empty_JS.png?raw=true">
+     		 <ul>
               <li><b>Property (y):</b> A dropdown menu to select the column in the data table that contains the values for the property you want to plot. These values determine the lengths of the bars. </li>
               <li><b>Label (x):</b> A dropdown menu to select the column in the data table that contains the names of the categories. There should be one label for each bar.</li>
               <li><b>Sort by:</b> An input form to specifiy how to sort the data. You may choose to sort the values themselves or their labels. If the labels are strings, they will be sorted alphabetically. You can sort along any column in the data, even if it is not the property selected under <i>Property (y)</i>.</li>
               <li><b>Orientation:</b> A dropdown menu to choose whether the bars should be oriented horizontally (default) or vertically. In the vertical orientation, the width of each bar will automaticlaly adjust to the width of the screen to ensure all records are displayed. In the horizontal orientation, each bar has a fixed height. The current maximum height has been set to 10000px, allowing for a maximum of 277 bars.</li>
+              <li><b>Draw Graph:</b> Once you have selected the <i>Property</i> and <i>Label</i> variables, click this button to retrieve the necessary data and to start drawing the graph.</p>
             </ul>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
@@ -509,7 +518,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
 
         d3.selectAll(".bar--positive").remove()
         d3.selectAll(".bar--negative").remove()
-        d3.selectAll("tick").remove()
+        d3.selectAll(".tick").remove()
         d3.selectAll("path").remove()
         d3.selectAll("line").remove()
         d3.selectAll(".label").remove()
@@ -544,7 +553,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
 
         d3.selectAll(".bar--positive").remove()
         d3.selectAll(".bar--negative").remove()
-        d3.selectAll("tick").remove()
+        d3.selectAll(".tick").remove()
         d3.selectAll("path").remove()
         d3.selectAll("line").remove()
         d3.selectAll(".label").remove()
@@ -663,7 +672,7 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                         d3.selectAll(".bar--positive").remove()
                                         d3.selectAll(".bar--negative").remove()
                                         d3.selectAll("path").remove()
-                                        d3.selectAll("tick").remove()
+                                        d3.selectAll(".tick").remove()
                                         d3.selectAll("line").remove()
                                         d3.selectAll(".label").remove()
                                         query_data(client,data,def_vis_width, def_vis_height, params);
@@ -681,7 +690,7 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                         d3.selectAll(".bar--positive").remove()
                                         d3.selectAll(".bar--negative").remove()
                                         d3.selectAll("path").remove()
-                                        d3.selectAll("tick").remove()
+                                        d3.selectAll(".tick").remove()
                                         d3.selectAll("line").remove()
                                         d3.selectAll(".label").remove()
                                         query_data(client,data,def_vis_width, def_vis_height, params);
