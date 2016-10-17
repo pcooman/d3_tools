@@ -1,14 +1,14 @@
 <html>
 <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
 <script src="https://rawgit.com/jashkenas/underscore/master/underscore-min.js"></script>  
-<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
 <script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
-<script src="//rawgit.com/jasondavies/d3-cloud/v1.2.1/build/d3.layout.cloud.js"></script>
 <script src="https://d3js.org/d3-color.v1.min.js"></script>
 <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
 <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<script src="//maps.google.com/maps/api/js?sensor=true"></script>
 
 <style>
 input {
@@ -25,36 +25,13 @@ input {
   display: inline-block;
   margin-left: 10px;
   margin-right: 10px;
-  width: 100;
-}
-
-.icon_zoom {
-  stroke: none;
-  stroke-width: 3;
-}
-.icon_zoom:hover {
-  stroke: red;
-  stroke-width: 3;
-}
-
-.brush_pan:hover {
-    cursor: move
+  width: 130;
 }
   
 .circle {
   fill-opacity: 0.5;
   stroke: white;
   stroke-width: 3;
-}
-
-.circle_selected {
-    fill-opacity: 1;
-    stroke: white;
-    stroke-width: 3;
-}
-.circle_selected:hover {
-    stroke: black;
-    stroke-width: 3;
 }
 
 .axis text {
@@ -70,7 +47,6 @@ input {
   
 .chart {
   font-family: Lato, Verdana, Arial, sans-serif;
-  stroke: black;
 }
 
 .tooltip {
@@ -154,7 +130,6 @@ $.ajaxSetup ({
             });
 
 draw = function(data, vis_width, vis_height, params) {
-
   /////////////////////////////////////////////
   // chart margin/sizing setup
   // deviate slightly from Bostock's convention
@@ -169,7 +144,7 @@ draw = function(data, vis_width, vis_height, params) {
     var count = 1
   }
 
-  var margin = {top: 0, right: 0, bottom: 0, left: 0};
+  var margin = {top: 10, right: 20, bottom: 60, left: 75};
   var width = vis_width - margin.left - margin.right,
       height = vis_height - margin.top - margin.bottom;
   d3.select('.chart-outer')
@@ -177,115 +152,34 @@ draw = function(data, vis_width, vis_height, params) {
     .attr("height", vis_height);
   var chart = d3.select(".chart")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-  var svg = d3.select(".chart")
-    .append("svg")
+  
+  var svg = d3.select(".chart").append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-  // Zoom icon
-  d3.select(".chart-outer").append("image")
-    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_zoom.png?raw=true")    
-    .attr("width", 40)
-    .attr("height", 40)
-    .attr("x", 8)
-    .attr("y", 8)
-  d3.select(".chart-outer").append("rect")
-    .attr('class', 'icon_zoom')
-    .attr("width", 50)
-    .attr("height", 50)
-    .attr("x", 3)
-    .attr("y", 3)
-    .attr("rx",5)
-    .attr("ry",5)
-    .style("fill-opacity", 0)
-    .on("click", function() {
-        d3.selectAll(".brush_pan").remove() 
-
-        svg.append("g")
-          .attr("class", "brush_zoom")
-          .call(brush_zoom);   
-    })
-
-  // Pan icon
-  d3.select(".chart-outer").append("image")
-    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_pan.png?raw=true")    
-    .attr("width", 40)
-    .attr("height", 40)
-    .attr("x", 8)
-    .attr("y", 61)
-  d3.select(".chart-outer").append("rect")
-    .attr('class', 'icon_zoom')
-    .attr("width", 50)
-    .attr("height", 50)
-    .attr("x", 3)
-    .attr("y", 56)
-    .attr("rx",5)
-    .attr("ry",5)
-    .style("fill-opacity", 0)
-    .on("click", function() {
-        d3.selectAll(".brush_zoom").remove()
-
-        svg.append("rect")
-                .attr("x",0)
-                .attr("x",0)
-                .attr("width",width)
-                .attr("height",height)
-              .attr("class", "brush_pan")
-              .style("fill-opacity",0)
-              .call(brush_pan);    
-    })
-
-  // Select icon
-  d3.select(".chart-outer").append("image")
-    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_select.png?raw=true")    
-    .attr("width", 30)
-    .attr("height", 30)
-    .attr("x", 13)
-    .attr("y", 119)
-  d3.select(".chart-outer").append("rect")
-    .attr('class', 'icon_zoom')
-    .attr("width", 50)
-    .attr("height", 50)
-    .attr("x", 3)
-    .attr("y", 109)
-    .attr("rx",5)
-    .attr("ry",5)
-    .style("fill-opacity", 0)
-    .on("click", function() {
-        d3.selectAll(".brush_pan").remove()
-        d3.selectAll(".brush_zoom").remove()
-    })
-
-  var x = d3.scaleLinear()
-    .range([0, width])
+  
+  var x = d3.scale.linear()
+    .range([0, width-100])
     .domain(d3.extent(data, function(d) { return parseFloat(d[params['xaxis']]); })).nice();
   
-  var y = d3.scaleLinear()
-    .range([height, 0])
+  var y = d3.scale.linear()
+    .range([height, 50])
     .domain(d3.extent(data, function(d) { return parseFloat(d[params['yaxis']]); })).nice();
-
-  var xAxis = d3.axisTop(x),
-    yAxis = d3.axisRight(y);
-
-  var brush_zoom = d3.brush().on("end", brushended),
-    idleTimeout,
-    idleDelay = 350;
-
-  var brush_pan = d3.zoom()
-    .scaleExtent([1, 100])
-    .on('zoom', panFn);
-
-  function panFn() {
-    d3.select('.chart')
-      .attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
-  }
-
-  var bubble = d3.scaleLinear()
+  
+  var bubble = d3.scale.linear()
   	.range([5,40])
-  	.domain(d3.extent(data, function(d) { return parseFloat(d[params['iaxis']]); })).nice();
+  	.domain(d3.extent(data, function(d) { return parseFloat(d[params['baxis']]); })).nice();
+ 
+  var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom")
+      .tickSize(0)
+      .tickPadding(6);
+
+  var yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left");
 	
   svg.selectAll(".circle")
       .data(data)
@@ -293,96 +187,28 @@ draw = function(data, vis_width, vis_height, params) {
       .attr("class", "circle")
       .attr("cx", function(d) { return x(parseFloat(d[params['xaxis']])); })
       .attr("cy", function(d) { return y(parseFloat(d[params['yaxis']])); })
-      .attr("r", function(d) { return (params['iaxis'] != null && params['iaxis'].length > 0) ? bubble(parseFloat(d[params['iaxis']])) : 10; })
-      .attr("selected", 0)
+      .attr("r", function(d) { return params['baxis'].length > 0 ? bubble(parseFloat(d[params['baxis']])) : 5; })
       .style("fill", function(d) {return d3.interpolateSpectral(1 -(classes.indexOf(d[params['caxis']])/count)); })
   		.on("mouseover", function(d) {
     				d3.select(this)
           		.transition().duration(200)
-    				.style("stroke", "black")
+          		.style("fill-opacity", 1)
+    					.style("stroke", "black")
     
-    				var label = params['xaxis']+": "+d[params['xaxis']] + 
-                                "<br/>" + params['yaxis']+": "+d[params['yaxis']]
+    				var label = params['laxis']+": "+d[params['laxis']] + "<br/>" +
+    						params['lataxis']+": "+d[params['lataxis']] + "<br/>" +
+    						params['lonaxis']+": "+d[params['lonaxis']] + "<br/>" +
+                				params['baxis']+": "+d[params['baxis']] + "<br/>" +
+    						params['caxis']+": "+d[params['caxis']];
 
-                      if (params['baxis']!=null &&  params['baxis'].length>0) {
-                        label = label + "<br/>" + params['baxis']+": "+d[params['baxis']]
-                        } 
-                      if (params['caxis']!=null &&  params['caxis'].length>0) {
-                        label = label + "<br/>" + params['caxis']+": "+d[params['caxis']];
-                        }
-                      if (params['iaxis']!=null &&  params['iaxis'].length>0) {
-                        label = label + "<br/>" + params['iaxis']+": "+d[params['iaxis']]
-                        } 
-                return showDetails(label,this);})
-          .on("mouseout", function(d) {
-                d3.select(this)
+            return showDetails(label,this);})
+      .on("mouseout", function(d) {
+    				d3.select(this)
           		.transition().duration(200)
-    				.style("stroke", "white")
+          		.style("fill-opacity", 0.5)
+    					.style("stroke", "white")
     				return hideDetails();})
-          .on("click", function(d) {
-                d3.select(this)
-                    .attr("selected", 1 - parseInt(this.getAttribute("selected")))
-                    .attr("class", parseInt(this.getAttribute("selected")) ? "circle_selected" : "circle")
-                    .style("fill", parseInt(this.getAttribute("selected")) ? "red" : d3.interpolateSpectral(1 -(classes.indexOf(d[params['caxis']])/count)) )
-                })
-    
-    function brushended() {
-      var s = d3.event.selection;
-      if (!s) {
-        if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
-
-        x.domain(d3.extent(data, function(d) { return parseFloat(d[params['xaxis']]); })).nice();
-        y.domain(d3.extent(data, function(d) { return parseFloat(d[params['yaxis']]); })).nice();
-
-        d3.select('.chart')
-          .attr('transform', 'translate(0,0) scale(1)');
-      } else {
-        x.domain([s[0][0], s[1][0]].map(x.invert, x));
-        y.domain([s[1][1], s[0][1]].map(y.invert, y));
-        svg.select(".brush_zoom").call(brush_zoom.move, null);
-      }
-      zoom();
-    }
-    
-    function idled() {
-      idleTimeout = null;
-    }
-    
-    function zoom() {
-      var t = svg.transition().duration(750);
-      svg.select(".axis--x").transition(t).call(xAxis);
-      svg.select(".axis--y").transition(t).call(yAxis);
-      svg.selectAll("circle").transition(t)
-          .attr("cx", function(d) { return x(parseFloat(d[params['xaxis']])); })
-          .attr("cy", function(d) { return y(parseFloat(d[params['yaxis']])); });
-    }
-
-    function get_nearest(input,element) {
-        console.log(input);
-        console.log(element);
-    debugger;    
-    }
-
-    // Create numerical inputs for number of histogram bins.
-    $("#vis").append("<div id='select_toolbar'></div>");
-    var dim = 'scope';
-    params['scopeaxis'] = 20;
-    // create the input 
-    $("#select_toolbar").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>Include nearest </label><input type='number' min="+0+" max="+1000+" value="+params['scopeaxis']+" id='"+dim+"-var'><label class='label_toolbar' for='"+dim+"-var'> nodes.</label>")
-                                      
-    // handle change to inputs, wrap in anonymous function so the pickers dont clash
-    $("#"+dim+"-var").change(function(dim) {
-      return function() {
-        var newVar = $("#"+dim+"-var").val();
-        var newVar = $("#"+dim+"-var").val();
-        params[dim+'axis'] = newVar;
-        params[dim+'axislabel'] = newVar;
-        CivisResult.saveParams(params);
-
-        d3.selectAll(".circle_selected")
-            .each(function(d) {get_nearest(data,d)})
-      }
-    }(dim));
+   
 }
 
 var showDetails = function(data, element) {
@@ -410,14 +236,13 @@ var createToolbar = function(data, params) {
   // an array of the column names in the original data source
   var columns = Object.keys(data[0]);
   // set up toolbar
-  $("#vis").prepend("<div id='toolbar' width='700px'></div>");
+  $("#vis").prepend("<div id='toolbar'></div>");
   // create pickers for both the x and y axis
-  var dimensions = ['x', 'y', 'c', 'b', 'i'];
-  var toolbar_labels = ['X axis', 'Y axis', '#Clusters', 'Labels', 'Importance'];
+  var dimensions = ['l', 'lat', 'lon', 'b', 'c'];
+  var toolbar_labels = ['Label', 'Latitude', 'Longitude', 'Bubble', 'Color'];
 	
   params['caxis'] = {};
   params['baxis'] = {};
-  params['iaxis'] = {};
   for(var i_dim in dimensions) {
     var dim = dimensions[i_dim];
     var label = toolbar_labels[i_dim];
@@ -437,10 +262,6 @@ var createToolbar = function(data, params) {
         d3.selectAll("text").remove()
         d3.selectAll(".tick").remove()
         d3.selectAll(".axis").remove()
-        d3.selectAll(".label_toolbar").remove()
-        d3.selectAll(".circle_selected").remove()
-        d3.selectAll("#select_toolbar").remove()
-
         var newVar = $("#"+dim+"-var").val();
         params[dim+'axis'] = newVar;
         params[dim+'axislabel'] = newVar;
