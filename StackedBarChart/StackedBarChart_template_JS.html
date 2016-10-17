@@ -95,41 +95,49 @@ body, html { overflow: scroll; height: 100% }
         <div class="tab-pane" id="b_tab">
             <h1>Info</h1>
           	<h2>Introduction</h2>
-          	<p>This section provides a manual for the Horizontal Bar Chart visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<p>This section provides a manual for the Stacked Bar Chart visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Toolbar_empty.png?raw=true">
-    				<ul>
-              <li><b>Revenue:</b> A dropdown menu to select the column in the data table that contains the values for the property you want to plot. These values determine the lengths of the bars. </li>
-              <li><b>Movie name:</b> A dropdown menu to select the column in the data table that contains the names of the categories. There should be one label for each bar.</li>
-              <li><b>Sort by:</b> An input form to specifiy how to sort the data. You may choose to sort the values themselves or their labels. If the labels are strings, they will be sorted alphabetically. You can sort along any column in the data, even if it is not the property selected under <i>Property (y)</i>.</li>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/StackedBarChart/StackedBarChart_Metatoolbar_empty.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second toolbar should appear:</p>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/StackedBarChart/StackedBarChart_Toolbar_empty.png?raw=true">
+    		 <ul>
+              <li><b>Category:</b> A dropdown menu to select the column in the data table that contains the primary category membership labels. The graph will contain a bar for each unique category. </li>
+              <li><b>Subcategory:</b> A dropdown menu to select the column in the data table that contains the subategory membership labels. Each bar will be subdivided along these subcategories.</li>
+              <li><b>Aggregate:</b> A dropdown menu to select the the aggregate function. The functions that are currently supported are: sum, average, count, min and max.</li>
+              <li><b>Property:</b> A dropdown menu to select the column in the data that contains the values for the property of interest.</li>
+              <li><b>Draw Graph:</b> Once you have selected the category, subcategory, the aggregate functiona nd the property of intereset, click this button to retrieve the necessary data and to start drawing the graph.</p>            
             </ul>
           	<h2>Data table</h2>
-          	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_table.png?raw=true">
-          	<p>The plot will generate a bar for each row of the table. You are responsible for removing duplicate rows. You will need at least one column with category labels and at least one column with corresponding values. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/StackedBarChart/StackedBarChart_table.png?raw=true">
+          	<p>You will need at least one column with category labels, one column with subcategory labels and at least one column with property values. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
           	<h2>Known issues</h2>
-          	<p>Even in the horizontal configuration, the number of bars that can be plotted is limited (currently 277). Possible fix: make def_vis_height dependent on the number of rows in the input data set.</p>
+          	<p>The number of bars that can be plotted is limited (currently 277). Possible fix: make def_vis_height dependent on the number of rows in the input data set.</p>
             <bcontent></bcontent>
         </div>
       
       	<div class="tab-pane" id="c_tab">
             <h1>Example</h1>
           	<h2>Introduction</h2>
-          	<p>Here we show an example of what the horizontal bar chart should look like. We will plot the values stored in a sample data set which can be accessed from Platform at pcooman.pos_neg_values.</p>
+          	<p>Here we show an example of what the Stacked Bar Chart should look like. We will plot the values stored in a sample data set which can be accessed from Platform at pcooman.uninsured_xtab.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_table.png?raw=true">
-          	<p>In this table, the <i>name</i> column contains the bar labels and the <i>value</i> column contains the length (or height) of the bars.</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/StackedBarChart/StackedBarChart_table.png?raw=true">
           	<h2>Sample plot</h2>
-          	<p>After selecting <i>value</i> and <i>name</i> from the <i>Property (y)</i> and <i>Label (x)</i> drop down menus repsectively, your plot should look something like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_unSorted.png?raw=true">
-           <p>Bold, white labels located at the end of each bar show the height of the bar (= value)</p>
-           <p>We can sort the bars according to their values,</p>
-           <img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Sorted_value.png?raw=true">
-           <p>or according to their labels (alphabetically):<p>
-           <img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Sorted_name.png?raw=true">
-           <p>Finally, we can change the orientation of the bars:</p>
-           <img src = "https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Vertical.png?raw=true">
-           <p>Note that the width of the bars has been adjusted automatically such that the figure uses the entire width of the screen and shows all records in the data set.</p>
+          	<p>For this example, we chose the <i>state_code</i> column as the primary category labels, the <i>age_bucket</i> column as subcategory labels, <i>sum</i> as the aggregate function and column <i>people_2016</i> as the property of interest.</p>
+           <p>If you follow these choices, the resulting plot should resemble the one shown below:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/StackedBarChart/StackedBarChart_toolbars_full.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/StackedBarChart/StackedBarChart_Example.png?raw=true">
+           <p>The <i>Sort by:</i> dropdown menu let's us select from four options: category, subcategory, property and right_edge. Category, subcategory and property correspond to the selections made earlier (i.e. state_code, age_bucket and people_2016). The 'right_edge' option denotes the cumulative sum of the aggregated property values. Typically, you will sort either by the primary category or by right_edge.</p> 
+           <p>Sorting the data by 'right_edge' in decreasing order should result in the following graph:</p>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/StackedBarChart/StackedBarChart_SortedByValue.png?raw=true">
+           <p>Hovering over a bar segment should highlight the corresponding bar segment and bring up a tooltip showing all corresponding values:</p>
+           <img src = "https://github.com/pcooman/d3_tools/blob/master/StackedBarChart/StackedBarChart_tooltip.png?raw=true">
             <ccontent></ccontent>
         </div>
       
