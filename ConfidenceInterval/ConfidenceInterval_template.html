@@ -82,41 +82,44 @@ body, html { overflow: scroll; height: 100% }
         <div class="tab-pane" id="b_tab">
             <h1>Info</h1>
           	<h2>Introduction</h2>
-          	<p>This section provides a manual for the Horizontal Bar Chart visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<p>This section provides a manual for the Confidence Interval visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Toolbar_empty.png?raw=true">
-    				<ul>
-              <li><b>Revenue:</b> A dropdown menu to select the column in the data table that contains the values for the property you want to plot. These values determine the lengths of the bars. </li>
-              <li><b>Movie name:</b> A dropdown menu to select the column in the data table that contains the names of the categories. There should be one label for each bar.</li>
-              <li><b>Sort by:</b> An input form to specifiy how to sort the data. You may choose to sort the values themselves or their labels. If the labels are strings, they will be sorted alphabetically. You can sort along any column in the data, even if it is not the property selected under <i>Property (y)</i>.</li>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_Toolbar_Empty.png?raw=true">
+    		 <ul>
+              <li><b>Label:</b> A dropdown menu to select the column in the data table that contains the labels. These will be listed on the left side of the plot.</li>
+              <li><b>Expected value:</b> A dropdown menu to select the column in the data table that contains the mean value of the property of interest. This value is represented in the plot by a red dot.</li>
+              <li><b>Lower bound:</b> A dropdown menu to select the column in the data table that contains the values of the lower bound of the propety of interest. Typically, these would correspond to the lower bounds of the 95% or 80% confidence interval.</li>
+              <li><b>Upper bound:</b> A dropdown menu to select the column in the data table that contains the values of the upper bound of the propety of interest. Typically, these would correspond to the upper bounds of the 95% or 80% confidence interval.</li>
+              <li><b>Sort by:</b> An dropdown menu to select the column in the data to sort by.  form to specifiy how to sort the data. You may choose to sort the values themselves or their labels. If the labels are strings, they will be sorted alphabetically. You can sort along any column in the data, even if it is not the property selected under <i>Property (y)</i>.</li>
+              <li><b>Order:</b> A dropdown menu to specify whether the dat should be sorted in ascending or descending order of the property selected in the <i>Sort by</i> menu.</li>
             </ul>
           	<h2>Data table</h2>
-          	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_table.png?raw=true">
-          	<p>The plot will generate a bar for each row of the table. You are responsible for removing duplicate rows. You will need at least one column with category labels and at least one column with corresponding values. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_Table.png?raw=true">
+          	<p>The plot will generate a bar for each row of the table. You are responsible for removing duplicate rows. You will need at least one column with labels, one column with mean values and one column each for the lower and upper bounds. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
           	<h2>Known issues</h2>
-          	<p>Even in the horizontal configuration, the number of bars that can be plotted is limited (currently 277). Possible fix: make def_vis_height dependent on the number of rows in the input data set.</p>
+          	<p>The number of bars that can be plotted is limited (currently 277). Possible fix: make def_vis_height dependent on the number of rows in the input data set.</p>
             <bcontent></bcontent>
         </div>
       
       	<div class="tab-pane" id="c_tab">
             <h1>Example</h1>
           	<h2>Introduction</h2>
-          	<p>Here we show an example of what the horizontal bar chart should look like. We will plot the values stored in a sample data set which can be accessed from Platform at pcooman.pos_neg_values.</p>
+          	<p>Here we show an example of what the Confidence Interval chart should look like. We will plot the values stored in a sample data set which can be accessed from Platform at pcooman.movies.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_table.png?raw=true">
-          	<p>In this table, the <i>name</i> column contains the bar labels and the <i>value</i> column contains the length (or height) of the bars.</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_Table.png?raw=true">
+          	<p>In this table, the <i>movie_name</i> column contains the labels, the <i>predicted_gross_revenue_rf</i> column contains the expected value, the <i>predicted_gross_revenue_95_lower</i> column contains the lower bound values and the <i>predicted_gross_revenue_95_upper2</i> columns contains the upper bound values.</p>
           	<h2>Sample plot</h2>
-          	<p>After selecting <i>value</i> and <i>name</i> from the <i>Property (y)</i> and <i>Label (x)</i> drop down menus repsectively, your plot should look something like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_unSorted.png?raw=true">
-           <p>Bold, white labels located at the end of each bar show the height of the bar (= value)</p>
+          	<p>After selecting <i>Label</i>, <i>Expected value</i>, <i>Lower bound</i> and <i>Upperbound</i> drop down menus, your plot should look something like this:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_Example.png?raw=true">
            <p>We can sort the bars according to their values,</p>
-           <img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Sorted_value.png?raw=true">
+           <img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_SortedByValue.png?raw=true">
            <p>or according to their labels (alphabetically):<p>
-           <img src="https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Sorted_name.png?raw=true">
-           <p>Finally, we can change the orientation of the bars:</p>
-           <img src = "https://github.com/pcooman/d3_tools/blob/master/HorBarChart/HorBarChart_Vertical.png?raw=true">
-           <p>Note that the width of the bars has been adjusted automatically such that the figure uses the entire width of the screen and shows all records in the data set.</p>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_SortedByName.png?raw=true">
+           <p>Hovering over a confidence interval will highight the bar and bring up a tooltip listing the relvant values for that record:</p>
+           <img src = "https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_TooltipBar.png?raw=true">
+           <p>Finally, hovering over a red dot adds a vertical red line originating at the selected node.</p>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceIntrval_TooltipMean.png?raw=true">
             <ccontent></ccontent>
         </div>
       
