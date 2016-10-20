@@ -1,0 +1,1116 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://rawgit.com/jashkenas/underscore/master/underscore-min.js"></script>  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="//rawgit.com/jasondavies/d3-cloud/v1.2.1/build/d3.layout.cloud.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<script src="https://s3.amazonaws.com/civis-console/javascript-client/v0.3.0/civis_client.min.js"></script>  
+
+<style>
+input {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+  
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 130;
+}
+ 
+.slope_line {
+  stroke-width: 2;
+  opacity: 0.5;
+}
+
+.slope_line_selected {
+  stroke-width: 3;
+  opacity: 1;
+  stroke: orange !important;
+}
+
+.slope_line_notselected {
+  stroke-width: 2;
+  opacity: 0.5;
+  stroke: silver !important;
+}
+
+.trend_line {
+  stroke: black;
+  stroke-width: 3;
+  opacity: 1;
+}
+ 
+.circle_pre {
+  stroke: black;
+  stroke-width: 2;
+}
+
+.circle_pre_selected {
+  stroke: orange;
+  stroke-width: 3;
+}
+
+.circle_pre_notselected {
+  stroke: silver;
+  stroke-width: 2;
+}
+
+.circle_post {
+  stroke: black;
+  stroke-width: 2;
+}
+
+.circle_post_selected {
+  stroke: orange;
+  stroke-width: 3;
+}
+
+.circle_post_notselected {
+  stroke: silver;
+  stroke-width: 2;
+}
+
+.label_pre {
+  font-size: 10px;  
+}
+
+.label_pre_selected {
+  font-size: 10px;  
+  stroke: orange;
+}
+
+.label_pre_notselected {
+  font-size: 10px;  
+  stroke: silver;
+}
+
+.label_post {
+  font-size: 10px;
+}
+
+.label_post_selected {
+  font-size: 10px;  
+  stroke: orange;
+}
+
+.label_post_notselected {
+  font-size: 10px;  
+  stroke: silver;
+}
+  
+.chart {
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+  
+body, html { overflow: scroll; height: 100% }
+
+.loader {
+    transform-origin: center center;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {transform: rotate(0deg); }
+    100% {transform: rotate(360deg); }
+}  
+</style>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+      
+        <div class="tab-pane active" id="a_tab">
+            <h1>Graph</h1>
+            <acontent><div id='vis'>
+              <svg class='chart-outer'><g class="chart"></g></svg>
+            </div>
+            </acontent>
+        </div>
+      
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<h2>Introduction</h2>
+          	<p>This section provides a manual for the Slopegraph visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<h2>Inputs</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_Toolbar_empty.png?raw=true">
+    				<ul>
+              <li><b>Labels:</b> A dropdown menu to select the column in the data table that contains the labels. These will appear both to the left of the 'Pre' axis and to the right of the 'Post' axis.</li>
+              <li><b>Pre:</b> A dropdown menu to select the column in the data table that contains the values during the 'Pre' timeframes.</li>
+              <li><b>Post:</b> A dropdown menu to select the column in the data table that contains the values during the 'Post' timeframes.</li>
+              <li><b>Select:</b> A dropdown menu to select the label that you want to highlight. This dropdown menu will be populated after you 
+                    select a <i>Labels</i> column and will contain all unique Label values. Selecting a label will highlight the 'Pre' and 'Post' 
+                    values index the graph, along witht their slope line. Any colliding lables will be faded out. Alternatively, you can click on any 
+                    label, slope line or circle to select (and highlight) the corresponding elements. You can remove the selection and return to the original graph by select 'none' from the <i>Selection</i> menu.</li>
+              <li><b>Graph height:</b> An input menu to adjust the height of the graph. This can be used to eliminate to reduce the occurence of label collisions. </li>
+            </ul>
+          	<h2>Data table</h2>
+          	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_table.png?raw=true">
+          	<p>The graph will plot a slope line for each row in the table. You are responsible for removing duplicate rows. You will need at 
+                least one column with label names, one column with 'Pre' values and one column with 'Post' values. The table can contain additional columns, 
+                the toolbar will let you select the columns that are relevant to the plot. The 'Pre' and 'Post' values are shown in round brackets next to the labels.
+                Slope lines with a positive trend are drawn in red, while slopes with a negative trend are colored red. Finally, a thick black line shows the average trend.</p>
+          	<h2>Known issues</h2>
+          	<p>There can still be a lot of label collisions, even at high graph heights! We may need an alternative solution here.</p>
+            <bcontent></bcontent>
+        </div>
+      
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+          	<h2>Introduction</h2>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. Here, we plot the change in the average uninsurance rates for each state.</p>
+            <h2>Data table</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_table.png?raw=true">
+          	<h2>Sample plot</h2>
+          	<p>We select 'state_code' from the <i>Labels</i> dropdown menu, 'scores_2013' from the 'Pre' menu and 'scores_2016' from the 'Post' menu. 
+            This selection should result in the following graph:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_Example.png?raw=true">
+           <p>We can observe a large number of label collisions, especially towards the bottom of the graph:</p> 
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_Example_unselected.png?raw=true">
+            <p>We can isolate the change for a particular state (e.g. Wyoming) by selecting it from the <i>Select</i> menu or by clicking on its label in the graph. This fades out any overlapping labels:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_Example_selected.png?raw=true">
+           <p>Alternatively, we may increase the graph height using the corresponding dropdown menu:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_Example_IncreasedHeight.png?raw=true">
+           <ccontent></ccontent>
+        </div>
+      
+    </div>
+</div>
+
+<script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+
+draw_graph = function(data, vis_width, vis_height, params) {
+
+    debugger;
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+
+      var vis_width = 1000;
+
+
+if (params['laxis'] != null && params['baxis'] != null && params['aaxis'] != null) {
+      var margin = {top: 10, right: 20, bottom: 60, left: 75};
+      var width = vis_width - margin.left - margin.right,
+          height = parseFloat(params['ghaxis']) - margin.top - margin.bottom;
+      d3.select('.chart-outer')
+        .attr("width", vis_width)
+        .attr("height", parseFloat(params['ghaxis']));
+      var chart = d3.select(".chart")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      
+      var svg = d3.select(".chart-outer").append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      
+      var arr_pre = data.map(function(d) { return parseFloat(d['values_pre']); });
+      var arr_post = data.map(function(d) { return parseFloat(d['values_post']); })  
+      var min_pre = d3.min(arr_pre)
+      var min_post = d3.min(arr_post)
+      var max_pre = d3.max(arr_pre)
+      var max_post = d3.max(arr_post)
+
+      var sum_pre = arr_pre.reduce(function(a, b) { return a + b; });
+      var avg_pre = sum_pre / arr_pre.length;
+      var sum_post = arr_post.reduce(function(a, b) { return a + b; });
+      var avg_post = sum_post / arr_post.length;
+    
+      var y = d3.scale.linear()
+        .range([height, 50])
+        .domain([d3.min([min_pre,min_post]),
+                d3.max([max_pre,max_post])]);
+      
+      if (params['haxis'] != 'none') {
+          var selected = data.map(function(d) { return d['labels'];})
+          var selected_index = selected.indexOf(params['haxis'])
+          var selected_pre = parseFloat(data[selected_index]['values_pre'])
+          var selected_post = parseFloat(data[selected_index]['values_post'])
+      }
+
+      svg.selectAll(".slope_line")
+            .data(data)
+        .enter().append("line")
+            .attr("class", function(d) {
+                    if (params['haxis'] != 'none') {
+                        var classed = (params['haxis'] == d['labels']) ? "slope_line_selected" : "slope_line_notselected" 
+                    } else {
+                        var classed = "slope_line"
+                    }
+                    return classed               
+                })
+            .attr("x1", 200)
+            .attr("y1", function(d) { return y(parseFloat(d['values_pre'])); })
+            .attr("x2", width - 400)
+            .attr("y2", function(d) { return y(parseFloat(d['values_post'])); })
+            .attr("stroke", function(d) {return (parseFloat(d['values_post']) < parseFloat(d['values_pre'])) ? "blue" : "red" ; })
+            .on("click", function(d){
+                params['haxis'] = d['labels']
+                CivisResult.saveParams(params);
+                d3.selectAll(".circle_pre").remove()
+                d3.selectAll(".circle_pre_selected").remove()
+                d3.selectAll(".circle_pre_notselected").remove()
+                d3.selectAll(".circle_post").remove()
+                d3.selectAll(".circle_post_selected").remove()
+                d3.selectAll(".circle_post_notselected").remove()
+                d3.selectAll(".slope_line").remove()
+                d3.selectAll(".slope_line_selected").remove()
+                d3.selectAll(".slope_line_notselected").remove()
+                d3.selectAll(".trend_line").remove()
+                d3.selectAll(".label_pre").remove()
+                d3.selectAll(".label_pre_selected").remove()
+                d3.selectAll(".label_pre_notselected").remove()
+                d3.selectAll(".label_post").remove()
+                d3.selectAll(".label_post_selected").remove()
+                d3.selectAll(".label_post_notselected").remove()
+                d3.selectAll(".axis_label").remove()
+                draw_graph(data, def_vis_width, def_vis_height, params);         
+            })
+
+      svg.append("line")
+           .attr("class","trend_line")
+           .attr("x1", 200)
+           .attr("y1", y(avg_pre))
+           .attr("x2", width - 400)
+           .attr("y2", y(avg_post))   
+
+      svg.append("text")
+           .attr("class","axis_label")
+           .attr("x",200)
+           .attr("y", 10)
+           .attr("font-size", 14)
+           .attr("font-weight","bold")
+           .attr("text-anchor","middle")
+           .text("PRE") 
+  			
+      svg.append("text")
+           .attr("class","axis_label")
+           .attr("x",width-400)
+           .attr("y", 10)
+           .attr("font-size", 14)
+           .attr("font-weight","bold")
+           .attr("text-anchor","middle")
+           .text("POST") 
+    	
+      svg.selectAll(".circle_pre")
+          .data(data)
+        .enter().append("circle")
+          .attr("class", function(d) {
+                    if (params['haxis'] != 'none') {
+                        var classed = (params['haxis'] == d['labels']) ? "circle_pre_selected" : "circle_pre_notselected" 
+                    } else {
+                        var classed = "circle_pre"
+                    }
+                    return classed               
+                })
+          .attr("cx", 200)
+          .attr("cy", function(d) { return y(parseFloat(d['values_pre'])); })
+          .attr("r", 3)
+          .style("fill", "white")
+            .on("click", function(d){
+                params['haxis'] = d['labels']
+                CivisResult.saveParams(params);
+                d3.selectAll(".circle_pre").remove()
+                d3.selectAll(".circle_pre_selected").remove()
+                d3.selectAll(".circle_pre_notselected").remove()
+                d3.selectAll(".circle_post").remove()
+                d3.selectAll(".circle_post_selected").remove()
+                d3.selectAll(".circle_post_notselected").remove()
+                d3.selectAll(".slope_line").remove()
+                d3.selectAll(".slope_line_selected").remove()
+                d3.selectAll(".slope_line_notselected").remove()
+                d3.selectAll(".trend_line").remove()
+                d3.selectAll(".label_pre").remove()
+                d3.selectAll(".label_pre_selected").remove()
+                d3.selectAll(".label_pre_notselected").remove()
+                d3.selectAll(".label_post").remove()
+                d3.selectAll(".label_post_selected").remove()
+                d3.selectAll(".label_post_notselected").remove()
+                d3.selectAll(".axis_label").remove()
+                draw_graph(data, def_vis_width, def_vis_height, params);
+            })
+    
+      svg.selectAll(".label_pre")
+          .data(data)
+        .enter().append("text")
+          .attr("class", function(d) {
+                    if (params['haxis'] != 'none') {
+                        var classed = (params['haxis'] == d['labels']) ? "label_pre_selected" : "label_pre_notselected" 
+                    } else {
+                        var classed = "label_pre"
+                    }
+                    return classed               
+                })
+          .attr("x", 190)
+          .attr("y", function(d) { return 4+y(parseFloat(d['values_pre'])); })
+          .attr("text-anchor",  "end")
+          .style("opacity", function(d) {
+              return (params['haxis'] != 'none' 
+                        && Math.pow(y(parseFloat(d['values_pre'])) - y(selected_pre),2) < 100
+                        && d['labels'] != params['haxis']) ? 0 : 1;})
+          .text(function(d) {return d['labels'] +" (" +parseFloat(d['values_pre']).toFixed(2)+ ")"})
+            .on("click", function(d){
+                params['haxis'] = d['labels']
+                $("#h-var").val(params['haxis']);
+                CivisResult.saveParams(params);
+                d3.selectAll(".circle_pre").remove()
+                d3.selectAll(".circle_pre_selected").remove()
+                d3.selectAll(".circle_pre_notselected").remove()
+                d3.selectAll(".circle_post").remove()
+                d3.selectAll(".circle_post_selected").remove()
+                d3.selectAll(".circle_post_notselected").remove()
+                d3.selectAll(".slope_line").remove()
+                d3.selectAll(".slope_line_selected").remove()
+                d3.selectAll(".slope_line_notselected").remove()
+                d3.selectAll(".trend_line").remove()
+                d3.selectAll(".label_pre").remove()
+                d3.selectAll(".label_pre_selected").remove()
+                d3.selectAll(".label_pre_notselected").remove()
+                d3.selectAll(".label_post").remove()
+                d3.selectAll(".label_post_selected").remove()
+                d3.selectAll(".label_post_notselected").remove()
+                d3.selectAll(".axis_label").remove()
+                draw_graph(data, def_vis_width, def_vis_height, params);
+            })
+    
+      svg.selectAll(".circle_post")
+          .data(data)
+        .enter().append("circle")
+          .attr("class", function(d) {
+                    if (params['haxis'] != 'none') {
+                        var classed = (params['haxis'] == d['labels']) ? "circle_post_selected" : "circle_post_notselected" 
+                    } else {
+                        var classed = "circle_post"
+                    }
+                    return classed               
+                })
+          .attr("cx", width - 400)
+          .attr("cy", function(d) { return y(parseFloat(d['values_post'])); })
+          .attr("r", 3)
+          .style("fill", "white")
+            .on("click", function(d){
+                params['haxis'] = d['labels']
+                CivisResult.saveParams(params);
+                d3.selectAll(".circle_pre").remove()
+                d3.selectAll(".circle_pre_selected").remove()
+                d3.selectAll(".circle_pre_notselected").remove()
+                d3.selectAll(".circle_post").remove()
+                d3.selectAll(".circle_post_selected").remove()
+                d3.selectAll(".circle_post_notselected").remove()
+                d3.selectAll(".slope_line").remove()
+                d3.selectAll(".slope_line_selected").remove()
+                d3.selectAll(".slope_line_notselected").remove()
+                d3.selectAll(".trend_line").remove()
+                d3.selectAll(".label_pre").remove()
+                d3.selectAll(".label_pre_selected").remove()
+                d3.selectAll(".label_pre_notselected").remove()
+                d3.selectAll(".label_post").remove()
+                d3.selectAll(".label_post_selected").remove()
+                d3.selectAll(".label_post_notselected").remove()
+                d3.selectAll(".axis_label").remove()
+                draw_graph(data, def_vis_width, def_vis_height, params);
+            })
+    
+      svg.selectAll(".label_post")
+          .data(data)
+        .enter().append("text")
+          .attr("class", function(d) {
+                    if (params['haxis'] != 'none') {
+                        var classed = (params['haxis'] == d['labels']) ? "label_post_selected" : "label_post_notselected" 
+                    } else {
+                        var classed = "label_post"
+                    }
+                    return classed               
+                })
+          .attr("x", width - 390)
+          .attr("y", function(d) { return 4+y(parseFloat(d['values_post'])); })
+          .attr("text-anchor",  "start")
+          .style("opacity", function(d) {
+              return (params['haxis'] != 'none' 
+                        && Math.pow(y(parseFloat(d['values_post'])) - y(selected_post),2) < 100
+                        && d['labels'] != params['haxis']) ? 0 : 1;})
+          .text(function(d) {return "(" +parseFloat(d['values_post']).toFixed(2)+ ") " + d['labels']})
+            .on("click", function(d){
+                params['haxis'] = d['labels']
+                CivisResult.saveParams(params);
+                d3.selectAll(".circle_pre").remove()
+                d3.selectAll(".circle_pre_selected").remove()
+                d3.selectAll(".circle_pre_notselected").remove()
+                d3.selectAll(".circle_post").remove()
+                d3.selectAll(".circle_post_selected").remove()
+                d3.selectAll(".circle_post_notselected").remove()
+                d3.selectAll(".slope_line").remove()
+                d3.selectAll(".slope_line_selected").remove()
+                d3.selectAll(".slope_line_notselected").remove()
+                d3.selectAll(".trend_line").remove()
+                d3.selectAll(".label_pre").remove()
+                d3.selectAll(".label_pre_selected").remove()
+                d3.selectAll(".label_pre_notselected").remove()
+                d3.selectAll(".label_post").remove()
+                d3.selectAll(".label_post_selected").remove()
+                d3.selectAll(".label_post_notselected").remove()
+                d3.selectAll(".axis_label").remove()
+                draw_graph(data, def_vis_width, def_vis_height, params);
+            })
+                                    var dim = 'h'
+                                    $("#h-var").change(function(dim) {
+                                      return function() {
+                                        debugger;
+                                        d3.selectAll(".circle_pre").remove()
+                                        d3.selectAll(".circle_pre_selected").remove()
+                                        d3.selectAll(".circle_pre_notselected").remove()
+                                        d3.selectAll(".circle_post").remove()
+                                        d3.selectAll(".circle_post_selected").remove()
+                                        d3.selectAll(".circle_post_notselected").remove()
+                                        d3.selectAll(".slope_line").remove()
+                                        d3.selectAll(".slope_line_selected").remove()
+                                        d3.selectAll(".slope_line_notselected").remove()
+                                        d3.selectAll(".trend_line").remove()
+                                        d3.selectAll(".label_pre").remove()
+                                        d3.selectAll(".label_pre_selected").remove()
+                                        d3.selectAll(".label_pre_notselected").remove()
+                                        d3.selectAll(".label_post").remove()
+                                        d3.selectAll(".label_post_selected").remove()
+                                        d3.selectAll(".label_post_notselected").remove()
+                                        d3.selectAll(".axis_label").remove()
+                  
+                                        var newVar = $("#h-var").val();
+                                        params['haxis'] = newVar;
+                                        params['haxislabel'] = newVar;
+                                        CivisResult.saveParams(params);
+                                        draw_graph(data,def_vis_width, def_vis_height, params);
+                                      }
+                                    }(dim));
+                                    
+                                    var dim = 'gh'
+                                    $("#gh-var").change(function(dim) {
+                                        return function() {
+                                          d3.selectAll(".circle_pre").remove()
+                                          d3.selectAll(".circle_pre_selected").remove()
+                                          d3.selectAll(".circle_pre_notselected").remove()
+                                          d3.selectAll(".circle_post").remove()
+                                          d3.selectAll(".circle_post_selected").remove()
+                                          d3.selectAll(".circle_post_notselected").remove()
+                                          d3.selectAll(".slope_line").remove()
+                                          d3.selectAll(".slope_line_selected").remove()
+                                          d3.selectAll(".slope_line_notselected").remove()
+                                          d3.selectAll(".trend_line").remove()
+                                          d3.selectAll(".label_pre").remove()
+                                          d3.selectAll(".label_pre_selected").remove()
+                                          d3.selectAll(".label_pre_notselected").remove()
+                                          d3.selectAll(".label_post").remove()
+                                          d3.selectAll(".label_post_selected").remove()
+                                          d3.selectAll(".label_post_notselected").remove()
+                                          d3.selectAll(".axis_label").remove()
+                                
+                                          var newVar = $("#gh-var").val();
+                                          var newVar = $("#gh-var").val();
+                                          params['ghaxis'] = newVar;
+                                          params['ghaxislabel'] = newVar;
+                                          CivisResult.saveParams(params);
+
+                                        draw_graph(data,def_vis_width, def_vis_height, params);
+                                        }
+                                    }(dim));
+
+  }
+    
+}
+
+query_data = function(client,data,def_vis_width,def_vis_height,params) {
+  
+  if (params['laxis'] != null && params['faxis'] != null && params['baxis'] != null && params['aaxis'] != null) {
+    
+    start_loader(150,300,175)
+    
+    var q = "select "+params['laxis']+" as labels, "+
+            params['faxis']+"("+params['baxis']+") as values_pre, "+
+            params['faxis']+"("+params['aaxis']+") as values_post "+
+            "from "+params['saxis']+"."+params['taxis']+" "+
+            "group by 1 "+
+            "order by 1 asc"
+    
+    client.request("/scripts/"+params['scriptId'],{
+          method: "PATCH",
+          data: {
+              'sql': q
+               }
+          }).then(function(result) {
+            var scriptId = result.data.id;
+            
+            client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                           .then(function(result){
+                             return result.data.output[0].path;
+                           }).then(function(dataUrl) {
+              			  d3.csv(dataUrl, function(error, data){
+                                params['url'] = dataUrl;
+                                CivisReport.saveParams(params);
+                             stop_loader();
+
+                                // an array of the column names in the original data source
+                                var columns = Object.keys(data[0]);
+                                
+                                  // create pickers for both the x and y axis
+                                  var dim = ['h'];
+                                  var label = 'Select';
+                                  params['haxis'] = 'none';
+                                  var selection = 
+                                    // create the select dropdown
+                                    $("#toolbar2").append("<div class='form-group'><label class='label_toolbar2' for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option value='none'>none</option></select></div>")
+                                    // set picker to saved param values
+                                    $("#"+dim+"-var").val(params[dim+'axis']);
+                                    // handle change to select, wrap in anonymous function so the pickers dont clash
+
+                                    var selection = _.uniq(data.map(function(d) { return d['labels']; }))
+                                            // populate the dropdown with the columns in the dataset
+                                              for(i_sel in selection) {
+                                                sel_name = selection[i_sel];
+                                                $("#h-var").append("<option value='"+sel_name+"'>"+sel_name+"</option>");
+                                    }
+                                
+                                    // Create numerical inputs for height of graph.
+                                    var dim = 'gh';
+                                    var label = 'Graph height';
+                                    params['ghaxis'] = 1000;
+                                    // create the select dropdown 
+                                    $("#toolbar2").append("<div class='form-group'><label class='label_toolbar2' for='"+dim+"-var'>"+label+":</label><input type='number' min="+0+" max="+1000+" value="+params['ghaxis']+" id='"+dim+"-var'>")
+                                                                      
+                                 draw_graph(data,def_vis_width,def_vis_height,params);
+                            
+                                })
+                        })
+            })
+    }
+}
+
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+start_loader = function(size,Xpos,Ypos) {
+    d3.select(".chart-outer").append("image")
+    .attr("xlink:href","https://civisanalytics.com/assets/civis_logos/Civis-symbol-d4d7147a1bb51c1b53d98f76e1a7ffce.png")    
+    .attr("class","loader")
+    .attr("width", size)
+    .attr("height", size)
+    .attr("x", Xpos)
+    .attr("y", Ypos)
+}
+stop_loader = function() {
+    d3.select(".loader").remove()
+    
+}
+
+var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) {
+   client.request("/databases", {method: "GET"}).then(function(result) {       
+       $("#vis").prepend("<div class='form-group' id='metatoolbar'></div>");
+     	   var db_options = result.data.map(function(d) {return d.name;});
+        var db_id_options = result.data.map(function(d) {return d.id;});
+        var dim = "db"
+        var label = "Source Database"
+        
+        $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option value='32' selected>redshift-general</option></select></div>")
+        // populate the dropdown with the geography types
+        for(i_label in db_options) {
+          db_type = db_options[i_label];
+          db_id_type = db_id_options[i_label];
+          if (db_type != "redshift-general" ){
+          	$("#"+dim+"-var").append("<option value='"+db_id_type+"'>"+db_type+"</option>");
+          }
+        }
+        
+        // set picker to saved param values
+        $("#"+dim+"-var").val(params[dim+'axis']);
+        // handle change to select, wrap in anonymous function so the pickers dont clash
+        $("#"+dim+"-var").change(function(dim) {
+          return function() {
+            d3.select("#s-var").html("");
+            d3.select("#t-var").html("");
+
+            var newVar = $("#"+dim+"-var").val();
+            params[dim+'axis'] = newVar;
+            params[dim+'axislabel'] = newVar;
+            CivisReport.saveParams(params);
+            client.request("/databases/"+params['dbaxis']+"/schemas", {method: "GET"}).then(function(result) {
+                var s_options = result.data.map(function(d) {return d.schema;});
+                for(i_label in s_options) {
+                  s_type = s_options[i_label];
+                  $("#s-var").append("<option value='"+s_type+"'>"+s_type+"</option>");
+                }
+            })
+           }
+         }(dim));
+       
+       var dimensions = ['s'];
+       var toolbar_labels = ['Source Schema'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             d3.select("#t-var").html("");
+
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+             CivisReport.saveParams(params);
+             client.request("/tables", {method: "GET", 
+                                        params:{
+                                                databaseId: params['dbaxis'],
+                                                schema: params['saxis'],
+                                                limit: 50
+                                                }
+                                        })
+            .then(function(result) {
+                var t_options = result.data.map(function(d) {if (d.databaseId == params['dbaxis'] && d.schema == params['saxis']) return d.name;});
+                for(i_label in t_options) {
+                  t_type = t_options[i_label];
+                  $("#t-var").append("<option value='"+t_type+"'>"+t_type+"</option>");
+                }
+             })
+           }
+         }(dim));
+       }
+
+       var dimensions = ['t'];
+       var toolbar_labels = ['Source Table'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+             CivisReport.saveParams(params);
+           }
+         }(dim));
+       }
+     
+     var svg = d3.select("#metatoolbar").append("svg")
+      .attr("width", def_vis_width)
+      .attr("height", 60);
+
+     svg.append('rect')
+      .attr("transform","translate(0,0)")
+   	 .attr('class','form-group')
+      .attr('width', 150)
+      .attr('height', 45)
+      .attr('x', 20)
+      .attr('y', 0)
+      .attr('rx', 20)
+      .attr('ry', 20)
+      .style('fill', 'rgb(31,119,180)')
+      .on("click",  function()  {
+        d3.selectAll("label.label_toolbar1").remove()
+        d3.selectAll("label.label_toolbar2").remove()
+        d3.select("#l-var").html("");
+        d3.select("#f-var").html("");
+        d3.select("#b-var").html("");
+        d3.select("#a-var").html("");
+        d3.select("#h-var").html("");
+        d3.select("#gh-var").html("");
+        d3.select("#l-var").remove();
+        d3.select("#f-var").remove();
+        d3.select("#b-var").remove();
+        d3.select("#a-var").remove();
+        d3.select("#h-var").remove();
+        d3.select("#gh-var").remove();
+        delete params['laxis']
+        delete params['faxis']
+        delete params['baxis']
+        delete params['aaxis']
+        delete params['haxis']
+        delete params['ghaxis']
+        d3.selectAll(".toolbar_rect").remove()
+        d3.selectAll(".toolbar_text").remove()
+        d3.select("#toolbar").remove()
+
+        d3.selectAll(".circle_pre").remove()
+        d3.selectAll(".circle_pre_selected").remove()
+        d3.selectAll(".circle_pre_notselected").remove()
+        d3.selectAll(".circle_post").remove()
+        d3.selectAll(".circle_post_selected").remove()
+        d3.selectAll(".circle_post_notselected").remove()
+        d3.selectAll(".slope_line").remove()
+        d3.selectAll(".slope_line_selected").remove()
+        d3.selectAll(".slope_line_notselected").remove()
+        d3.selectAll(".trend_line").remove()
+        d3.selectAll(".label_pre").remove()
+        d3.selectAll(".label_pre_selected").remove()
+        d3.selectAll(".label_pre_notselected").remove()
+        d3.selectAll(".label_post").remove()
+        d3.selectAll(".label_post_selected").remove()
+        d3.selectAll(".label_post_notselected").remove()
+        d3.selectAll(".axis_label").remove()
+
+        createToolbar(client,def_vis_width, def_vis_height, params);
+        })
+  							
+    svg.append('text').text('Get Table')
+      .attr('x', 95)
+      .attr('y', 30)
+      .style('fill', 'white')
+      .style("font-weight", "bold")
+      .style("font-size", "16px")
+      .attr("text-anchor", "middle")
+      .on("click", function()  {
+        d3.selectAll("label.label_toolbar1").remove()
+        d3.selectAll("label.label_toolbar2").remove()
+        d3.select("#l-var").html("");
+        d3.select("#f-var").html("");
+        d3.select("#b-var").html("");
+        d3.select("#a-var").html("");
+        d3.select("#h-var").html("");
+        d3.select("#gh-var").html("");
+        d3.select("#l-var").remove();
+        d3.select("#f-var").remove();
+        d3.select("#b-var").remove();
+        d3.select("#a-var").remove();
+        d3.select("#h-var").remove();
+        d3.select("#gh-var").remove();
+        delete params['laxis']
+        delete params['faxis']
+        delete params['baxis']
+        delete params['aaxis']
+        delete params['haxis']
+        delete params['ghaxis']
+        d3.selectAll(".toolbar_rect").remove()
+        d3.selectAll(".toolbar_text").remove()
+        d3.select("#toolbar").remove()
+
+        d3.selectAll(".circle_pre").remove()
+        d3.selectAll(".circle_pre_selected").remove()
+        d3.selectAll(".circle_pre_notselected").remove()
+        d3.selectAll(".circle_post").remove()
+        d3.selectAll(".circle_post_selected").remove()
+        d3.selectAll(".circle_post_notselected").remove()
+        d3.selectAll(".slope_line").remove()
+        d3.selectAll(".slope_line_selected").remove()
+        d3.selectAll(".slope_line_notselected").remove()
+        d3.selectAll(".trend_line").remove()
+        d3.selectAll(".label_pre").remove()
+        d3.selectAll(".label_pre_selected").remove()
+        d3.selectAll(".label_pre_notselected").remove()
+        d3.selectAll(".label_post").remove()
+        d3.selectAll(".label_post_selected").remove()
+        d3.selectAll(".label_post_notselected").remove()
+        d3.selectAll(".axis_label").remove()
+        
+        createToolbar(client,def_vis_width, def_vis_height, params);
+        })
+     
+   })
+}
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 1000;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(client,def_vis_width,def_vis_height,params) {
+
+    start_loader(50,400,12.5);
+    $("#metatoolbar").append("<div id='toolbar1'></div>");
+
+  // Create script to get data table metadata
+  client.defaultCredential().then(function(credential) {
+      client.request("/scripts/sql",{
+              method: "POST",
+              data: {
+                  'name': 'test script 1234',
+                  'remoteHostId': parseInt(params['dbaxis']),
+                  'credentialId': credential.id,
+                  'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 1"
+              }
+              }).then(function(result) {
+              
+                var scriptId = result.data.id;
+        				params['scriptId'] = scriptId;
+                
+                client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                               .then(function(result){
+                                 return result.data.output[0].path;
+                               }).then(function(dataUrl) {
+                  			  d3.csv(dataUrl, function(error, data){
+                                  // an array of the column names in the original data source
+                                  var columns = Object.keys(data[0]);
+                                  
+                                    var dim = 'l';
+                                    var label = 'Labels';
+                                    // create the select dropdown
+                                    $("#toolbar1").append("<div class='form-group'><label class='label_toolbar1' for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+                                    // populate the dropdown with the columns in the dataset
+                                    for(i_col in columns) {
+                                      col_name = columns[i_col];
+                                      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                    }
+                                    // set picker to saved param values
+                                    $("#"+dim+"-var").val(params[dim+'axis']);
+                                    // handle change to select, wrap in anonymous function so the pickers dont clash
+                                    $("#"+dim+"-var").change(function(dim) {
+                                      return function() {
+                                        var newVar = $("#"+dim+"-var").val();
+                                        params[dim+'axis'] = newVar;
+                                        params[dim+'axislabel'] = newVar;
+                                        CivisResult.saveParams(params);
+                                        
+                                        if (dim == 'l') {
+                                            var selection = _.uniq(data.map(function(d) { return d[params['laxis']]; }))
+                                            // populate the dropdown with the columns in the dataset
+                                              for(i_sel in selection) {
+                                                sel_name = selection[i_sel];
+                                                $("#h-var").append("<option value='"+sel_name+"'>"+sel_name+"</option>");
+                                            }
+                                        }        
+                                      }
+                                    }(dim));
+                                  
+
+                                      dim = 'f';
+                                      var aggregates = ["sum","avg","min","max"];
+                                      $("#toolbar1").append("<div class='form-group'><label class='label_toolbar1' for='f-var'> Aggregate:</label><select class='form-control' id='f-var'><option></option></select></div>")
+                                      for(i_agg in aggregates) {
+                                        var agg = aggregates[i_agg];
+                                        $("#f-var").append("<option value='"+agg+"'>"+agg+"</option>");
+                                      }
+                                      // set picker to saved param values
+                                      $("#f-var").val(params['yaxis']);
+                                      // handle change to select, wrap in anonymous function so the pickers dont clash
+                                      $("#f-var").change(function(dim) {
+                                        return function() {
+                                          var newVar = $("#f-var").val();
+                                          params['faxis'] = newVar;
+                                          params['faxislabel'] = newVar;
+                                          CivisResult.saveParams(params);
+                                        }
+                                      }(dim))
+
+                                  // create pickers for both the x and y axis
+                                  var dimensions = ['b', 'a'];
+                                  var toolbar_labels = ['Pre', 'Post'];
+                                
+                                  for(var i_dim in dimensions) {
+                                    var dim = dimensions[i_dim];
+                                    var label = toolbar_labels[i_dim];
+                                    // create the select dropdown
+                                    $("#toolbar1").append("<div class='form-group'><label class='label_toolbar1' for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+                                    // populate the dropdown with the columns in the dataset
+                                    for(i_col in columns) {
+                                      col_name = columns[i_col];
+                                      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                    }
+                                    // set picker to saved param values
+                                    $("#"+dim+"-var").val(params[dim+'axis']);
+                                    // handle change to select, wrap in anonymous function so the pickers dont clash
+                                    $("#"+dim+"-var").change(function(dim) {
+                                      return function() {
+                                        var newVar = $("#"+dim+"-var").val();
+                                        params[dim+'axis'] = newVar;
+                                        params[dim+'axislabel'] = newVar;
+                                        CivisResult.saveParams(params);        
+                                      }
+                                    }(dim));
+                                  }
+
+                                      // set up toolbar2
+                                      $("#toolbar1").append("<div id='toolbar2'></div>");
+
+                                    var svg = d3.select("#toolbar2").append("svg")
+                                      .attr("width", def_vis_width)
+                                      .attr("height", 60);
+                                
+                                     svg.append('rect')
+                                      .attr("transform","translate(0,0)")
+                                   	 .attr('class','form-group toolbar_rect')
+                                      .attr('width', 150)
+                                      .attr('height', 45)
+                                      .attr('x', 20)
+                                      .attr('y', 0)
+                                      .attr('rx', 20)
+                                      .attr('ry', 20)
+                                      .style('fill', 'rgb(31,119,180)')
+                                      .on("click",  function()  {
+                                        d3.selectAll(".circle_pre").remove()
+                                        d3.selectAll(".circle_pre_selected").remove()
+                                        d3.selectAll(".circle_pre_notselected").remove()
+                                        d3.selectAll(".circle_post").remove()
+                                        d3.selectAll(".circle_post_selected").remove()
+                                        d3.selectAll(".circle_post_notselected").remove()
+                                        d3.selectAll(".slope_line").remove()
+                                        d3.selectAll(".slope_line_selected").remove()
+                                        d3.selectAll(".slope_line_notselected").remove()
+                                        d3.selectAll(".trend_line").remove()
+                                        d3.selectAll(".label_pre").remove()
+                                        d3.selectAll(".label_pre_selected").remove()
+                                        d3.selectAll(".label_pre_notselected").remove()
+                                        d3.selectAll(".label_post").remove()
+                                        d3.selectAll(".label_post_selected").remove()
+                                        d3.selectAll(".label_post_notselected").remove()
+                                        d3.selectAll(".axis_label").remove()
+
+                                        d3.selectAll(".label_toolbar2").remove()
+                                        d3.select("#h-var").html("");
+                                        d3.select("#gh-var").html("");
+                                        d3.select("#h-var").remove();
+                                        d3.select("#gh-var").remove();
+                                        delete params['haxis']
+                                        delete params['ghaxis']
+
+                                        query_data(client,data,def_vis_width, def_vis_height, params);
+                                        })
+                                  							
+                                    svg.append('text').text('Draw Graph')
+                                      .attr('class', 'toolbar_text')
+                                      .attr('x', 95)
+                                      .attr('y', 30)
+                                      .style('fill', 'white')
+                                      .style("font-weight", "bold")
+                                      .style("font-size", "16px")
+                                      .attr("text-anchor", "middle")
+                                      .on("click", function()  {
+                                        d3.selectAll(".circle_pre").remove()
+                                        d3.selectAll(".circle_pre_selected").remove()
+                                        d3.selectAll(".circle_pre_notselected").remove()
+                                        d3.selectAll(".circle_post").remove()
+                                        d3.selectAll(".circle_post_selected").remove()
+                                        d3.selectAll(".circle_post_notselected").remove()
+                                        d3.selectAll(".slope_line").remove()
+                                        d3.selectAll(".slope_line_selected").remove()
+                                        d3.selectAll(".slope_line_notselected").remove()
+                                        d3.selectAll(".trend_line").remove()
+                                        d3.selectAll(".label_pre").remove()
+                                        d3.selectAll(".label_pre_selected").remove()
+                                        d3.selectAll(".label_pre_notselected").remove()
+                                        d3.selectAll(".label_post").remove()
+                                        d3.selectAll(".label_post_selected").remove()
+                                        d3.selectAll(".label_post_notselected").remove()
+                                        d3.selectAll(".axis_label").remove()
+
+                                        d3.selectAll(".label_toolbar2").remove()
+                                        d3.select("#h-var").html("");
+                                        d3.select("#gh-var").html("");
+                                        d3.select("#h-var").remove();
+                                        d3.select("#gh-var").remove();
+                                        delete params['haxis']
+                                        delete params['ghaxis']
+
+                                        query_data(client,data,def_vis_width, def_vis_height, params);
+                                        })
+                                  stop_loader();    
+                                  })
+                               })
+              })
+      })
+};
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+  // use the startRefreshApiToken method to get a new api key
+  client = new CivisClient(config.apiKey)
+  client.startRefreshApiToken(config.reportId)
+
+  var params = config['params'] || {};
+  delete params['dbaxis']
+  delete params['saxis']
+  delete params['taxis']
+
+  // sizing
+  var def_vis_width = 1000;
+  var def_vis_height = 1000;
+
+  var margin = {top: 10, right: 20, bottom: 0, left: 75};
+  var width = def_vis_width - margin.left - margin.right,
+      height = def_vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", width)
+    .attr("height", height);
+  var chart = d3.select(".chart-outer")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+
+  var svg = d3.select(".chart-outer").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+  
+  createMetaToolbar(client, def_vis_width, def_vis_height, params);
+
+  if (params['url'] != null && params['url'].length > 0) {
+    d3.csv(params['url'], function(error, data){
+       draw_graph(data,def_vis_width,def_vis_height,params);
+    })
+  }
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+</script>
+</html>
