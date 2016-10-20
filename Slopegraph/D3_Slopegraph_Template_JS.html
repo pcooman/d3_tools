@@ -159,16 +159,30 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>This section provides a manual for the Slopegraph visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_Toolbar_empty.png?raw=true">
-    				<ul>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_Metatoolbar_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second toolbar should appear:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_Toolbar_JS.png?raw=true">
+    		  <ul>
               <li><b>Labels:</b> A dropdown menu to select the column in the data table that contains the labels. These will appear both to the left of the 'Pre' axis and to the right of the 'Post' axis.</li>
+              <li><b>Aggregate:</b> A dropdown menu to select the aggregate function. The options currently supported are 'sum', 'avg'(average), 'min' and 'max'.</li>
               <li><b>Pre:</b> A dropdown menu to select the column in the data table that contains the values during the 'Pre' timeframes.</li>
               <li><b>Post:</b> A dropdown menu to select the column in the data table that contains the values during the 'Post' timeframes.</li>
+              <li><b>Draw Graph:</b> Once you have selected the <i>Labels</i>, <i>Aggregate</i>, <i>Pre</i> and <i>Post</i> variables, click this button to retrieve the necessary data and to start drawing the graph.
+                    This will also bring up a third and final set of dropdown menus that allows the user the fine-tune the plot's appearance.</li> 
+            </ul>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_AdjToolbar_JS.png?raw=true">            
+            <ul>
               <li><b>Select:</b> A dropdown menu to select the label that you want to highlight. This dropdown menu will be populated after you 
                     select a <i>Labels</i> column and will contain all unique Label values. Selecting a label will highlight the 'Pre' and 'Post' 
                     values index the graph, along witht their slope line. Any colliding lables will be faded out. Alternatively, you can click on any 
                     label, slope line or circle to select (and highlight) the corresponding elements. You can remove the selection and return to the original graph by select 'none' from the <i>Selection</i> menu.</li>
-              <li><b>Graph height:</b> An input menu to adjust the height of the graph. This can be used to eliminate to reduce the occurence of label collisions. </li>
+              <li><b>Graph height:</b> An input menu to adjust the height of the graph. This can be used to reduce or even eliminate the occurence of label collisions. </li>
             </ul>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
@@ -785,7 +799,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
         delete params['ghaxis']
         d3.selectAll(".toolbar_rect").remove()
         d3.selectAll(".toolbar_text").remove()
-        d3.select("#toolbar").remove()
+        d3.select("#toolbar1").remove()
 
         d3.selectAll(".circle_pre").remove()
         d3.selectAll(".circle_pre_selected").remove()
@@ -838,7 +852,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
         delete params['ghaxis']
         d3.selectAll(".toolbar_rect").remove()
         d3.selectAll(".toolbar_text").remove()
-        d3.select("#toolbar").remove()
+        d3.select("#toolbar1").remove()
 
         d3.selectAll(".circle_pre").remove()
         d3.selectAll(".circle_pre_selected").remove()
