@@ -167,7 +167,7 @@ body, html { overflow: scroll; height: 100% }
               <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
             </ul>
            <p>A short time after clicking the <i>Get Table</i> button a second toolbar should appear:</p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_Toolbar_JS.png?raw=true">
+          	<img src="hhttps://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_table_JS.png?raw=true">
     		  <ul>
               <li><b>Labels:</b> A dropdown menu to select the column in the data table that contains the labels. These will appear both to the left of the 'Pre' axis and to the right of the 'Post' axis.</li>
               <li><b>Aggregate:</b> A dropdown menu to select the aggregate function. The options currently supported are 'sum', 'avg'(average), 'min' and 'max'.</li>
@@ -186,8 +186,8 @@ body, html { overflow: scroll; height: 100% }
             </ul>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_table.png?raw=true">
-          	<p>The graph will plot a slope line for each row in the table. You are responsible for removing duplicate rows. You will need at 
+          	<img src="hhttps://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_table_JS.png?raw=true">
+          	<p>The graph will plot a slope line for each unique category of the column selected from the <i>Labels</i> menu. You will need at 
                 least one column with label names, one column with 'Pre' values and one column with 'Post' values. The table can contain additional columns, 
                 the toolbar will let you select the columns that are relevant to the plot. The 'Pre' and 'Post' values are shown in round brackets next to the labels.
                 Slope lines with a positive trend are drawn in red, while slopes with a negative trend are colored red. Finally, a thick black line shows the average trend.</p>
@@ -201,7 +201,7 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>Here we show an example of a typical use case and what the resulting plot should look like. Here, we plot the change in the average uninsurance rates for each state.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_table.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Slopegraph/Slopegraph_table_JS.png?raw=true">
           	<h2>Sample plot</h2>
           	<p>We select 'state_code' from the <i>Labels</i> dropdown menu, 'scores_2013' from the 'Pre' menu and 'scores_2016' from the 'Post' menu. 
             This selection should result in the following graph:</p>
