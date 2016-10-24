@@ -94,16 +94,24 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>This section provides a manual for the Confidence Interval visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_Toolbar_Empty.png?raw=true">
-    		 <ul>
-              <li><b>Label:</b> A dropdown menu to select the column in the data table that contains the labels. These will be listed on the left side of the plot.</li>
-              <li><b>Expected value:</b> A dropdown menu to select the column in the data table that contains the mean value of the property of interest. This value is represented in the plot by a red dot.</li>
-              <li><b>Lower bound:</b> A dropdown menu to select the column in the data table that contains the values of the lower bound of the propety of interest. Typically, these would correspond to the lower bounds of the 95% or 80% confidence interval.</li>
-              <li><b>Upper bound:</b> A dropdown menu to select the column in the data table that contains the values of the upper bound of the propety of interest. Typically, these would correspond to the upper bounds of the 95% or 80% confidence interval.</li>
-              <li><b>Sort by:</b> An dropdown menu to select the column in the data to sort by.  form to specifiy how to sort the data. You may choose to sort the values themselves or their labels. If the labels are strings, they will be sorted alphabetically. You can sort along any column in the data, even if it is not the property selected under <i>Property (y)</i>.</li>
-              <li><b>Order:</b> A dropdown menu to specify whether the dat should be sorted in ascending or descending order of the property selected in the <i>Sort by</i> menu.</li>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_Metatoolbar_empty_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
             </ul>
-          	<h2>Data table</h2>
+           <p>A short time after clicking the <i>Get Table</i> button a second set of toolbars should appear:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_Toolbar_empty_JS.png?raw=true">
+    		 <ul>
+              <li><b>Property:</b> A dropdown menu to select the column in the data table that contains values for the property of interest.</li>
+              <li><b>Group by:</b> A dropdown menu to select the column in the data table that contains category labels. This menu is optional. If it is left blank, the plot will show a single confidence interval reflecting the entire data set, otherwise there will be a confidence interval for each unique category in the column selected from the <i>Group by</i> menu.</li>
+              <li><b>Lower bound:</b> A numercial input that allows the user to specify the cutoff percentage of the lower tail end of the distribution. For example, for a 95% confidence interval, a typical choice for the lower bound would be 2.5.</li>
+              <li><b>Upper bound:</b> A numercial input that allows the user to specify the cutoff percentage of the upper tail end of the distribution. For example, for a 95% confidence interval, a typical choice for the upper bound would be 97.5.</li>
+              <li><b>Draw Graph:</b> Once you have selected the <i>Property</i>, <i>Lower bound</i>, <i>Upper bound</i> and optionally <i>Group by</i> variables, click this button to retrieve the necessary data and to start drawing the graph.
+                    This will also bring up a third and final set of dropdown menus that allows the user the sort the data according to the categoy names or the expected values.</li> 
+            </ul>   
+        	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/ConfidenceInterval/ConfidenceInterval_Table.png?raw=true">
           	<p>The plot will generate a bar for each row of the table. You are responsible for removing duplicate rows. You will need at least one column with labels, one column with mean values and one column each for the lower and upper bounds. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
@@ -232,9 +240,9 @@ draw_graph = function(data, vis_width, vis_height, params) {
               		  .transition().duration(200)
     				
                         var label = "Name: "+d['category'] + 
-                                "<br/>Expected Value: "+d['mean']+
-                                "<br/>Lower Bound: "+d['lower'].toFixed(3)+
-                                "<br/>UpperBound: "+d['upper'].toFixed(3) 
+                                "<br/>Expected Value: "+parseFloat(d['mean']).toFixed(3)+
+                                "<br/>Lower Bound: "+parseFloat(d['lower']).toFixed(3)+
+                                "<br/>UpperBound: "+parseFloat(d['upper']).toFixed(3) 
 
                 return showDetails(label,this);})
           .on("mouseout", function(d) {
