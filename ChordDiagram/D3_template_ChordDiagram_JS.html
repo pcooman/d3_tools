@@ -116,7 +116,7 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Table.png?raw=true">
-          	<p>The template will sum the values in the select <i>Counts</i> column for each unique combination of the <i>Origins</i> and <i>Destinations</i> categories. You can have multiple columns for each category (<i>Origins</i>, <i>Destinations</i> and <i>Counts</i>). The toolbar will let you select the columns that are relevant to the plot. You do not need to include every possible origin to destination combination. For example, if your data contains (origin:A, destination:B, count:X), but not the reverse path (origin:B, destination:A, count:Y), the visualization will still work (automatically sets Y = 0).</p>
+          	<p>The template will sum the values in the selected <i>Counts</i> column for each unique combination of the <i>Origins</i> and <i>Destinations</i> categories. You can have multiple columns for each category (<i>Origins</i>, <i>Destinations</i> and <i>Counts</i>). The toolbar will let you select the columns that are relevant to the plot. You do not need to include every possible origin to destination combination. For example, if your data contains (origin:A, destination:B, count:X), but not the reverse path (origin:B, destination:A, count:Y), the visualization will still work (automatically sets Y = 0).</p>
           	<h2>Known issues</h2>
           	<p>No known issues at this time.</p>
             <bcontent></bcontent>
@@ -128,10 +128,10 @@ body, html { overflow: scroll; height: 100% }
           	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the flow of refugees between different regions of the world. The data can be found either on Platform (schema.table = <i>pcooman.refugees</i> on redshift-general) or here: <i>http://www.global-migration.info/</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
             <h2>Data table</h2>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Table.png?raw=true">
-          	<p>In this table, the <i>origin</i> and <i>destination</i> columns respectively contain the countries of origin of refugees and their ultimate. The <i>count</i> column conatins the total number of refugees that followed each path.</p>
+          	<p>In this table, the <i>origin</i> and <i>destination</i> columns respectively contain the countries of origin of refugees and their ultimate destination. The <i>count</i> column conatins the total number of refugees that followed each path.</p>
           	<h2>Sample plot</h2>
           	<p>If everything goes well. Your plot should look something like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Toolbar_full.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Toolbar_full_JS.png?raw=true">
             <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Example_full.png?raw=true">
             <p>If you hover over a segment of the outer circle, a tooltip should appear. This indicates the total number of incoming and outgoing refugees for the selected region:</p>
             <img src="https://github.com/pcooman/d3_tools/blob/master/ChordDiagram/ChordDiagram_Tooltip_group.png?raw=true">
@@ -271,7 +271,7 @@ draw_graph = function(data, vis_width, vis_height, params) {
         .outerRadius(r0 + 20);
 
     var svg = d3.select(".chart-outer").append("svg:svg")
-        .attr("width", w)
+        .attr("width", 1000)
         .attr("height", h)
         .append("svg:g")
         .attr("id", "circle")
@@ -751,6 +751,7 @@ var prepChart = function(config) {
     def_vis_width = config['dimensions']['width'];
     def_vis_height = config['dimensions']['height'];
   }
+  def_vis_width = 1000;
   def_vis_height = 1200;
 
   var margin = {top: 10, right: 20, bottom: 0, left: 75};
