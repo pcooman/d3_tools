@@ -5,6 +5,7 @@
 <script src="//rawgit.com/jasondavies/d3-cloud/v1.2.1/build/d3.layout.cloud.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
 <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 
 <style>
 input {
@@ -27,7 +28,6 @@ input {
 .chart {
   font-family: Lato, Verdana, Arial, sans-serif;
 }
-
 .tooltip {
   border-radius: 10px;
   padding: 10px;
@@ -105,7 +105,6 @@ $.ajaxSetup ({
                 // Used when debugging
                 cache: false
             });
-
 draw = function(data, vis_width, vis_height, params) {
   /////////////////////////////////////////////
   // chart margin/sizing setup
@@ -120,7 +119,6 @@ draw = function(data, vis_width, vis_height, params) {
     .attr("height", vis_height);
   var chart = d3.select(".chart")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
   var minFontsize = parseInt(params['minaxis']) || 0;
 	var maxFontsize = parseInt(params['maxaxis']) || 50;
 	
@@ -155,7 +153,7 @@ draw = function(data, vis_width, vis_height, params) {
     	.style("font-size", function(d) {return d.size + "px";})
 			.style("font-family", "Lato")
                 .style("font-weight", "bold")
-			.style("fill", "rgb(214,39,40)")
+			.style("fill", "rgb(31,119,180)")
     	.attr("class", "word")
 			.attr("text-anchor", "middle")
 			.attr("transform", function(d) {
@@ -166,7 +164,6 @@ draw = function(data, vis_width, vis_height, params) {
                 .on("mouseout", function(d) {return hideDetails();})
 	}
 }
-
 var showDetails = function(data, element) {
   pos = $(element).position()
   $("#chart-tooltip").html(data)
@@ -178,7 +175,6 @@ var showDetails = function(data, element) {
 var hideDetails = function() {
   $("#chart-tooltip").hide()
 };
-
 //////////////////////////////////////////////////////////
 // Chart Edit Toolbar Code
 //
@@ -196,7 +192,6 @@ var createToolbar = function(data, params) {
   // create pickers for both the x and y axis
   var dimensions = ['x', 'y'];
   var toolbar_labels = ['Words', 'Counts'];
-
   for(var i_dim in dimensions) {
     var dim = dimensions[i_dim];
     var label = toolbar_labels[i_dim];
@@ -250,7 +245,6 @@ var createToolbar = function(data, params) {
 // Handle config blob, download the csv from the url, create the toolbar
 // and init the graph with the resulting parameters.
 var prepChart = function(config) {
-
   var params = config['params'] || {};
   
   // sizing
@@ -269,9 +263,7 @@ var prepChart = function(config) {
     draw(data, def_vis_width, def_vis_height, params);
   });
 };
-
 //Init report
 CivisResult.init(prepChart);
-
 </script>
 </html>
