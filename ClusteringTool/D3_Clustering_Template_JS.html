@@ -1,0 +1,1044 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://rawgit.com/jashkenas/underscore/master/underscore-min.js"></script>  
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="//rawgit.com/jasondavies/d3-cloud/v1.2.1/build/d3.layout.cloud.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<script src="https://s3.amazonaws.com/civis-console/javascript-client/v0.3.0/civis_client.min.js"></script>
+
+<style>
+input {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+  
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 100;
+}
+
+.icon_zoom {
+  stroke: none;
+  stroke-width: 3;
+}
+.icon_zoom:hover {
+  stroke: red;
+  stroke-width: 3;
+}
+
+.brush_pan:hover {
+    cursor: move
+}
+  
+.circle {
+  fill-opacity: 0.5;
+  stroke: white;
+  stroke-width: 3;
+}
+
+.circle_selected {
+    fill-opacity: 1;
+    stroke: white;
+    stroke-width: 3;
+}
+.circle_selected:hover {
+    stroke: black;
+    stroke-width: 3;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+  
+.chart {
+  font-family: Lato, Verdana, Arial, sans-serif;
+  stroke: black;
+}
+
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+  
+body, html { overflow: scroll; height: 100% }
+
+.loader {
+    transform-origin: center center;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {transform: rotate(0deg); }
+    100% {transform: rotate(360deg); }
+}    
+</style>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+      
+        <div class="tab-pane active" id="a_tab">
+            <h1>Graph</h1>
+            <acontent><div id='vis'>
+              <svg class='chart-outer'><g class="chart"></g></svg>
+            </div>
+            </acontent>
+        </div>
+      
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<h2>Introduction</h2>
+          	<p>This section provides a manual for the Scatter/Bubble visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<h2>Inputs</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_Toolbar_empty.png?raw=true">
+    				<ul>
+              <li><b>X axis:</b> A dropdown menu to select the column in the data table that contains the values to be plotted along the X axis.</li>
+              <li><b>Y axis:</b> A dropdown menu to select the column in the data table that contains the values to be plotted along the Y axis.</li>
+              <li><b>Bubble:</b> A dropdown menu to select the column in the data tabe whose values define the size of the bubbles. If no column is selected, the bubbles will have a default radius of 5px</li>
+              <li><b>Color:</b> A dropdown menu to select the column in the data tabe whose values define the color of the bubbles. Both numerical and categorical variables are supported.</li>
+            </ul>
+          	<h2>Data table</h2>
+          	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_table.png?raw=true">
+          	<p>The graph will plot a bubble for each row in the table. You are responsible for removing duplicate rows. You will need at least two columns with numerical variables for the <i>X axis</i> and <i>Y axis</i>. The <i>Bubble</i> variable needs to be numerical, whereas the <i>Color</i> variable can be numerical or categorical. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
+          	<h2>Known issues</h2>
+          	<p>Needs a legend when using the <i>Color</i> variable.</p>
+            <bcontent></bcontent>
+        </div>
+      
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+          	<h2>Introduction</h2>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the iris data set. The data can be found either on Platform (schema.table = <i>pcooman.iris</i> on redshift-general) or here: <i>http://www.idvbook.com/teaching-aid/data-sets/the-iris-data-set/</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+            <h2>Data table</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_table.png?raw=true">
+          	<h2>Sample plot</h2>
+          	<p>first, we only select a <i>X axis</i> and a <i>Y axis</i> variable:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_standard.png?raw=true">
+           <p>Next, we add a <i>Bubble</i> variable to set the size of the bubbles:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_bubble.png?raw=true">
+           <p>Finally, we add a <i>Color</i> variable to better separate the three iris classes:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_color.png?raw=true">
+           <p>Hovering over a bubble should bring up a tooltip, listing the X axis, Y axis, Bubble and Color values:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ScatterPlot/ScatterBubble_tooltip.png?raw=true">
+          	 <ccontent></ccontent>
+        </div>
+      
+    </div>
+</div>
+
+<script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+
+draw_graph = function(data, vis_width, vis_height, params) {
+
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+
+  if (params['caxis'].length > 0) {
+    var classes = d3.set(data.map(function(d) { return d['class'];})).values();
+	  var count = classes.length;
+  } else {
+    var classes = [params['caxis']];
+    var count = 1
+  }
+
+  var margin = {top: 30, right: 30, bottom: 30, left: 30};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", vis_width)
+    .attr("height", vis_height);
+  var chart = d3.select(".chart")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  var svg = d3.select(".chart")
+    .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+    .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  // Zoom icon
+  d3.select(".chart-outer").append("image")
+    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_zoom.png?raw=true")    
+    .attr("width", 40)
+    .attr("height", 40)
+    .attr("x", 8)
+    .attr("y", 8)
+  d3.select(".chart-outer").append("rect")
+    .attr('class', 'icon_zoom')
+    .attr("width", 50)
+    .attr("height", 50)
+    .attr("x", 3)
+    .attr("y", 3)
+    .attr("rx",5)
+    .attr("ry",5)
+    .style("fill-opacity", 0)
+    .on("click", function() {
+        d3.selectAll(".brush_pan").remove() 
+
+        svg.append("g")
+          .attr("class", "brush_zoom")
+          .call(brush_zoom);   
+    })
+
+  // Pan icon
+  d3.select(".chart-outer").append("image")
+    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_pan.png?raw=true")    
+    .attr("width", 40)
+    .attr("height", 40)
+    .attr("x", 8)
+    .attr("y", 61)
+  d3.select(".chart-outer").append("rect")
+    .attr('class', 'icon_zoom')
+    .attr("width", 50)
+    .attr("height", 50)
+    .attr("x", 3)
+    .attr("y", 56)
+    .attr("rx",5)
+    .attr("ry",5)
+    .style("fill-opacity", 0)
+    .on("click", function() {
+        d3.selectAll(".brush_zoom").remove()
+
+        svg.append("rect")
+                .attr("x",0)
+                .attr("x",0)
+                .attr("width",width)
+                .attr("height",height)
+              .attr("class", "brush_pan")
+              .style("fill-opacity",0)
+              .call(brush_pan);    
+    })
+
+  // Select icon
+  d3.select(".chart-outer").append("image")
+    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_select.png?raw=true")    
+    .attr("width", 30)
+    .attr("height", 30)
+    .attr("x", 13)
+    .attr("y", 119)
+  d3.select(".chart-outer").append("rect")
+    .attr('class', 'icon_zoom')
+    .attr("width", 50)
+    .attr("height", 50)
+    .attr("x", 3)
+    .attr("y", 109)
+    .attr("rx",5)
+    .attr("ry",5)
+    .style("fill-opacity", 0)
+    .on("click", function() {
+        d3.selectAll(".brush_pan").remove()
+        d3.selectAll(".brush_zoom").remove()
+    })
+
+  var x = d3.scaleLinear()
+    .range([margin.left, width-margin.right])
+    .domain(d3.extent(data, function(d) { return parseFloat(d['x']); })).nice();
+  
+  var y = d3.scaleLinear()
+    .range([height-margin.bottom, margin.top])
+    .domain(d3.extent(data, function(d) { return parseFloat(d['y']); })).nice();
+
+  var xAxis = d3.axisTop(x),
+    yAxis = d3.axisRight(y);
+
+  var brush_zoom = d3.brush().on("end", brushended),
+    idleTimeout,
+    idleDelay = 350;
+
+  var brush_pan = d3.zoom()
+    .scaleExtent([1, 100])
+    .on('zoom', panFn);
+
+  function panFn() {
+    d3.select('.chart')
+      .attr('transform', 'translate(' + d3.event.transform.x + ',' + d3.event.transform.y + ') scale(' + d3.event.transform.k + ')');
+  }
+
+  var bubble = d3.scaleLinear()
+  	.range([4,20])
+  	.domain(d3.extent(data, function(d) { return parseFloat(d['importance']); })).nice();
+	
+  svg.selectAll(".circle")
+      .data(data)
+    .enter().append("circle")
+      .attr("class", "circle")
+      .attr("cx", function(d) { return x(parseFloat(d['x'])); })
+      .attr("cy", function(d) { return y(parseFloat(d['y'])); })
+      .attr("r", function(d) { return (params['iaxis'] != null && params['iaxis'].length > 0) ? bubble(parseFloat(d['importance'])) : 10; })
+      .attr("selected", 0)
+      .attr("id", function(d,i) {return i;})
+      .style("fill", function(d) {return d3.interpolateSpectral(1 -(classes.indexOf(d['class'])/count)); })
+  		.on("mouseover", function(d) {
+    				d3.select(this)
+    				.style("stroke", "black")
+    
+    				var label = ""
+
+                      if (params['laxis']!=null &&  params['laxis'].length>0) {
+                        label = label +  params['laxis']+": "+d['label']
+                        } 
+                      if (params['caxis']!=null &&  params['caxis'].length>0) {
+                        label = label + "<br/>" + params['caxis']+": "+d['class'];
+                        }
+                      if (params['iaxis']!=null &&  params['iaxis'].length>0) {
+                        label = label + "<br/>" + params['iaxis']+": "+d['importance']
+                        } 
+                return showDetails(label,this);})
+          .on("mouseout", function(d) {
+                d3.select(this)
+          		.transition().duration(200)
+    				.style("stroke", "white")
+    				return hideDetails();})
+          .on("click", function(d) {
+                d3.select(this)
+                    .attr("selected", 1 - parseInt(this.getAttribute("selected")))
+                    .attr("class", parseInt(this.getAttribute("selected")) ? "circle_selected" : "circle")
+                    .style("fill", parseInt(this.getAttribute("selected")) ? "red" : d3.interpolateSpectral(1 -(classes.indexOf(d['class'])/count)) )
+                })
+    
+    function brushended() {
+      var s = d3.event.selection;
+      if (!s) {
+        if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+
+        x.domain(d3.extent(data, function(d) { return parseFloat(d['x']); })).nice();
+        y.domain(d3.extent(data, function(d) { return parseFloat(d['y']); })).nice();
+
+        d3.select('.chart')
+          .attr('transform', 'translate(0,0) scale(1)');
+      } else {
+        x.domain([s[0][0], s[1][0]].map(x.invert, x));
+        y.domain([s[1][1], s[0][1]].map(y.invert, y));
+        svg.select(".brush_zoom").call(brush_zoom.move, null);
+      }
+      zoom();
+    }
+    
+    function idled() {
+      idleTimeout = null;
+    }
+    
+    function zoom() {
+      var t = svg.transition().duration(750);
+      svg.select(".axis--x").transition(t).call(xAxis);
+      svg.select(".axis--y").transition(t).call(yAxis);
+      svg.selectAll("circle").transition(t)
+          .attr("cx", function(d) { return x(parseFloat(d['x'])); })
+          .attr("cy", function(d) { return y(parseFloat(d['y'])); });
+    }
+
+}
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (-15 + pos.top-height*1.50)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+start_loader = function(size,Xpos,Ypos) {
+    d3.select(".chart").append("image")
+    .attr("xlink:href","https://civisanalytics.com/assets/civis_logos/Civis-symbol-d4d7147a1bb51c1b53d98f76e1a7ffce.png")    
+    .attr("class","loader")
+    .attr("width", size)
+    .attr("height", size)
+    .attr("x", Xpos)
+    .attr("y", Ypos)
+}
+stop_loader = function() {
+    d3.select(".loader").remove()
+    
+}
+
+var query_data = function(client,data,def_vis_width,def_vis_height,params) {
+  
+  if (params['xaxis'] != null && params['yaxis'] != null && params['laxis'] != null) {
+    
+    start_loader(200,150,150);
+    
+    var q = "select "+params['xaxis']+" as x, " +
+            params['yaxis']+" as y, " +
+            params['laxis']+" as label "
+
+        if (params['caxis'] != null) {
+            q = q +", "+ params['caxis']+" as class "            
+            }
+        if (params['iaxis'] != null) {
+            q = q +", "+ params['iaxis']+" as importance "            
+            }
+
+        q = q + "from "+params['saxis']+"."+params['taxis']
+
+    client.request("/scripts/"+params['scriptId'],{
+          method: "PATCH",
+          data: {
+              'sql': q
+               }
+          }).then(function(result) {
+            var scriptId = result.data.id;
+            
+            client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                           .then(function(result){
+                             return result.data.output[0].path;
+                           }).then(function(dataUrl) {
+              			  d3.csv(dataUrl, function(error, data){
+                                params['url'] = dataUrl;
+                                CivisReport.saveParams(params);
+                                console.log(data)
+                             stop_loader();
+
+                                  $("#toolbar1").append("<div id='toolbar2' width='700px'></div>");
+                                    var dim = 'hb';
+                                    var label = 'Select by';
+                                    // create the select dropdown
+                                    $("#toolbar2").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+                                    // populate the dropdown with the columns in the dataset
+                                    columns = ["class","label","importance"]
+                                    for(i_col in columns) {
+                                      col_name = columns[i_col];
+                                      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                    }
+                                    // set picker to saved param values
+                                    $("#"+dim+"-var").val(params[dim+'axis']);
+                                    // handle change to select, wrap in anonymous function so the pickers dont clash
+                                    $("#"+dim+"-var").change(function(dim) {
+                                      return function() {
+                                        var newVar = $("#"+dim+"-var").val();
+                                        params[dim+'axis'] = newVar;
+                                        params[dim+'axislabel'] = newVar;
+                                        CivisResult.saveParams(params);
+                                        d3.select("#h-var").html("");
+                                        // populate the dropdown with the columns in the dataset
+                                        if (isNaN(data[0][params['hbaxis']])) {
+                                            var labels = _.uniq(data.map(function(d) {return d[params['hbaxis']];}))
+                                            labels.sort();
+                                        } else {
+                                            var labels = _.uniq(data.map(function(d) {return parseFloat(d[params['hbaxis']]);}))
+                                            labels.sort(function(a, b){return b-a});
+                                        }
+                                        labels.unshift("");
+                                        for(i_lab in labels) {
+                                        label_name = labels[i_lab];
+                                          $("#h-var").append("<option value='"+label_name+"'>"+label_name+"</option>");
+                                        }
+                                      }
+                                    }(dim));
+                                
+                                  $("#toolbar2").append("<div id='toolbar3' width='700px'></div>");
+                                    var dim = 'h';
+                                    var label = 'Select';
+                                    // create the select dropdown
+                                    $("#toolbar3").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+                                
+                                    // set picker to saved param values
+                                    $("#"+dim+"-var").val(params[dim+'axis']);
+                                    // handle change to select, wrap in anonymous function so the pickers dont clash
+                                    $("#"+dim+"-var").change(function(dim) {
+                                      return function() {
+                                        var newVar = $("#"+dim+"-var").val();
+                                        params[dim+'axis'] = newVar;
+                                        params[dim+'axislabel'] = newVar;
+                                        CivisResult.saveParams(params);
+                                        debugger;
+                                        
+                                        for (var i=0; i<data.length; i++){
+                                            var this_circle = document.getElementsByClassName("circle")[i];
+                                           var id = parseInt(this_circle.getAttribute("id"))
+                                            if (data[id][params['hbaxis']] == params['haxis']) {
+                                              this_circle.setAttribute("selected",1)
+                                              this_circle.setAttribute("class","circle_selected")
+                                              this_circle.setAttribute("style", "fill: red")
+                                            }
+                                      
+                                        }      
+                                      }
+                                    }(dim));
+
+                                     var svg = d3.select("#toolbar3").append("svg")
+                                      .attr("width", def_vis_width)
+                                      .attr("height", 60);
+                                
+                                     svg.append('rect')
+                                      .attr("transform","translate(0,0)")
+                                   	 .attr('class','form-group')
+                                      .attr('width', 150)
+                                      .attr('height', 45)
+                                      .attr('x', 20)
+                                      .attr('y', 0)
+                                      .attr('rx', 20)
+                                      .attr('ry', 20)
+                                      .style('fill', 'rgb(31,119,180)')
+                                      .on("click",  function()  {
+                                            d3.selectAll(".circle").remove()
+                                            d3.selectAll(".tick").remove()
+                                            d3.selectAll(".axis").remove()
+                                            d3.selectAll(".circle_selected").remove()
+                                            d3.selectAll("#select_toolbar").remove()
+                                            draw_graph(data, def_vis_width, def_vis_height, params);
+                                        })
+                                  							
+                                    svg.append('text').text('Reset Selection')
+                                      .attr('x', 95)
+                                      .attr('y', 30)
+                                      .style('fill', 'white')
+                                      .style("font-weight", "bold")
+                                      .style("font-size", "16px")
+                                      .attr("text-anchor", "middle")
+                                      .on("click", function()  {
+                                            d3.selectAll(".circle").remove()
+                                            d3.selectAll(".tick").remove()
+                                            d3.selectAll(".axis").remove()
+                                            d3.selectAll(".circle_selected").remove()
+                                            d3.selectAll("#select_toolbar").remove()
+                                            draw_graph(data, def_vis_width, def_vis_height, params);            
+                                        })
+
+                             draw_graph(data,def_vis_width,def_vis_height,params);
+                             createExportToolbar(client, data, def_vis_width, def_vis_height, params)
+                            
+                                })
+                        })
+            })
+    }
+}
+
+var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) {
+   client.request("/databases", {method: "GET"}).then(function(result) {       
+       $("#vis").prepend("<div class='form-group' id='metatoolbar'></div>");
+     	   var db_options = result.data.map(function(d) {return d.name;});
+        var db_id_options = result.data.map(function(d) {return d.id;});
+        var dim = "db"
+        var label = "Source Database"
+        
+        $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option value='32' selected>redshift-general</option></select></div>")
+        // populate the dropdown with the geography types
+        for(i_label in db_options) {
+          db_type = db_options[i_label];
+          db_id_type = db_id_options[i_label];
+          if (db_type != "redshift-general" ){
+          	$("#"+dim+"-var").append("<option value='"+db_id_type+"'>"+db_type+"</option>");
+          }
+        }
+        
+        // set picker to saved param values
+        $("#"+dim+"-var").val(params[dim+'axis']);
+        // handle change to select, wrap in anonymous function so the pickers dont clash
+        $("#"+dim+"-var").change(function(dim) {
+          return function() {
+            d3.select("#s-var").html("");
+            d3.select("#t-var").html("");
+
+            var newVar = $("#"+dim+"-var").val();
+            params[dim+'axis'] = newVar;
+            params[dim+'axislabel'] = newVar;
+            CivisReport.saveParams(params);
+            client.request("/databases/"+params['dbaxis']+"/schemas", {method: "GET"}).then(function(result) {
+                var s_options = result.data.map(function(d) {return d.schema;});
+                for(i_label in s_options) {
+                  s_type = s_options[i_label];
+                  $("#s-var").append("<option value='"+s_type+"'>"+s_type+"</option>");
+                }
+            })
+           }
+         }(dim));
+       
+       var dimensions = ['s'];
+       var toolbar_labels = ['Source Schema'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             d3.select("#t-var").html("");
+
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+             CivisReport.saveParams(params);
+             client.request("/tables", {method: "GET", 
+                                        params:{
+                                                databaseId: params['dbaxis'],
+                                                schema: params['saxis'],
+                                                limit: 50
+                                                }
+                                        })
+            .then(function(result) {
+                var t_options = result.data.map(function(d) {if (d.databaseId == params['dbaxis'] && d.schema == params['saxis']) return d.name;});
+                for(i_label in t_options) {
+                  t_type = t_options[i_label];
+                  $("#t-var").append("<option value='"+t_type+"'>"+t_type+"</option>");
+                }
+             })
+           }
+         }(dim));
+       }
+
+       var dimensions = ['t'];
+       var toolbar_labels = ['Source Table'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+             CivisReport.saveParams(params);
+           }
+         }(dim));
+       }
+     
+     var svg = d3.select("#metatoolbar").append("svg")
+      .attr("width", def_vis_width)
+      .attr("height", 60);
+
+     svg.append('rect')
+      .attr("transform","translate(0,0)")
+   	 .attr('class','form-group')
+      .attr('width', 150)
+      .attr('height', 45)
+      .attr('x', 20)
+      .attr('y', 0)
+      .attr('rx', 20)
+      .attr('ry', 20)
+      .style('fill', 'rgb(31,119,180)')
+      .on("click",  function()  {
+        delete params['xaxis'];
+        delete params['yaxis'];
+        delete params['caxis'];
+        delete params['laxis'];
+        delete params['iaxis'];
+        delete params['hbaxis'];
+        delete params['haxis'];
+
+        d3.selectAll("label.label_toolbar").remove()
+        d3.select("#x-var").html("");
+        d3.select("#y-var").html("");
+        d3.select("#c-var").html("");
+        d3.select("#l-var").html("");
+        d3.select("#i-var").html("");
+        d3.select("#hb-var").html("");
+        d3.select("#h-var").html("");
+        d3.select("#x-var").remove();
+        d3.select("#y-var").remove();
+        d3.select("#c-var").remove();
+        d3.select("#l-var").remove();
+        d3.select("#-var").remove();
+        d3.select("#hb-var").remove();
+        d3.select("#h-var").remove();
+
+        d3.selectAll(".toolbar_rect").remove()
+        d3.selectAll(".toolbar_text").remove()
+        d3.select("#toolbar1").remove()
+        d3.select("#toolbar2").remove()
+        d3.select("#toolbar3").remove()
+
+        d3.selectAll(".circle").remove()
+        d3.selectAll(".tick").remove()
+        d3.selectAll(".axis").remove()
+        d3.selectAll(".circle_selected").remove()
+        d3.selectAll("#select_toolbar").remove()
+
+        createToolbar(client,def_vis_width, def_vis_height, params);
+        })
+  							
+    svg.append('text').text('Get Table')
+      .attr('x', 95)
+      .attr('y', 30)
+      .style('fill', 'white')
+      .style("font-weight", "bold")
+      .style("font-size", "16px")
+      .attr("text-anchor", "middle")
+      .on("click", function()  {
+        delete params['xaxis'];
+        delete params['yaxis'];
+        delete params['caxis'];
+        delete params['laxis'];
+        delete params['iaxis'];
+        delete params['hbaxis'];
+        delete params['haxis'];
+
+        d3.selectAll("label.label_toolbar").remove()
+        d3.select("#x-var").html("");
+        d3.select("#y-var").html("");
+        d3.select("#c-var").html("");
+        d3.select("#l-var").html("");
+        d3.select("#i-var").html("");
+        d3.select("#hb-var").html("");
+        d3.select("#h-var").html("");
+        d3.select("#x-var").remove();
+        d3.select("#y-var").remove();
+        d3.select("#c-var").remove();
+        d3.select("#l-var").remove();
+        d3.select("#-var").remove();
+        d3.select("#hb-var").remove();
+        d3.select("#h-var").remove();
+
+        d3.selectAll(".toolbar_rect").remove()
+        d3.selectAll(".toolbar_text").remove()
+        d3.select("#toolbar1").remove()
+        d3.select("#toolbar2").remove()
+        d3.select("#toolbar3").remove()
+        d3.select("#exporttoolbar1").remove()
+        d3.select("#exporttoolbar2").remove()
+
+        d3.selectAll(".circle").remove()
+        d3.selectAll(".tick").remove()
+        d3.selectAll(".axis").remove()
+        d3.selectAll(".circle_selected").remove()
+        d3.selectAll("#select_toolbar").remove()
+        
+        createToolbar(client,def_vis_width, def_vis_height, params);
+        })
+     
+   })
+}
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 1000;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(client,def_vis_width, def_vis_height, params) {
+      start_loader(200,150,150);
+    $("#metatoolbar").append("<div id='toolbar1' width='2000px'></div>");
+
+  // Create script to get data table metadata
+  client.defaultCredential().then(function(credential) {
+      client.request("/scripts/sql",{
+              method: "POST",
+              data: {
+                  'name': 'test script 1234',
+                  'remoteHostId': parseInt(params['dbaxis']),
+                  'credentialId': credential.id,
+                  'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 1"
+              }
+              }).then(function(result) {
+              
+                var scriptId = result.data.id;
+        				params['scriptId'] = scriptId;
+                
+                client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                               .then(function(result){
+                                 return result.data.output[0].path;
+                               }).then(function(dataUrl) {
+                  			  d3.csv(dataUrl, function(error, data){  // an array of the column names in the original data source
+
+                                  var columns = Object.keys(data[0]);
+                                  // create pickers for both the x and y axis
+                                  var dimensions = ['x', 'y', 'c', 'l', 'i'];
+                                  var toolbar_labels = ['X axis', 'Y axis', '#Clusters', 'Labels', 'Importance'];
+                                	
+                                  params['caxis'] = {};
+                                  params['laxis'] = {};
+                                  params['iaxis'] = {};
+                                  for(var i_dim in dimensions) {
+                                    var dim = dimensions[i_dim];
+                                    var label = toolbar_labels[i_dim];
+                                    // create the select dropdown
+                                    $("#toolbar1").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+                                    // populate the dropdown with the columns in the dataset
+                                    for(i_col in columns) {
+                                      col_name = columns[i_col];
+                                      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                    }
+                                    // set picker to saved param values
+                                    $("#"+dim+"-var").val(params[dim+'axis']);
+                                    // handle change to select, wrap in anonymous function so the pickers dont clash
+                                    $("#"+dim+"-var").change(function(dim) {
+                                      return function() {                                
+                                        var newVar = $("#"+dim+"-var").val();
+                                        params[dim+'axis'] = newVar;
+                                        params[dim+'axislabel'] = newVar;
+                                        CivisResult.saveParams(params);
+                                      }
+                                    }(dim));
+                                  }
+                                                    
+                                     var svg = d3.select("#toolbar1").append("svg")
+                                      .attr("width", def_vis_width)
+                                      .attr("height", 60);
+                                
+                                     svg.append('rect')
+                                      .attr("transform","translate(0,0)")
+                                   	 .attr('class','form-group toolbar_rect')
+                                      .attr('width', 150)
+                                      .attr('height', 45)
+                                      .attr('x', 20)
+                                      .attr('y', 0)
+                                      .attr('rx', 20)
+                                      .attr('ry', 20)
+                                      .style('fill', 'rgb(31,119,180)')
+                                      .on("click",  function()  {
+                                        d3.select("#toolbar2").remove()
+                                        d3.select("#toolbar3").remove()
+                                        d3.select("#exporttoolbar1").remove()
+                                        d3.select("#exporttoolbar2").remove()
+                                
+                                        d3.selectAll(".circle").remove()
+                                        d3.selectAll(".tick").remove()
+                                        d3.selectAll(".axis").remove()
+                                        d3.selectAll(".circle_selected").remove()
+                                        d3.selectAll("#select_toolbar").remove()
+
+                                        query_data(client,data,def_vis_width, def_vis_height, params);
+                                        })
+                                  							
+                                    svg.append('text').text('Draw Graph')
+                                      .attr('class', 'toolbar_text')
+                                      .attr('x', 95)
+                                      .attr('y', 30)
+                                      .style('fill', 'white')
+                                      .style("font-weight", "bold")
+                                      .style("font-size", "16px")
+                                      .attr("text-anchor", "middle")
+                                      .on("click", function()  {
+                                        d3.select("#toolbar2").remove()
+                                        d3.select("#toolbar3").remove()
+                                        d3.select("#exporttoolbar1").remove()
+                                        d3.select("#exporttoolbar2").remove()
+                                
+                                        d3.selectAll(".circle").remove()
+                                        d3.selectAll(".tick").remove()
+                                        d3.selectAll(".axis").remove()
+                                        d3.selectAll(".circle_selected").remove()
+                                        d3.selectAll("#select_toolbar").remove()
+
+                                        query_data(client,data,def_vis_width, def_vis_height, params);
+                                        })
+                                  stop_loader();
+                                  })
+                               })
+              })
+      })    
+};
+
+var createExportToolbar = function(client, data, def_vis_width, def_vis_height, params) {
+    $("#vis").append("<div width='2000px' id='exporttoolbar1'></div>");
+
+    var dim = 's-out';
+    // create the input 
+    $("#exporttoolbar1").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>Output Schema Name: </label><input type='text' id='"+dim+"-var'>")
+                                      
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+      }
+    }(dim));
+
+   // Create output table input.
+    var dim = 't-out';
+    // create the input 
+    $("#exporttoolbar1").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>Output Table Name: </label><input type='text' id='"+dim+"-var'>")
+                                      
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+      }
+    }(dim));
+
+    // Create numerical inputs for number of histogram bins.
+    $("#exporttoolbar1").append("<div id='exporttoolbar2'></div>");
+    var dim = 'scope';
+    params['scopeaxis'] = 5;
+    // create the input 
+    $("#exporttoolbar2").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>Include nearest </label><input type='number' min="+1+" max="+1000+" value="+params['scopeaxis']+" id='"+dim+"-var'><label class='label_toolbar' for='"+dim+"-var'> nodes.</label>")
+                                      
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+
+        d3.selectAll(".circle_selected")
+            .each(function(d) {get_nearest(data,d)})
+      }
+    }(dim));
+     
+     var svg = d3.select("#exporttoolbar2").append("svg")
+      .attr("width", def_vis_width)
+      .attr("height", 60);
+
+     svg.append('rect')
+      .attr("transform","translate(0,0)")
+   	 .attr('class','form-group')
+      .attr('width', 150)
+      .attr('height', 45)
+      .attr('x', 20)
+      .attr('y', 0)
+      .attr('rx', 20)
+      .attr('ry', 20)
+      .style('fill', 'rgb(31,119,180)')
+      .on("click",  function()  {
+        exportTable(client, data, params)
+        })
+  							
+    svg.append('text').text('Create Output')
+      .attr('x', 95)
+      .attr('y', 30)
+      .style('fill', 'white')
+      .style("font-weight", "bold")
+      .style("font-size", "16px")
+      .attr("text-anchor", "middle")
+      .on("click", function()  {
+        exportTable(client,data,params)
+        })
+}
+
+var exportTable = function(client, data, params) {
+  var selected_circles = document.getElementsByClassName("circle_selected")
+  var N_selected = selected_circles.length
+    
+  var q = "drop table if exists "+params['s-outaxis']+"."+params['t-outaxis']+"; "+
+                    "create table "+params['s-outaxis']+"."+params['t-outaxis']+" as "
+    for (var i = 0; i<N_selected; i++){
+        var this_circle = selected_circles[i];
+        debugger;
+           var id = parseInt(this_circle.getAttribute("id"))
+           if (i > 0) {q = q + "union all "}
+           q = q + "(select row_number() over (order by distance asc) as rank, * from "+
+                    "(select '"+data[id]['label']+"' as selected, "+
+                    "*, "+
+                    "("+params['xaxis']+"-("+data[id]['x']+"))^2+("+params['yaxis']+"-("+data[id]['y']+"))^2 as distance "+
+                    "from "+params['saxis']+"."+params['taxis']+" "+
+                    "order by distance asc "+
+                    "limit "+(params['scopeaxis']+1)+") "+
+                    "where distance > 0) "
+        }    
+
+  client.defaultCredential().then(function(credential) {
+      client.request("/scripts/sql",{
+              method: "POST",
+              data: {
+                  'name': 'clustering output',
+                  'remoteHostId': 32,
+                  'credentialId': credential.id,
+                  'sql': q
+              }
+              }).then(function(result) {
+              
+                var scriptId = result.data.id;
+        				params['scriptId'] = scriptId;
+                
+                client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                               .then(function(result){
+            })
+        })
+    })
+}
+
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+  // use the startRefreshApiToken method to get a new api key
+  client = new CivisClient(config.apiKey)
+  client.startRefreshApiToken(config.reportId)
+
+  var params = config['params'] || {};
+  delete params['dbaxis']
+  delete params['saxis']
+  delete params['taxis']
+
+  // sizing
+  if('dimensions' in config) {
+    def_vis_width = config['dimensions']['width'];
+    def_vis_height = config['dimensions']['height'];
+  }
+  def_vis_width = 1000;
+  // tooltips
+  $("#vis").append("<div class='tooltip' width='2000px' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+
+  createMetaToolbar(client, def_vis_width, def_vis_height, params);
+
+  if (params['url'] != null && params['url'].length > 0) {
+    d3.csv(params['url'], function(error, data){
+       draw_graph(data,def_vis_width,def_vis_height,params);
+    })
+  }
+
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+</script>
+</html>

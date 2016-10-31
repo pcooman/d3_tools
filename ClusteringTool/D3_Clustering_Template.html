@@ -9,6 +9,7 @@
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
 <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<script src="https://s3.amazonaws.com/civis-console/javascript-client/v0.3.0/civis_client.min.js"></script>
 
 <style>
 input {
@@ -169,7 +170,7 @@ draw = function(data, vis_width, vis_height, params) {
     var count = 1
   }
 
-  var margin = {top: 0, right: 0, bottom: 0, left: 0};
+  var margin = {top: 30, right: 30, bottom: 30, left: 30};
   var width = vis_width - margin.left - margin.right,
       height = vis_height - margin.top - margin.bottom;
   d3.select('.chart-outer')
@@ -180,8 +181,8 @@ draw = function(data, vis_width, vis_height, params) {
 
   var svg = d3.select(".chart")
     .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("width", width)
+      .attr("height", height)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -260,11 +261,11 @@ draw = function(data, vis_width, vis_height, params) {
     })
 
   var x = d3.scaleLinear()
-    .range([0, width])
+    .range([margin.left, width-margin.right])
     .domain(d3.extent(data, function(d) { return parseFloat(d[params['xaxis']]); })).nice();
   
   var y = d3.scaleLinear()
-    .range([height, 0])
+    .range([height-margin.bottom, margin.top])
     .domain(d3.extent(data, function(d) { return parseFloat(d[params['yaxis']]); })).nice();
 
   var xAxis = d3.axisTop(x),
@@ -284,7 +285,7 @@ draw = function(data, vis_width, vis_height, params) {
   }
 
   var bubble = d3.scaleLinear()
-  	.range([5,40])
+  	.range([4,20])
   	.domain(d3.extent(data, function(d) { return parseFloat(d[params['iaxis']]); })).nice();
 	
   svg.selectAll(".circle")
@@ -295,17 +296,16 @@ draw = function(data, vis_width, vis_height, params) {
       .attr("cy", function(d) { return y(parseFloat(d[params['yaxis']])); })
       .attr("r", function(d) { return (params['iaxis'] != null && params['iaxis'].length > 0) ? bubble(parseFloat(d[params['iaxis']])) : 10; })
       .attr("selected", 0)
+      .attr("id", function(d,i) {return i;})
       .style("fill", function(d) {return d3.interpolateSpectral(1 -(classes.indexOf(d[params['caxis']])/count)); })
   		.on("mouseover", function(d) {
     				d3.select(this)
-          		.transition().duration(200)
     				.style("stroke", "black")
     
-    				var label = params['xaxis']+": "+d[params['xaxis']] + 
-                                "<br/>" + params['yaxis']+": "+d[params['yaxis']]
+    				var label = ""
 
-                      if (params['baxis']!=null &&  params['baxis'].length>0) {
-                        label = label + "<br/>" + params['baxis']+": "+d[params['baxis']]
+                      if (params['laxis']!=null &&  params['laxis'].length>0) {
+                        label = label +  params['laxis']+": "+d[params['laxis']]
                         } 
                       if (params['caxis']!=null &&  params['caxis'].length>0) {
                         label = label + "<br/>" + params['caxis']+": "+d[params['caxis']];
@@ -362,27 +362,6 @@ draw = function(data, vis_width, vis_height, params) {
         console.log(element);
     debugger;    
     }
-
-    // Create numerical inputs for number of histogram bins.
-    $("#vis").append("<div id='select_toolbar'></div>");
-    var dim = 'scope';
-    params['scopeaxis'] = 20;
-    // create the input 
-    $("#select_toolbar").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>Include nearest </label><input type='number' min="+0+" max="+1000+" value="+params['scopeaxis']+" id='"+dim+"-var'><label class='label_toolbar' for='"+dim+"-var'> nodes.</label>")
-                                      
-    // handle change to inputs, wrap in anonymous function so the pickers dont clash
-    $("#"+dim+"-var").change(function(dim) {
-      return function() {
-        var newVar = $("#"+dim+"-var").val();
-        var newVar = $("#"+dim+"-var").val();
-        params[dim+'axis'] = newVar;
-        params[dim+'axislabel'] = newVar;
-        CivisResult.saveParams(params);
-
-        d3.selectAll(".circle_selected")
-            .each(function(d) {get_nearest(data,d)})
-      }
-    }(dim));
 }
 
 var showDetails = function(data, element) {
@@ -390,7 +369,7 @@ var showDetails = function(data, element) {
   $("#chart-tooltip").html(data)
   width = $("#chart-tooltip").width()
   height = $("#chart-tooltip").height()
-  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").css('top', (-15 + pos.top-height*1.50)+'px').css('left', (pos.left-width/2.0)+'px')
   $("#chart-tooltip").show()
 };
 var hideDetails = function() {
@@ -410,19 +389,19 @@ var createToolbar = function(data, params) {
   // an array of the column names in the original data source
   var columns = Object.keys(data[0]);
   // set up toolbar
-  $("#vis").prepend("<div id='toolbar' width='700px'></div>");
+  $("#vis").prepend("<div id='toolbar1' width='700px'></div>");
   // create pickers for both the x and y axis
-  var dimensions = ['x', 'y', 'c', 'b', 'i'];
+  var dimensions = ['x', 'y', 'c', 'l', 'i'];
   var toolbar_labels = ['X axis', 'Y axis', '#Clusters', 'Labels', 'Importance'];
 	
   params['caxis'] = {};
-  params['baxis'] = {};
+  params['laxis'] = {};
   params['iaxis'] = {};
   for(var i_dim in dimensions) {
     var dim = dimensions[i_dim];
     var label = toolbar_labels[i_dim];
     // create the select dropdown
-    $("#toolbar").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+    $("#toolbar1").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
     // populate the dropdown with the columns in the dataset
     for(i_col in columns) {
       col_name = columns[i_col];
@@ -434,10 +413,8 @@ var createToolbar = function(data, params) {
     $("#"+dim+"-var").change(function(dim) {
       return function() {
         d3.selectAll(".circle").remove()
-        d3.selectAll("text").remove()
         d3.selectAll(".tick").remove()
         d3.selectAll(".axis").remove()
-        d3.selectAll(".label_toolbar").remove()
         d3.selectAll(".circle_selected").remove()
         d3.selectAll("#select_toolbar").remove()
 
@@ -449,19 +426,267 @@ var createToolbar = function(data, params) {
       }
     }(dim));
   }
+
+  $("#toolbar1").append("<div id='toolbar2' width='700px'></div>");
+    var dim = 'hb';
+    var label = 'Select by';
+    // create the select dropdown
+    $("#toolbar2").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+    // populate the dropdown with the columns in the dataset
+    for(i_col in columns) {
+      col_name = columns[i_col];
+      $("#"+dim+"-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+    }
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        d3.select("#h-var").html("");
+        // populate the dropdown with the columns in the dataset
+        if (isNaN(data[0][params['hbaxis']])) {
+            var labels = _.uniq(data.map(function(d) {return d[params['hbaxis']];}))
+            labels.sort();
+        } else {
+            var labels = _.uniq(data.map(function(d) {return parseFloat(d[params['hbaxis']]);}))
+            labels.sort(function(a, b){return b-a});
+        }
+        labels.unshift("");
+        for(i_lab in labels) {
+        label_name = labels[i_lab];
+          $("#h-var").append("<option value='"+label_name+"'>"+label_name+"</option>");
+        }
+      }
+    }(dim));
+
+  $("#toolbar2").append("<div id='toolbar3' width='700px'></div>");
+    var dim = 'h';
+    var label = 'Select';
+    // create the select dropdown
+    $("#toolbar3").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+
+    // set picker to saved param values
+    $("#"+dim+"-var").val(params[dim+'axis']);
+    // handle change to select, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        debugger;
+        
+        for (var i=0; i<data.length; i++){
+            var this_circle = document.getElementsByClassName("circle")[i];
+           var id = parseInt(this_circle.getAttribute("id"))
+            if (data[id][params['hbaxis']] == params['haxis']) {
+              this_circle.setAttribute("selected",1)
+              this_circle.setAttribute("class","circle_selected")
+              this_circle.setAttribute("style", "fill: red")
+            }
+      
+        }      
+      }
+    }(dim));
+
+     var svg = d3.select("#toolbar3").append("svg")
+      .attr("width", def_vis_width)
+      .attr("height", 60);
+
+     svg.append('rect')
+      .attr("transform","translate(0,0)")
+   	 .attr('class','form-group')
+      .attr('width', 150)
+      .attr('height', 45)
+      .attr('x', 20)
+      .attr('y', 0)
+      .attr('rx', 20)
+      .attr('ry', 20)
+      .style('fill', 'rgb(31,119,180)')
+      .on("click",  function()  {
+            var selected_circles = document.getElementsByClassName("circle_selected")
+            var N_selected = selected_circles.length
+    
+            for (var i = 0; i<N_selected; i++){
+                selected_circles[i].setAttribute("class","circle");
+            }
+        })
+  							
+    svg.append('text').text('Reset Selection')
+      .attr('x', 95)
+      .attr('y', 30)
+      .style('fill', 'white')
+      .style("font-weight", "bold")
+      .style("font-size", "16px")
+      .attr("text-anchor", "middle")
+      .on("click", function()  {
+            var selected_circles = document.getElementsByClassName("circle_selected")
+            var N_selected = selected_circles.length
+    
+            for (var i = 0; i<N_selected; i++){
+                selected_circles[i].setAttribute("class","circle");
+                selected_circles[i].setAttribute("style","fill:"                    .style("fill", parseInt(this.getAttribute("selected")) ? "red" : d3.interpolateSpectral(1 -(classes.indexOf(d[params['caxis']])/count)) )
+
+            }
+        })
+
+    createExportToolbar(client, data, def_vis_width, def_vis_height, params)
 };
+
+var createExportToolbar = function(client, data, def_vis_width, def_vis_height, params) {
+    $("#vis").append("<div id='exporttoolbar1'></div>");
+
+    var dim = 's-out';
+    // create the input 
+    $("#exporttoolbar1").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>Output Schema Name: </label><input type='text' id='"+dim+"-var'>")
+                                      
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+      }
+    }(dim));
+
+   // Create output table input.
+    var dim = 't-out';
+    // create the input 
+    $("#exporttoolbar1").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>Output Table Name: </label><input type='text' id='"+dim+"-var'>")
+                                      
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+      }
+    }(dim));
+
+    // Create numerical inputs for number of histogram bins.
+    $("#exporttoolbar1").append("<div id='exporttoolbar2'></div>");
+    var dim = 'scope';
+    params['scopeaxis'] = 5;
+    // create the input 
+    $("#exporttoolbar2").append("<div class='form-group'><label class='label_toolbar' for='"+dim+"-var'>Include nearest </label><input type='number' min="+1+" max="+1000+" value="+params['scopeaxis']+" id='"+dim+"-var'><label class='label_toolbar' for='"+dim+"-var'> nodes.</label>")
+                                      
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        var newVar = $("#"+dim+"-var").val();
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+
+        d3.selectAll(".circle_selected")
+            .each(function(d) {get_nearest(data,d)})
+      }
+    }(dim));
+     
+     var svg = d3.select("#exporttoolbar2").append("svg")
+      .attr("width", def_vis_width)
+      .attr("height", 60);
+
+     svg.append('rect')
+      .attr("transform","translate(0,0)")
+   	 .attr('class','form-group')
+      .attr('width', 150)
+      .attr('height', 45)
+      .attr('x', 20)
+      .attr('y', 0)
+      .attr('rx', 20)
+      .attr('ry', 20)
+      .style('fill', 'rgb(31,119,180)')
+      .on("click",  function()  {
+        exportTable(client, data, params)
+        })
+  							
+    svg.append('text').text('Create Output')
+      .attr('x', 95)
+      .attr('y', 30)
+      .style('fill', 'white')
+      .style("font-weight", "bold")
+      .style("font-size", "16px")
+      .attr("text-anchor", "middle")
+      .on("click", function()  {
+        exportTable(client,data,params)
+        })
+}
+
+var exportTable = function(client, data, params) {
+  var selected_circles = document.getElementsByClassName("circle_selected")
+  var N_selected = selected_circles.length
+    
+  var q = "drop table if exists "+params['s-outaxis']+"."+params['t-outaxis']+"; "+
+                    "create table "+params['s-outaxis']+"."+params['t-outaxis']+" as "
+    for (var i = 0; i<N_selected; i++){
+        var this_circle = selected_circles[i];
+        debugger;
+           var id = parseInt(this_circle.getAttribute("id"))
+           if (i > 0) {q = q + "union all "}
+           q = q + "(select row_number() over (order by distance asc) as rank, * from "+
+                    "(select '"+data[id][params['laxis']]+"' as selected, "+
+                    "*, "+
+                    "("+params['xaxis']+"-("+data[id][params['xaxis']]+"))^2+("+params['yaxis']+"-("+data[id][params['yaxis']]+"))^2 as distance "+
+                    "from pcooman.movies_tsne "+
+                    "order by distance asc "+
+                    "limit "+(params['scopeaxis']+1)+") "+
+                    "where distance > 0) "
+        }    
+  debugger;
+  console.log(q)
+
+  client.defaultCredential().then(function(credential) {
+      client.request("/scripts/sql",{
+              method: "POST",
+              data: {
+                  'name': 'clustering output',
+                  'remoteHostId': 32,
+                  'credentialId': credential.id,
+                  'sql': q
+              }
+              }).then(function(result) {
+              
+                var scriptId = result.data.id;
+        				params['scriptId'] = scriptId;
+                
+                client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                               .then(function(result){
+            })
+        })
+    })
+}
+
 // Handle config blob, download the csv from the url, create the toolbar
 // and init the graph with the resulting parameters.
 var prepChart = function(config) {
+  // use the startRefreshApiToken method to get a new api key
+  client = new CivisClient(config.apiKey)
+  client.startRefreshApiToken(config.reportId)
 
   var params = config['params'] || {};
-  
+  delete params['dbaxis']
+  delete params['saxis']
+  delete params['taxis']
+
+  //var params = config['params'] || {};
+  var params = {};
+
   // sizing
   if('dimensions' in config) {
     def_vis_width = config['dimensions']['width'];
     def_vis_height = config['dimensions']['height'];
   }
-
+  def_vis_width = 900;
   // tooltips
   $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
   $("#chart-tooltip").hide();
@@ -472,6 +697,7 @@ var prepChart = function(config) {
     }
     draw(data, def_vis_width, def_vis_height, params);
   });
+
 };
 
 //Init report
