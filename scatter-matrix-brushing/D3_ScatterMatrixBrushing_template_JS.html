@@ -1,0 +1,816 @@
+<html>
+<script src="https://rawgit.com/jashkenas/underscore/1.8.3/underscore-min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://rawgit.com/jashkenas/underscore/master/underscore-min.js"></script>  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="https://rawgit.com/jstat/jstat/1.5.3/dist/jstat.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<script src="https://s3.amazonaws.com/civis-console/javascript-client/v0.3.0/civis_client.min.js"></script>  
+
+<style>
+input {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+  
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 130;
+}
+  
+svg {
+  font: 10px sans-serif;
+  padding: 10px;
+}
+
+.axis,
+.frame {
+  shape-rendering: crispEdges;
+}
+
+.axis line {
+  stroke: #ddd;
+}
+
+.axis path {
+  display: none;
+}
+
+.cell text {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.frame {
+  fill: none;
+  stroke: #aaa;
+}
+
+circle {
+  fill-opacity: .7;
+}
+
+
+circle.hidden {
+  fill: grey !important;
+}
+  
+.extent {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #fff;
+}
+
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+  
+body, html { overflow: scroll; height: 100% }
+
+.loader {
+    transform-origin: center center;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {transform: rotate(0deg); }
+    100% {transform: rotate(360deg); }
+}  
+  
+</style>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+      
+        <div class="tab-pane active" id="a_tab">
+            <h1>Graph</h1>
+            <acontent>
+            <div id='metatoolbar' style="height:100px;"></div>
+            <div id='toolbar1' style="height:75px;"></div>
+            <div id='toolbar3'></div>
+            <div id='vis'>
+              <svg class='chart-outer'><g class="chart"></g></svg>
+            </div>
+            </acontent>
+        </div>
+      
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<h2>Introduction</h2>
+          	<p>This section provides a manual for the Scatter Matrix with Brushing visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<h2>Inputs</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Toolbar_empty.png?raw=true">
+    		 <ul>
+              <li><b>Add Variable:</b> A button to generate additional Property dropdown forms.</li>
+              <li><b>Property:</b> A dropdown menu to select a new variable to include in the plot.</li>
+              <li><b>Color:</b> A dropdown menu to select the variable that signifies class membership. The number of different colors equals the number of unique classes.</li>
+            </ul>
+          	<h2>Data table</h2>
+          	<p>The template plots the scatter plot for all pairwise combinations of the selected variables. The values in the selected <i>Property</i> columns need to be numerical. The variable selected for the <i>Color</i> menu can be a categorical or numerical, provided that there are a limited number of unique values. In the following table, all columns can be selected as the <i>Color</i> variable, but only the first four column can be selected as <i>Property</i> variables:<p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Table.png?raw=true">
+          	<p>The graph will plot a matrix with the column names in the left ahnd corner of the cells that form the diagonal. Each data point is plotted as a circle. These circles have a fixed radius, but their color is determined by the <i>Color</i> value of its corresponding data point.</p>
+          	<p>The <i>Add Variable</i> button allows you to gradually build up the graph. A variable can be "removed" from the plot by changing that variable to one that has already been plotted.</p>
+           <p>Holding down the mouse button and drawing a rectangle ("brushing") highlights the data points that fall within the rectangle, not only in the current cell, but in all cells of the matrix. You can adjust the size of the brush by moving its edges or its corners. You can also translate the brush by clicking inside the rectangle and dragging it. Finally, to clear the brush, simply click anywehere outside of the rectangular area.</p>
+           <h2>Known issues</h2>
+          	<p>There is a remaining issue with the brushing feature. When brushing, the unselected data points should appear as light grey filled circles, at the moment they disappear from the plot.</p>
+            <bcontent></bcontent>
+        </div>
+      
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+          	<h2>Introduction</h2>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the iris data set. The data can be found either on Platform (schema.table = <i>pcooman.iris</i> on redshift-general) or here: <i>http://www.idvbook.com/teaching-aid/data-sets/the-iris-data-set/</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+            <h2>Data table</h2>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Table.png?raw=true">
+          	<h2>Sample plot</h2>
+          	<p>We start by clicking the <i>Add Variable</i> button. This brings up a first <i>Property</i> input and the <i>Color</i> input. The <i>Color</i> input is only added the first time, subsequently clicking the <i>Add Variable</i> button only adds a new <i>Property</i> input:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Toolbar_empty.png?raw=true">
+           <p>For now, we will only fill in <i>Property</i> and leave the <i>Color</i> input empty:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Toolbar_nocolor.png?raw=true">
+           <p>For the inputs listed above, the plot should look as follows:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Example_nocolor.png?raw=true">
+           <p>Filling in the <i>Color</i> variable changes the fill color of the data points accordingly. A legend in the top right corner shows which color corresponds to each class:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Toolbar_full.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Example_color.png?raw=true">
+           <p>Finally, drawing a rectangle on one of the cells highlights the selected data points in the current cells and the corresponding data points in all other cells:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/scatter-matrix-brushing/ScatterMatrix_Example_brushing.png?raw=true">
+          	 <ccontent></ccontent>
+        </div>
+      
+    </div>
+</div>
+
+<script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+
+draw_graph = function(data_full, vis_width, vis_height, params) {
+  debugger;
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+  var margin = {top: 10, right: 20, bottom: 60, left: 75};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", vis_width)
+    .attr("height", vis_height);
+  var chart = d3.select(".chart")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  
+  var count = params['count'];
+  var width = 750;
+  var size = width/(count+1);
+  var padding = 20;
+  
+  var data = [];
+  for (var i=0; i<data_full.length; i++){
+    var new_data = {};
+    for (var j=0; j<count+1; j++) {
+      new_data[params['xaxis'+j]] = data_full[i][params['xaxis'+j]]
+    }
+    if (params['caxis'] != null && params['caxis'].length > 0) {
+    new_data[params['caxis']] = data_full[i][params['caxis']]    
+    }
+    data.push(new_data)
+  }  
+
+  var x = d3.scale.linear()
+      .range([padding / 2, size - padding / 2]);
+
+  var y = d3.scale.linear()
+      .range([size - padding / 2, padding / 2]);
+
+  var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom")
+      .ticks(6);
+
+  var yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left")
+      .ticks(6);
+  
+  var domainByTrait = {},
+      traits = Object.keys(data[0]).filter(function(d) { return d !== "class"; }),
+      n = traits.length;
+  
+  traits.forEach(function(trait) {
+    domainByTrait[trait] = d3.extent(data, function(d) { return d[trait]; });
+  });
+
+  xAxis.tickSize(size * n);
+  yAxis.tickSize(-size * n);
+
+  var svg = d3.select(".chart").append("svg")
+      .attr("width", 150 + size * n + padding)
+      .attr("height", size * n + padding)
+    .append("g")
+      .attr("transform", "translate(" + padding + "," + padding / 2 + ")");
+
+  svg.selectAll(".x.axis")
+      .data(traits)
+    .enter().append("g")
+      .attr("class", "x axis")
+      .attr("transform", function(d, i) { return "translate(" + (20 + (n - i - 1) * size) + ",0)"; })
+      .each(function(d) { x.domain(domainByTrait[d]); d3.select(this).call(xAxis); });
+
+  svg.selectAll(".y.axis")
+      .data(traits)
+    .enter().append("g")
+      .attr("class", "y axis")
+      .attr("transform", function(d, i) { return "translate(20," + i * size + ")"; })
+      .each(function(d) { y.domain(domainByTrait[d]); d3.select(this).call(yAxis); });
+  
+  if (params['caxis'] != null && params['caxis'].length > 0) {
+    var classes = _.uniq(data_full.map(function(d) {return d[params['caxis']];}));
+    var N_colors = classes.length;
+  }
+
+  var cell = svg.selectAll(".cell")
+      .data(cross(traits, traits))
+    .enter().append("g")
+      .attr("class", "cell")
+      .attr("transform", function(d) { return "translate(" + (20 + (n - d.i - 1) * size) + "," + d.j * size + ")"; })
+      .each(plot);
+
+  // Titles for the diagonal.
+  cell.filter(function(d) { return d.i === d.j; }).append("text")
+      .attr("class","diag_label")
+      .attr("x", padding)
+      .attr("y", padding)
+      .attr("dy", ".71em")
+      .text(function(d) { return d.x; });
+
+  var brush = d3.svg.brush()
+      .x(x)
+      .y(y)
+      .on("brushstart", brushstart)
+      .on("brush", brushmove)
+      .on("brushend", brushend);
+ 
+  cell.call(brush);
+  
+  if (params['caxis'] != null && params['caxis'].length > 0) {
+    for (var i=0; i<classes.length; i++) {
+    svg.append("circle")
+       .attr("class","legend_circle")
+       .attr("cx", 20 + size * n + padding )
+       .attr("cy", 10+20*i)
+       .attr("r", 5)
+       .attr("fill", d3.interpolateSpectral(1 - parseFloat(i)/N_colors))
+
+     svg.append("text")
+       .attr("x", 20 + size * n + padding + 15)
+       .attr("y", 14+20*i)
+       .attr("class","legend_label")
+       .text(classes[i])
+       .style("font-weight", "bold")
+       .style("font-size", "12px")
+       .attr("fill", d3.interpolateSpectral(1 - parseFloat(i)/N_colors))
+       .style("text-anchor","left")
+    }
+  }
+
+  function plot(p) {
+    var cell = d3.select(this);
+
+    x.domain(domainByTrait[p.x]);
+    y.domain(domainByTrait[p.y]);
+
+    cell.append("rect")
+        .attr("class", "frame")
+        .attr("x", padding / 2)
+        .attr("y", padding / 2)
+        .attr("width", size - padding)
+        .attr("height", size - padding);
+
+    cell.selectAll("circle")
+        .data(data)
+      .enter().append("circle")
+        .attr("cx", function(d) { return x(d[p.x]); })
+        .attr("cy", function(d) { return y(d[p.y]); })
+        .attr("r", 4)
+        .style("fill", function(d) { return (params['caxis'] != null && params['caxis'].length > 0) ? d3.interpolateSpectral(1 -parseFloat(classes.indexOf(d[params['caxis']]))/N_colors) : "rgb(0,96,130)"; });
+}
+ 
+var brushCell;
+
+// Clear the previously-active brush, if any.
+function brushstart(p) {
+if (brushCell !== this) {
+    d3.select(brushCell).call(brush.clear());
+    x.domain(domainByTrait[p.x]);
+    y.domain(domainByTrait[p.y]);
+    brushCell = this;
+  }
+}
+
+// Highlight the selected circles.
+function brushmove(p) {
+  var e = brush.extent();
+  svg.selectAll("circle").classed("hidden", function(d) {
+    return e[0][0] > d[p.x] || d[p.x] > e[1][0]
+        || e[0][1] > d[p.y] || d[p.y] > e[1][1];
+  });
+}
+
+// If the brush is empty, select all circles.
+function brushend() {
+  if (brush.empty()) {
+    svg.selectAll(".hidden").classed("hidden", false);
+  }
+};
+
+function cross(a, b) {
+      var c = [], n = a.length, m = b.length, i, j;
+      for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
+      return c;
+  }    
+}
+
+query_data = function(client,data,def_vis_width,def_vis_height,params) {
+      
+    start_loader(150,300,175)
+
+    if (params['caxis'] != null) {
+        var q = "select "+params['caxis']+" "
+        for (var i=0; i<params['count']+1; i++) {
+            q = q + ", "+params['xaxis'+i]    
+        }
+        q = q + " from "+params['saxis']+"."+params['taxis']
+    } else {
+        var q = "select "
+        for (var i=0; i<params['count']+1; i++) {
+            if (i > 0) {q = q + ", "}
+            q = q + params['xaxis'+i]    
+        }
+        q = q + " from "+params['saxis']+"."+params['taxis']    
+    }
+    
+    client.request("/scripts/"+params['scriptId'],{
+          method: "PATCH",
+          data: {
+              'sql': q
+               }
+          }).then(function(result) {
+            var scriptId = result.data.id;
+            
+            client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                           .then(function(result){
+                             return result.data.output[0].path;
+                           }).then(function(dataUrl) {
+              			  d3.csv(dataUrl, function(error, data){
+                                params['url'] = dataUrl;
+                                CivisReport.saveParams(params);
+                                debugger;
+                             stop_loader();
+                             draw_graph(data,def_vis_width,def_vis_height,params);
+                            
+                                })
+                        })
+            })
+}
+
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+start_loader = function(size,Xpos,Ypos) {
+    d3.select(".chart").append("image")
+    .attr("xlink:href","https://civisanalytics.com/assets/civis_logos/Civis-symbol-d4d7147a1bb51c1b53d98f76e1a7ffce.png")    
+    .attr("class","loader")
+    .attr("width", size)
+    .attr("height", size)
+    .attr("x", Xpos)
+    .attr("y", Ypos)
+}
+stop_loader = function() {
+    d3.select(".loader").remove()
+    
+}
+
+var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) {
+   client.request("/databases", {method: "GET"}).then(function(result) {       
+        //$("#vis").prepend("<div class='form-group' id='metatoolbar'></div>");
+     	   var db_options = result.data.map(function(d) {return d.name;});
+        var db_id_options = result.data.map(function(d) {return d.id;});
+        var dim = "db"
+        var label = "Source Database"
+        
+        $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option value='32' selected>redshift-general</option></select></div>")
+        // populate the dropdown with the geography types
+        for(i_label in db_options) {
+          db_type = db_options[i_label];
+          db_id_type = db_id_options[i_label];
+          if (db_type != "redshift-general" ){
+          	$("#"+dim+"-var").append("<option value='"+db_id_type+"'>"+db_type+"</option>");
+          }
+        }
+        
+        // set picker to saved param values
+        $("#"+dim+"-var").val(params[dim+'axis']);
+        // handle change to select, wrap in anonymous function so the pickers dont clash
+        $("#"+dim+"-var").change(function(dim) {
+          return function() {
+            d3.select("#s-var").html("");
+            d3.select("#t-var").html("");
+
+            var newVar = $("#"+dim+"-var").val();
+            params[dim+'axis'] = newVar;
+            params[dim+'axislabel'] = newVar;
+            client.request("/databases/"+params['dbaxis']+"/schemas", {method: "GET"}).then(function(result) {
+                var s_options = result.data.map(function(d) {return d.schema;});
+                for(i_label in s_options) {
+                  s_type = s_options[i_label];
+                  $("#s-var").append("<option value='"+s_type+"'>"+s_type+"</option>");
+                }
+            })
+           }
+         }(dim));
+       
+       var dimensions = ['s'];
+       var toolbar_labels = ['Source Schema'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             d3.select("#t-var").html("");
+
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+             client.request("/tables", {method: "GET", 
+                                        params:{
+                                                databaseId: params['dbaxis'],
+                                                schema: params['saxis'],
+                                                limit: 50
+                                                }
+                                        })
+            .then(function(result) {
+                var t_options = result.data.map(function(d) {if (d.databaseId == params['dbaxis'] && d.schema == params['saxis']) return d.name;});
+                for(i_label in t_options) {
+                  t_type = t_options[i_label];
+                  $("#t-var").append("<option value='"+t_type+"'>"+t_type+"</option>");
+                }
+             })
+           }
+         }(dim));
+       }
+
+       var dimensions = ['t'];
+       var toolbar_labels = ['Source Table'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+           }
+         }(dim));
+       }
+     
+     var svg = d3.select("#metatoolbar").append("svg")
+      .attr("width", def_vis_width)
+      .attr("height", 60);
+
+     svg.append('rect')
+      .attr("transform","translate(0,0)")
+   	 .attr('class','form-group')
+      .attr('width', 150)
+      .attr('height', 45)
+      .attr('x', 20)
+      .attr('y', 0)
+      .attr('rx', 20)
+      .attr('ry', 20)
+      .style('fill', 'rgb(31,119,180)')
+      .on("click",  function()  {
+        delete params['caxis']
+        for (var i=0; i<params['count']+1; i++) {delete params['xaxis'+i]}
+        params["count"] = -1
+        d3.selectAll('circle').remove()
+        d3.selectAll('.diag_label').remove()
+        d3.selectAll("line").remove()
+        d3.selectAll(".tick").remove()
+        d3.selectAll(".frame").remove()
+        d3.selectAll(".legend_circle").remove()
+        d3.selectAll(".legend_label").remove()
+
+        d3.select("#toolbar1").html("")
+        d3.select("#toolbar3").html("")
+
+        createToolbar(client,def_vis_width, def_vis_height, params);
+        })
+  							
+    svg.append('text').text('Get Table')
+      .attr('x', 95)
+      .attr('y', 30)
+      .style('fill', 'white')
+      .style("font-weight", "bold")
+      .style("font-size", "16px")
+      .attr("text-anchor", "middle")
+      .on("click", function()  {
+        delete params['caxis']
+        for (var i=0; i<params['count']+1; i++) {delete params['xaxis'+i]}
+        params["count"] = -1
+        d3.selectAll('circle').remove()
+        d3.selectAll('.diag_label').remove()
+        d3.selectAll("line").remove()
+        d3.selectAll(".tick").remove()
+        d3.selectAll(".frame").remove()
+        d3.selectAll(".legend_circle").remove()
+        d3.selectAll(".legend_label").remove()
+
+        d3.select("#toolbar1").html("")
+        d3.select("#toolbar3").html("")
+        
+        createToolbar(client,def_vis_width, def_vis_height, params);
+        })
+     
+   })
+}
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 475;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(client,def_vis_width,def_vis_height,params) {
+
+    start_loader(50,400,12.5);
+
+  // Create script to get data table metadata
+  client.defaultCredential().then(function(credential) {
+      client.request("/scripts/sql",{
+              method: "POST",
+              data: {
+                  'name': 'test script 1234',
+                  'remoteHostId': parseInt(params['dbaxis']),
+                  'credentialId': credential.id,
+                  'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 1"
+              }
+              }).then(function(result) {
+              
+                var scriptId = result.data.id;
+        				params['scriptId'] = scriptId;
+                
+                client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                               .then(function(result){
+                                 return result.data.output[0].path;
+                               }).then(function(dataUrl) {
+                  			  d3.csv(dataUrl, function(error, data){
+                                      // an array of the column names in the original data source
+                                      var columns = Object.keys(data[0]);
+                                      var count = params['count']
+
+  svg = d3.select("#toolbar1").append('svg').attr('height', 600).attr('width', 300)
+	rect = svg.append('rect').attr('width', 150)
+                .attr('height', 45)
+                .attr('x', 20)
+                .attr('y', 0)
+                .attr('rx', 20)
+                .attr('ry', 20)
+                .style('fill', 'rgb(31,119,180)')
+  		   .on("click", function() {
+                    params["count"] = params["count"] + 1
+
+                    $("#toolbar3").prepend("<div id='proptoolbar"+params['count']+"'></div>");
+                    CivisResult.saveParams(params);
+                                        // 1. create the Property selector dropdown
+                                      dim = 'xaxis'+params['count']
+                                      $("#proptoolbar"+params['count']).append("<div class='form-group'><label for='x-var"+params['count']+"'> Property:</label><select class='form-control' id='x-var"+params['count']+"'><option></option></select></div>")
+                                      // populate the dropdown with the columns in the dataset
+                                      for(i_col in columns) {
+                                        col_name = columns[i_col];
+                                        $("#x-var"+params['count']).append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                      }
+                                      // set picker to saved param values
+                                      $("#x-var"+params['count']).val(params['xaxis'+params['count']]);
+                                      // handle change to select, wrap in anonymous function so the pickers dont clash
+                                      $("#x-var"+params['count']).change(function(dim) {
+                                        return function() {
+                                          var newVar = $("#x-var"+dim.slice(5)).val();
+                                          params[dim] = newVar;
+                                          params['xaxislabel'+dim.slice(5)] = newVar;
+                                          CivisResult.saveParams(params);
+                                        }
+                                      }(dim))
+                 });
+  							
+	text = svg.append('text').text('Add Variable')
+                .attr('x', 95)
+                .attr('y', 30)
+                .style('fill', 'white')
+  		     .style("font-weight", "bold")
+  		     .style("font-size", "16px")
+  		     .attr("text-anchor", "middle")
+  		.on("click", function() {
+                params["count"] = params["count"] + 1
+                $("#toolbar3").prepend("<div id='proptoolbar"+params['count']+"'></div>");
+                 CivisResult.saveParams(params);
+                                        // 1. create the Property selector dropdown
+                                      dim = 'xaxis'+params['count']
+                                      $("#proptoolbar"+params['count']).append("<div class='form-group'><label for='x-var"+params['count']+"'> Property:</label><select class='form-control' id='x-var"+params['count']+"'><option></option></select></div>")
+                                      // populate the dropdown with the columns in the dataset
+                                      for(i_col in columns) {
+                                        col_name = columns[i_col];
+                                        $("#x-var"+params['count']).append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                      }
+                                      // set picker to saved param values
+                                      $("#x-var"+params['count']).val(params['xaxis'+params['count']]);
+                                      // handle change to select, wrap in anonymous function so the pickers dont clash
+                                      $("#x-var"+params['count']).change(function(dim) {
+                                        return function() {
+                                          var newVar = $("#x-var"+dim.slice(5)).val();
+                                          params[dim] = newVar;
+                                          params['xaxislabel'+dim.slice(5)] = newVar;
+                                          CivisResult.saveParams(params);
+                                        }
+                                      }(dim))                    
+                 });
+
+                                        var dim = 'c';
+                                        $("#toolbar3").prepend("<div id='toolbar2'></div>");
+
+                                        $("#toolbar2").append("<div><label for='c-var'> Color:</label><select class='form-control' id='c-var'><option></option></select></div>")
+                                        // populate the dropdown with the columns in the dataset
+                                        for(i_col in columns) {
+                                          col_name = columns[i_col];
+                                          $("#c-var").append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                        }
+                                        // set picker to saved param values
+                                        $("#c-var").val(params['caxis']);
+                                        // handle change to select, wrap in anonymous function so the pickers dont clash
+                                        $("#c-var").change(function(dim) {
+                                          return function() {                                    
+                                            var newVar = $("#c-var").val();
+                                            params['caxis'] = newVar;
+                                            params['caxislabel'] = newVar;
+                                            CivisResult.saveParams(params);
+                                          }
+                                        }(dim))
+                                      
+
+
+                                    var svg = d3.select("#toolbar3").append("svg")
+                                      .attr("width", def_vis_width)
+                                      .attr("height", 60);
+                                
+                                     svg.append('rect')
+                                      .attr("transform","translate(0,0)")
+                                   	 .attr('class','form-group toolbar_rect')
+                                      .attr('width', 150)
+                                      .attr('height', 45)
+                                      .attr('x', 20)
+                                      .attr('y', 0)
+                                      .attr('rx', 20)
+                                      .attr('ry', 20)
+                                      .style('fill', 'rgb(31,119,180)')
+                                      .on("click",  function()  {
+                                          d3.selectAll('circle').remove()
+                                          d3.selectAll('.diag_label').remove()
+                                          d3.selectAll("line").remove()
+                                          d3.selectAll(".tick").remove()
+                                          d3.selectAll(".frame").remove()
+                                    	   d3.selectAll(".legend_circle").remove()
+                                    	   d3.selectAll(".legend_label").remove()
+                                        query_data(client,data,def_vis_width, def_vis_height, params);
+                                        })
+                                  							
+                                    svg.append('text').text('Draw Graph')
+                                      .attr('class', 'toolbar_text')
+                                      .attr('x', 95)
+                                      .attr('y', 30)
+                                      .style('fill', 'white')
+                                      .style("font-weight", "bold")
+                                      .style("font-size", "16px")
+                                      .attr("text-anchor", "middle")
+                                      .on("click", function()  {
+                                          d3.selectAll('circle').remove()
+                                          d3.selectAll('.diag_label').remove()
+                                          d3.selectAll("line").remove()
+                                          d3.selectAll(".tick").remove()
+                                          d3.selectAll(".frame").remove()
+                                    	   d3.selectAll(".legend_circle").remove()
+                                    	   d3.selectAll(".legend_label").remove()
+                                        query_data(client,data,def_vis_width, def_vis_height, params);
+                                        })
+                                  stop_loader();    
+                                  })
+                               })
+              })
+      })
+};
+
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+  // use the startRefreshApiToken method to get a new api key
+  client = new CivisClient(config.apiKey)
+  client.startRefreshApiToken(config.reportId)
+  debugger;
+  var params = config['params'] || {};
+  delete params['dbaxis']
+  delete params['saxis']
+  delete params['taxis']
+
+  // sizing
+  if('dimensions' in config) {
+    def_vis_width = config['dimensions']['width'];
+    def_vis_height = config['dimensions']['height'];
+  }
+    
+  def_vis_height = 1000;
+
+  var margin = {top: 10, right: 20, bottom: 0, left: 75};
+  var width = def_vis_width - margin.left - margin.right,
+      height = def_vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", width)
+    .attr("height", height);
+  var chart = d3.select(".chart-outer")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+
+  var svg = d3.select(".chart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+  console.log(params)
+  if (params['url'] != null && params['url'].length > 0) {
+    d3.csv(params['url'], function(error, data){
+        console.log(data)
+       draw_graph(data,def_vis_width,def_vis_height,params);
+    })
+  } 
+  
+  createMetaToolbar(client, def_vis_width, def_vis_height, params);  
+};
+
+//Init report
+CivisResult.init(prepChart);
+
+</script>
+</html>
