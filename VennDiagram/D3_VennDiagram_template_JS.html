@@ -83,21 +83,29 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>This section provides a manual for the Venn Diagram visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_Toolbar_empty.png?raw=true">
-    				<ul>
-              <p>Click the blue button marked "New Filter" to generate a new set of input forms that allow you to specify multiple groups. Each group will be represented graphically by a circle. </p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_Metatoolbar_empty_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second toolbar should appear:</p>
+        	<img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_Toolbar_empty_JS.png?raw=true">			
+              <p>Click the blue button marked 'Add Filter' to generate a new set of input forms that allow you to specify multiple groups. Each group will be represented graphically by a circle. </p>
+                <ul>
               <li><b>Property:</b> A dropdown menu to select the column in the data table that contains the property you want to filter on. This property can be numerical or categorical.</li>
               <li><b>Operator:</b> A dropdown menu to select a conditional operator (e.g. ==, <, >). At the moment, the template only supports '==' and '!=' for categorical properties. For numerical properties, all operators are supported. </li>
               <li><b>Value:</b> A text box input to specifiy the value the chosen property should be compared to. For categorical properties, enter either text or numbers, for numerical properties, only enter a number.</li>
               <li><b>Name:</b> A text box input to specifiy the name of the group. This name will be displayed in the corresponding circle. This is an optional input to help keep track of the different groups.</li>
+              <li><b>Draw Graph:</b> Once you have specified the filters and (optionally) assigned labels to each group, click this button to retrieve the necessary data and to start drawing the graph.</p>   
                      </ul>
-            <p>The Venn Diagram will only redraw once the first three inputs (Property, Operator and Value) have been specified.</p>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as 								follows:<p>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_table.png?raw=true">
           	<p>Each row should correspond to a unique entity. Each column corresponds to a different property.</p>
           	<h2>Known issues</h2>
-          	<p>If you create multiple tool bars (clicking "Add Filter" multiple times) before filling in the forms, the graph will not appear until after you have filled in all fields. We recommend adding filters one at a time. </p>
+          	<p>No known issues at this time.</p>
             <bcontent></bcontent>
         </div>
       
@@ -106,13 +114,13 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a Venn Diagram based on the well-known Iris data set. The data can be found either on Platform (schema.table = <i>pcooman.iris</i> on redshift-general) or here: <i>http://www.idvbook.com/teaching-aid/data-sets/the-iris-data-set/</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_table.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_table.png?raw=true">
            <p>We can create a number of filters as follows:</p>
-           <img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_Toolbar_full.png?raw=true">
+           <img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_Toolbar_full_JS.png?raw=true">
           	<h2>Sample plot</h2>
           	<p>If everything goes well. Your plot should look something like this:</p>
             <img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_Example.png?raw=true">
-            <p>If you hover over a circle (or the intersection of circles) a tooltip should appear, indicating the number of members in this group or intersection. The following image shows ane xample of this tooltip:</p>
+            <p>If you hover over a circle (or the intersection of circles) a tooltip should appear, indicating the number of members in this group or intersection. The following image shows an example of this tooltip:</p>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/VennDiagram/VennDiagram_Tooltip.png?raw=true">
             <ccontent></ccontent>
         </div>
@@ -256,9 +264,7 @@ query_data = function(client,data,def_vis_width,def_vis_height,params) {
                                     } else {
                                         var new_set = {sets: combi[i], size: data[0]['count_'+combi[i].join("_")]}
                                     }
-                                    if (new_set.size > 0) {
-                                        mysets.push(new_set)
-                                    }
+                                    mysets.push(new_set)
                                 }
 
                                 debugger;
