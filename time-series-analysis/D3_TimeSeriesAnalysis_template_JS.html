@@ -111,19 +111,20 @@ body, html { overflow: scroll; height: 100% }
               <li><b>Values:</b> A drop down menu to select the column in the data table that contains the time series values.</li>
               <li><b>Start Y axis at 0:</b> A checkbox to specify whether Y=0 should be included in the chart. By default, the plot will range from the minimum to the maximum of <i>Values</i>. If this range does not include 0 and you want to show it in the plot, check the box.</li>
               <li><b>Aggregate function:</b> A drop down menu to select an aggregate function. The template currently supports the following functions: 'sum', 'avg', 'min' and 'max'. While selecting an aggregate function is optional, you will also need to select a timeframe if you do.</li>
-              <li><b>Timeframe:</b> A drop down menu to select the timeframe that the aggregate function should cover. 
+              <li><b>Timeframe:</b> A drop down menu to select the timeframe that the aggregate function should cover. The template currently supports the following options: 'year', 'month', 'week', 'hour', 'minute', 'second' and 'microsecond'.</li>
               <li><b>Predicted trend:</b> A dropdown menu to select the column in the data table that contains the predicted trend. This predicted trend will be drawn as a dashed blue line.</li>
               <li><b>Lower limit:</b> A dropdown menu to select the column in the data table that contains the lower end of the confidence interval for either the <i>Predicted trend</i>, the <i>Pointwise effect</i> or the <i>Cumulative effect.</i></li>
               <li><b>Upper limit:</b> A dropdown menu to select the column in the data table that contains the upper end of the confidence interval for either the <i>Predicted trend</i>, the <i>Pointwise effect</i> or the <i>Cumulative effect</i>.</li>
               <li><b>Pointwise effect:</b> A dropdown menu to select the column in the data table that contains the Pointwise effect. In intervention analysis, this is the difference between original trend (<i>Values</i>) and the <i>Predicted trend</i> at each timestamp.</li>
               <li><b>Cumulative effect:</b> A dropdown menu to select the column in the data table that contains the Cumulative effect. In intervention analysis, this is the cumulative difference between the original trend (<i>Values</i>) and the <i>Predicted trend</i> over time.</li>
               <li><b>Intervention:</b> A dropdown menu to select the column in the data table that contains flags specifying whether the intervention is in effect or not. The script detects change points and draws markers signifying the start (and end) of an intervention.</li>
+              <li><b>Draw Graph:</b> Once you have selected the variable(s) you want to plot and (optionally) the aggregate function and timeframe, click this button to retrieve the necessary data and to start drawing the graph.</p>           
             </ul>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_Table.png?raw=true">
-          	<p>Each row in the table should correspond to a instance in time. These instances should be at regular intervals, any missing values will result in gaps in the plot. This is a great way to check if your time series data is complete!</p>
-           <p>The <i>intervention</i> column should contain only 0's and 1's.</p>
+          	<p>Each row in the table should have a timestamp. If the timestamp is not unique, or if you would like to aggregate the data to a longer timeframe (e.g. roll up daily data to weeks), use the aggregate functions. The template will ignore any missing data.</p>
+           <p>The <i>intervention</i> column should contain only 0's and 1's, with a '1' value whenever the intervetion was active.</p>
           	<h2>Known issues</h2>
           	<p>The confidence band in the first plot is drawn twice, once with respect to the the original trend and once with respect to the predicted trend. This causes the confidence band to have a darker shade compared to the confidence bands in the second and third plot.</p>
            <p>Legend labels connected to the ends of the lines get cut off.</p>
@@ -136,25 +137,21 @@ body, html { overflow: scroll; height: 100% }
           	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the intervention analysis example from the R CausalImpact package (<i>https://google.github.io/CausalImpact/CausalImpact.html</i>). The data can be found on Platform (schema.table = <i>pcooman.time_series</i> on redshift-general).</p>
             <h2>Data table</h2>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_Table.png?raw=true">
-          	<p>The original trend is an ARIMA process with a step of size 10 starting at March 11th. The CausalImpact package predicts the most likely trend if the intervention had not occurred. The data spans a period of 100 months.</p>
+          	<p>The original trend is an ARIMA process with a step of size 10 starting at March 11th. The CausalImpact package predicts the most likely trend if the intervention had not occurred. The data spans a period of 100 days.</p>
            <h2>Sample plot</h2>
-           <p>We start by plotting the original trend:</p>
-           <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_ResponseOnly.png?raw=true">
-           <p>By default, the Y axis ranges from the minimum to the maximum values if the <i>Values</i> column. We can force the Y axis to include 0 by checking the <i>Start Y axis at 0</i> checkbox:</p>
-           <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_ForceTo0.png?raw=true">
-           <p>Here, including 0 on the Y axis obscures the trend in our data, so we will keep the default for now.</p>
-           <p>Next, we include our predicted trend. This is an output from the CausalImpact package, along with the lower and upper boundaries of the 95% confidence band. Note that here, the predicted trend corresponds to the counterfactual (what would ahve happened int he absence of the intervention), but we can just as easily plot predictions of the extrapolated trend.</p>
-           <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_PredNoIntervention.png?raw=true">
-           <p>We can add a marker signifying when the intervention started by specifying the <i>Intervention</i> variable. This variable should only take 0 and 1 values. The script detectes transitions and puts a 'Start of intervention' marker when the intervention variable transitions from 0 to 1, and a 'End of intervention' marker when the intervention transitions from 1 to 0.</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_PredIntervention.png?raw=true">          	
-            <p>The second plot shows the pointwise effect of the intervention. This is simply the difference between the original trend and the predicted trend at each time point.</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_ToolbarPointwise.png?raw=true">            
-            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/TimeSeries_Pointwise.png?raw=true">
-            <p>The third plot shows the cumulative effect of the intervention over time.</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_Toolbar_full.png?raw=true">
-            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_cumulative.png?raw=true">
-            <p>If you hover any trend line, a tooltip should appear, indicating the value of the original and predicted trends, and of the pointwise and cumulative effects. All plots are linked, so hovering over a trend line in one plot will show the tooltip for the trend lines in the oteher plots at the corresponing timepoints.</p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_Tooltip.png?raw=true">
+           <p>We start by plotting the various trends on a daily basis (without aggregation):</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/TimeSeriesAnalysis_Toolbar_standard_JS.png?raw=true">
+           <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/TimeSeriesAnalysis_Example_standard_JS.png?raw=true">
+           <p>The top plot shows the original trend in black and the counterfactual trend (what we predict would have happened in the absence of the intervention) as a dashed blue line. Here the lower and upper boundaries represent the 95% confidence interval for the predicted trend, as calculated by the CausalImpact R library. A verticle line marks the start of the intervetion.</p>
+            <p>The middle plot shows the pointwise predicted effect of the intervention, while the bottom plot shows the cumulative effect of the intervention.</p>
+            <p>Next, we will aggregate the daily data to the weekly level, taking the average:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/TimeSeriesAnalysis_Toolbar_aggregate_JS.png?raw=true"> 
+            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/TimeSeriesAnalysis_Example_aggregate_JS.png?raw=true">
+            <p>This aggregation smooths out the daily fluctuations.</p>         	
+            <p>If you hover any trend line, a tooltip should appear, indicating the value of the original and predicted trends, and of the pointwise and cumulative effects. All plots are linked, so hovering over a trend line in one plot will show the tooltip for the trend lines in the other plots at the corresponding timepoints.</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/TimeSeriesAnalysis_Tooltip_JS.png?raw=true">
+            <p>By default, the Y axis ranges from the minimum to the maximum values if the <i>Values</i> column. We can force the Y axis to include 0 by checking the <i>Start Y axis at 0</i> checkbox:</p> 
+            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/TimeSeriesAnalysis_Example_ForceTo0_JS.png?raw=true">   
             <ccontent></ccontent>
         </div>
       
