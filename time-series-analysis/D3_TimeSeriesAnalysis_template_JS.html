@@ -95,12 +95,23 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>This section provides a manual for the Time Series Analysis visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/Timeseries_Toolbar_empty.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/TimeSeriesAnalysis_Metatoolbar_empty_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second set of toolbars should appear:</p>
+
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/time-series-analysis/TimeSeriesAnalysis_Toolbar_empty_JS.png?raw=true">
             <p>You don't need to fill in all of the input fields. Only <i>Time</i> and <i>Values</i> are required, the others are optional and will depend on your use case. </p>
     		 <ul>
               <li><b>Time:</b> A dropdown menu to select the column in the data table that contains the timestamps. For basic plotting, these do not have to be sorted, however if you are plotting the results of an intervention analysis and you want to plot a marker at the start (and/or end) of the intervention, you will need to sort these in ascending order first.</li>
-              <li><b>Values:</b> A drop down menu to selec the column in the data table that contains the time series values.</li>
+              <li><b>Values:</b> A drop down menu to select the column in the data table that contains the time series values.</li>
               <li><b>Start Y axis at 0:</b> A checkbox to specify whether Y=0 should be included in the chart. By default, the plot will range from the minimum to the maximum of <i>Values</i>. If this range does not include 0 and you want to show it in the plot, check the box.</li>
+              <li><b>Aggregate function:</b> A drop down menu to select an aggregate function. The template currently supports the following functions: 'sum', 'avg', 'min' and 'max'. While selecting an aggregate function is optional, you will also need to select a timeframe if you do.</li>
+              <li><b>Timeframe:</b> A drop down menu to select the timeframe that the aggregate function should cover. 
               <li><b>Predicted trend:</b> A dropdown menu to select the column in the data table that contains the predicted trend. This predicted trend will be drawn as a dashed blue line.</li>
               <li><b>Lower limit:</b> A dropdown menu to select the column in the data table that contains the lower end of the confidence interval for either the <i>Predicted trend</i>, the <i>Pointwise effect</i> or the <i>Cumulative effect.</i></li>
               <li><b>Upper limit:</b> A dropdown menu to select the column in the data table that contains the upper end of the confidence interval for either the <i>Predicted trend</i>, the <i>Pointwise effect</i> or the <i>Cumulative effect</i>.</li>
@@ -396,7 +407,7 @@ draw_graph = function(data, vis_width, vis_height, params) {
 
 query_data = function(client,data,def_vis_width,def_vis_height,params) {
       
-    start_loader(150,300,175)
+    start_loader(150,300,100)
     
     if (params['faxis'] != null && params['tfaxis'] != null) {
         var q = ""    
@@ -562,7 +573,7 @@ var hideDetails = function() {
 };
 
 start_loader = function(size,Xpos,Ypos) {
-    d3.select(".chart").append("image")
+    d3.select(".chart1").append("image")
     .attr("xlink:href","https://civisanalytics.com/assets/civis_logos/Civis-symbol-d4d7147a1bb51c1b53d98f76e1a7ffce.png")    
     .attr("class","loader")
     .attr("width", size)
@@ -921,7 +932,7 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                       dim = 'f'
                                       $("#toolbar2").append("<div class='form-group'><label for='"+dim+"-var'>Aggregate function (Optional):</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
                                       // populate the dropdown with the columns in the dataset
-                                      var operators = ["sum","avg","count","min","max"];
+                                      var operators = ["sum","avg","min","max"];
                                       for(i_op in operators) {
                                         var op = operators[i_op];
                                         $("#"+dim+"-var").append("<option value='"+op+"'>"+op+"</option>");
