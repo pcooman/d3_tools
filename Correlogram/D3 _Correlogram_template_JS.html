@@ -107,11 +107,10 @@ body, html { overflow: scroll; height: 100% }
             </ul>
            <p>A short time after clicking the <i>Get Table</i> button a second set of buttons should appear:</p>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_start_JS.png?raw=true">
-            <p>Clicking the 'Add Variable' button will create additional 'Property' menus.</p>    		 
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_empty_JS.png?raw=true">
             <ul>
               <li><b>Add Variable:</b> A button to generate additional Property dropdown forms.</li>
               <li><b>Property:</b> A drop down menu to select the column of the data set you would like to include in the pairwise correlation calculations.</li>
+              <li><b>Reset Selection:</b> A button to reset the selected Properties.This will remove all current 'Property' menus and their selected values.</li>
               <li><b>Draw Graph:</b> When you have selected the properties for which you want to plot the Correlogram, click this button to retrieve the necessary data and to start drawing the graph.</li>
             </ul>
           	<h2>Data table</h2>
@@ -629,7 +628,7 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                       }(dim))                            
                             })
 
-                        	text = svg.append('text').text('Add Filter')
+                        	text = svg.append('text').text('Add Variable')
                                         .attr('x', 95)
                                         .attr('y', 30)
                                         .style('fill', 'white')
