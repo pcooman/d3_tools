@@ -98,16 +98,26 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>This section provides a manual for the Correlogram visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_empty.png?raw=true">
-    		 <ul>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_MEtatoolbar_empty_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the table to visualize.</li>
+              <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
+            </ul>
+           <p>A short time after clicking the <i>Get Table</i> button a second set of buttons should appear:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_start_JS.png?raw=true">
+            <p>Clicking the 'Add Variable' button will create additional 'Property' menus.</p>    		 
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_empty_JS.png?raw=true">
+            <ul>
               <li><b>Add Variable:</b> A button to generate additional Property dropdown forms.</li>
-              <li><b>Property:</b> A dropdown menu to select the variable to include in the plot.</li>
+              <li><b>Property:</b> A drop down menu to select the column of the data set you would like to include in the pairwise correlation calculations.</li>
+              <li><b>Draw Graph:</b> When you have selected the properties for which you want to plot the Correlogram, click this button to retrieve the necessary data and to start drawing the graph.</li>
             </ul>
           	<h2>Data table</h2>
-          	<p>The template calculates the Pearson correlation coefficient for all pairwise combinations of the selected variables. The values in the selected columns need to be numerical. In the following table, each column can be selected and potted, with exception of the last colum <i>car_name</i> because it is a categorical variable:<p>
+          	<p>The template calculates the Pearson correlation coefficient for all pairwise combinations of the selected variables. The values in the selected columns need to be numerical. In the following table, each column can be selected and plotted, with exception of the last colum <i>car_name</i> because it is a categorical variable:<p>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Table.png?raw=true">
           	<p>The graph will plot a matrix with the column names on the diagonal, the correlation coefficient in the lower left triangle and filled circles in the upper right triangle. The color and size of the circles depends on the correlation coefficient. Negative correlation coefficients are displayed as red circles and positive correlation coefficients are displayed as blue circles. The higher the absolute value of the correlation coefficient, the deeper the color intensity and radius of the circle.</p>
-          	<p>The <i>Add Variable</i> button allows you to gradually build up the correlogram. A variable can be "removed" from the plot by changing that variable to one that is already plotted.</p>
            <h2>Known issues</h2>
           	<p>Move the labels from the diagonal to the left and top of the plot. When many variables need to be plotted, this would prevent the labels from bleeding over into the adjacent cells.</p>
             <bcontent></bcontent>
@@ -116,21 +126,15 @@ body, html { overflow: scroll; height: 100% }
       	<div class="tab-pane" id="c_tab">
             <h1>Example</h1>
           	<h2>Introduction</h2>
-          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the cars data set. The data can be found either on Platform (schema.table = <i>pcooman.cars</i> on redshift-general) or here: <i>https://archive.ics.uci.edu/ml/datasets/Auto+MPG</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot the Correlogram of the cars data set. The data can be found either on Platform (schema.table = <i>pcooman.cars</i> on redshift-general) or here: <i>https://archive.ics.uci.edu/ml/datasets/Auto+MPG</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
             <h2>Data table</h2>
+           <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Metatoolbar_full_JS.png?raw=true">
           	<img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Table.png?raw=true">
           	<h2>Sample plot</h2>
-          	<p>We start by clicking the <i>Add Variable</i> button multiple times and filling in the variables we want to include int he plot:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_allbutone.png?raw=true">
-           <p>This should generate a correlogram that looks like this:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_allbutone.png?raw=true">
-           <p>Clicking the <i>Add Variable</i> again, creates a new dropdown menu at the top of the list:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlgram_Toolbar_lastempty.png?raw=true">
-           <p>Creating this new dropdown menu, but leaving it empty for now, will create placeholder cells in the correlogram:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_lastempty.png?raw=true">
-           <p>Once we choose a variable from the newly created dropdown menu, the empty correlogram cells will be filled in:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_full.png?raw=true">
-            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_full.png?raw=true">
+          	<p>We start by clicking the <i>Add Variable</i> button 8 times and filling in the variables we want to include in the plot:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Toolbar_full_JS.png?raw=true">
+           <p>Clicking the 'Draw Graph' button should generate a correlogram that looks like this:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/Correlogram/Correlogram_Example_JS.png?raw=true">
           	 <ccontent></ccontent>
         </div>
       
@@ -501,11 +505,14 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
         d3.selectAll("label.label_toolbar").remove()
         for (var i=0; i<params['count']+1; i++) {d3.select("#x-var"+i).html("");}
         for (var i=0; i<params['count']+1; i++) {d3.select("#x-var"+i).remove();}
+        for (var i=0; i<params['count']+1; i++) {d3.select("#toolbar"+i).remove();}
         for (var i=0; i<params['count']+1; i++) {delete params['xaxis'+i];}
 
         d3.selectAll(".toolbar_rect").remove()
         d3.selectAll(".toolbar_text").remove()
         d3.selectAll(".toolbar_label").remove()
+        d3.select("#first_toolbar").html("") 
+        d3.select("#last_toolbar").html("")  
 
         d3.selectAll('.cor_text').remove()
         d3.selectAll('.cor').remove()
@@ -527,11 +534,15 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
         d3.selectAll("label.label_toolbar").remove()
         for (var i=0; i<params['count']+1; i++) {d3.select("#x-var"+i).html("");}
         for (var i=0; i<params['count']+1; i++) {d3.select("#x-var"+i).remove();}
+        for (var i=0; i<params['count']+1; i++) {d3.select("#toolbar"+i).remove();}
         for (var i=0; i<params['count']+1; i++) {delete params['xaxis'+i];}
+
 
         d3.selectAll(".toolbar_rect").remove()
         d3.selectAll(".toolbar_text").remove()
         d3.selectAll(".toolbar_label").remove()
+        d3.select("#first_toolbar").html("") 
+        d3.select("#last_toolbar").html("")               
 
         d3.selectAll('.cor_text').remove()
         d3.selectAll('.cor').remove()
@@ -610,8 +621,6 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                       // handle change to select, wrap in anonymous function so the pickers dont clash
                                       $("#x-var"+params['count']).change(function(dim) {
                                         return function() {
-                                          d3.selectAll('.cor_text').remove()
-                                          d3.selectAll('.cor').remove()
                                           var newVar = $("#x-var"+dim.slice(5)).val();
                                           params[dim] = newVar;
                                           params['xaxislabel'+dim.slice(5)] = newVar;
@@ -645,8 +654,6 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                       // handle change to select, wrap in anonymous function so the pickers dont clash
                                       $("#x-var"+params['count']).change(function(dim) {
                                         return function() {
-                                          d3.selectAll('.cor_text').remove()
-                                          d3.selectAll('.cor').remove()
                                           var newVar = $("#x-var"+dim.slice(5)).val();
                                           params[dim] = newVar;
                                           params['xaxislabel'+dim.slice(5)] = newVar;
@@ -657,8 +664,8 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
 
                                     var svg = d3.select("#last_toolbar").append("svg")
                                       .attr("width", def_vis_width)
-                                      .attr("height", 60);
-                                
+                                      .attr("height", 120);
+
                                      svg.append('rect')
                                       .attr("transform","translate(0,0)")
                                    	 .attr('class','form-group toolbar_rect')
@@ -666,6 +673,46 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                       .attr('height', 45)
                                       .attr('x', 20)
                                       .attr('y', 0)
+                                      .attr('rx', 20)
+                                      .attr('ry', 20)
+                                      .style('fill', 'rgb(31,119,180)')
+                                      .on("click",  function()  {
+                                        d3.selectAll('.toolbar_label').remove()
+                                        for (var i=0; i<params['count']+1; i++) {d3.select("#x-var"+i).html("");}
+                                        for (var i=0; i<params['count']+1; i++) {d3.select("#x-var"+i).remove();}
+                                        for (var i=0; i<params['count']+1; i++) {d3.select("#toolbar"+i).remove();}
+                                        for (var i=0; i<params['count']+1; i++) {delete params['xaxis'+i];}                                                                                
+                                        params['count'] = -1
+
+                                          CivisResult.saveParams(params);
+
+                                        })
+                                  							
+                                    svg.append('text').text('Reset Selection')
+                                      .attr('class', 'toolbar_text')
+                                      .attr('x', 95)
+                                      .attr('y', 30)
+                                      .style('fill', 'white')
+                                      .style("font-weight", "bold")
+                                      .style("font-size", "16px")
+                                      .attr("text-anchor", "middle")
+                                      .on("click", function()  {
+                                        d3.selectAll('.toolbar_label').remove()
+                                        for (var i=0; i<params['count']+1; i++) {d3.select("#x-var"+i).html("");}
+                                        for (var i=0; i<params['count']+1; i++) {d3.select("#x-var"+i).remove();}
+                                        for (var i=0; i<params['count']+1; i++) {d3.select("#toolbar"+i).remove();}
+                                        for (var i=0; i<params['count']+1; i++) {delete params['xaxis'+i];}                                                                                
+                                        params['count'] = -1
+
+                                        })
+                                
+                                     svg.append('rect')
+                                      .attr("transform","translate(0,0)")
+                                   	 .attr('class','form-group toolbar_rect')
+                                      .attr('width', 150)
+                                      .attr('height', 45)
+                                      .attr('x', 20)
+                                      .attr('y', 50)
                                       .attr('rx', 20)
                                       .attr('ry', 20)
                                       .style('fill', 'rgb(31,119,180)')
@@ -681,7 +728,7 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                     svg.append('text').text('Draw Graph')
                                       .attr('class', 'toolbar_text')
                                       .attr('x', 95)
-                                      .attr('y', 30)
+                                      .attr('y', 80)
                                       .style('fill', 'white')
                                       .style("font-weight", "bold")
                                       .style("font-size", "16px")
