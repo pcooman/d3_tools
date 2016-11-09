@@ -116,6 +116,7 @@ body, html { overflow: scroll; height: 100% }
               <li><b>GEO type:</b> A dropdown menu to select the geographical level of the map. Currently, the template supporst states, counties and congressional districts.</li>
               <li><b>GEO id:</b> A dropdown menu to select the column in the data table that represents the id of the geography. These are the 2-digit, 4-digit and 5-digit fips codes for states, congressional districts and coounties respectively.</li>
               <li><b>Var:</b> A dropdown menu to select the column in the data table that contains the values you want to plot.</li>
+              <li><b>Draw Graph:</b> Once you have selected the <i>GEO type</i>, <i>GEO id</i> and <i>Var</i> properties, click this button to retrieve the necessary data and to start drawing the graph.</li>
             </ul>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
@@ -135,6 +136,7 @@ body, html { overflow: scroll; height: 100% }
           	<p>In this table, the first column conatins the fips codes of each congressional district. The second column conatins the difference in percent of the vote between Obama and Romney. A positive value means that Obama got more votes, while a negative value means that Romney got more votes. The third column contains the differences for the 2008 election (Obama vs McCain).</p>
           	<h2>Sample plot</h2>
           	<p>If everything goes well. Your plot should look something like this:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_Metabar_full.png?raw=true">
             <img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_example_congress.png?raw=true">
             <p>If you hover over a geographical location, a tooltip should pop up, indicating the fips code and value of that location. The following image shows ane xample of this tooltip:</p>
           	<img src="https://github.com/pcooman/d3_tools/blob/master/ChoroplethMap/ChoroplethMap_example_tooltip.png?raw=true">
