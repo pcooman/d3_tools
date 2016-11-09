@@ -310,7 +310,6 @@ draw_graph = function(data, vis_width, vis_height, params) {
   }
   
   if (params['xaxis'] != null && params['yaxis'] != null){
-    debugger;
     var AUC = 0
     var fpr_old = mydata[0].y_fpr
     var rec_old = mydata[0].y_rec
@@ -364,7 +363,7 @@ draw_graph = function(data, vis_width, vis_height, params) {
   var yAxis2 = d3.svg.axis()
       .scale(y2)
       .orient("left");
-  debugger;
+
   // --------------------------------------------------------------------------
 	var svg1 = d3.select(".chart-outer1").append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -646,7 +645,7 @@ draw_graph = function(data, vis_width, vis_height, params) {
               d3.select(".axis_label.fn").text(mydata[this.getAttribute("index")].fn)
               d3.select(".axis_label.fp").text(mydata[this.getAttribute("index")].fp)
               d3.select(".axis_label.tn").text(mydata[this.getAttribute("index")].tn)
-              debugger;
+
               d3.select(".roc_rect")
               	.attr("x", x1(mydata[this.getAttribute("index")].y_fpr))
                 .attr("fill","rgb(244,168,0)")
@@ -962,7 +961,7 @@ var query_data = function(client,data,def_vis_width,def_vis_height,params) {
               			  d3.csv(dataUrl, function(error, data){
                                 params['url'] = dataUrl;
                                 CivisReport.saveParams(params);
-                                console.log(data)
+
                              stop_loader();
                              draw_graph(data,def_vis_width,def_vis_height,params);
                             
@@ -1040,6 +1039,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
             CivisReport.saveParams(params);
             client.request("/databases/"+params['dbaxis']+"/schemas", {method: "GET"}).then(function(result) {
                 var s_options = result.data.map(function(d) {return d.schema;});
+                s_options.unshift('--Select--')
                 for(i_label in s_options) {
                   s_type = s_options[i_label];
                   $("#s-var").append("<option value='"+s_type+"'>"+s_type+"</option>");
@@ -1078,6 +1078,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
                                         })
             .then(function(result) {
                 var t_options = result.data.map(function(d) {if (d.databaseId == params['dbaxis'] && d.schema == params['saxis']) return d.name;});
+                t_options.unshift('--Select--')
                 for(i_label in t_options) {
                   t_type = t_options[i_label];
                   $("#t-var").append("<option value='"+t_type+"'>"+t_type+"</option>");
@@ -1216,7 +1217,7 @@ var createToolbar = function(client,def_vis_width, def_vis_height, params) {
       client.request("/scripts/sql",{
               method: "POST",
               data: {
-                  'name': 'test script 1234',
+                  'name': 'Thresholding ' +params['reportId'],
                   'remoteHostId': parseInt(params['dbaxis']),
                   'credentialId': credential.id,
                   'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 1"
@@ -1389,6 +1390,7 @@ var prepChart = function(config) {
   client.startRefreshApiToken(config.reportId)
 
   var params = config['params'] || {};
+  params['reportId'] = config['reportId']
   delete params['dbaxis'];
   delete params['taxis'];
   delete params['saxis'];

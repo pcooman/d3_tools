@@ -1,0 +1,562 @@
+<html>
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+<script src="https://platform.civisanalytics.com/assets/civis-report-header.js"></script>
+<script src="//rawgit.com/jasondavies/d3-cloud/v1.2.1/build/d3.layout.cloud.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel='stylesheet'>
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+<link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+<script src="https://s3.amazonaws.com/civis-console/javascript-client/v0.3.0/civis_client.min.js"></script>  
+
+<style>
+input {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+  
+.form-group {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.form-control {
+  display: inline-block;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 130;
+}
+  
+.chart {
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+.tooltip {
+  border-radius: 10px;
+  padding: 10px;
+  position: absolute;
+  color: #FFF;
+  background-color: #222;
+  opacity: .9;
+  z-index: 1;
+  font-family: Lato, Verdana, Arial, sans-serif;
+}
+  
+body, html { overflow: scroll; height: 100% }
+
+.loader {
+    transform-origin: center center;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {transform: rotate(0deg); }
+    100% {transform: rotate(360deg); }
+}    
+</style>
+
+<div class="tabbable">
+    <ul class="nav nav-tabs">
+        <li class="active"><a class="atab" href="#a_tab" data-toggle="tab">Graph</a></li>
+        <li><a class="btab" href="#b_tab" data-toggle="tab">Info</a></li>
+        <li><a class="ctab" href="#c_tab" data-toggle="tab">Example</a></li>
+    </ul>
+    <div class="tab-content">
+      
+        <div class="tab-pane active" id="a_tab">
+            <h1>Graph</h1>
+            <acontent><div id='vis'>
+              <svg class='chart-outer'><g class="chart"></g></svg>
+            </div>
+            </acontent>
+        </div>
+      
+        <div class="tab-pane" id="b_tab">
+            <h1>Info</h1>
+          	<h2>Introduction</h2>
+          	<p>This section provides a manual for the Word Cloud visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
+          	<h2>Inputs</h2>
+            <p>As an optional feature, the first menu allows the user to import a list of words that should not be counted and therefore should be exluded (suppressed) from the plot. These typically include common words such as 'are', 'a', 'also', etc.</p>   
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Metatoolbar_empty_JS.png?raw=true">
+            <ul>
+              <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the suppression table. Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
+              <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the suppression table. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
+              <li><b>Source Table:</b> A dropdown menu to select the name of the suppression table.</li>
+              <li><b>Get Suppression Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the suppression table.</li>
+            </ul>
+            <p>The suppression table should be set up as follows:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table_JS.png?raw=true">
+            <p>Make sure the name of the column with the words to suppress is called 'word'.</p>
+            <p>To create the word cloud, simply paste your text into the text box and click on the button marked 'Draw Graph'. The template will change all words to lower case and will remove any special characters.</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_TextArea_empty_JS.png?raw=true">
+            <p>A third set of menus allows the user to adjust the minimum and maximum font sizes:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_FontSize_JS.png?raw=true">
+          	<h2>Known issues</h2>
+          	<p>No known issues at this time.</p>
+            <bcontent></bcontent>
+        </div>
+      
+      	<div class="tab-pane" id="c_tab">
+            <h1>Example</h1>
+          	<h2>Introduction</h2>
+          	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a word cloud of the President Obama's 2016 speech at the Democratic National Convention. The full text can be found here: <i>http://abcnews.go.com/Politics/full-text-president-barack-obamas-2016-democratic-national/story?id=40949231</i>. Platform does not support outgoing links, so you will need to manually copy and paste the url.</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_TextArea_full_JS.png?raw=true">
+            <p>Without specifying a suppression table, the word cloud that is generated when we click the 'Draw Graph' button look as follows:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example_naive_JS.png?raw=true">
+            <p>We find that common words dominate the plot. We can remove these common words by specifying a suppression table.</p>            
+            <h2>Data table</h2>
+            <p>The suppression table that we used here can be found on the Platform at <i>pcooman.most_common_values</i>:</p>
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Table_JS.png?raw=true">
+          	<p>In this table, the <i>word</i> column contains the words we want to suppress from the plot.</p>
+           <p>We can import this supression table by selecting the source database, schema and table name from the menus, and clicking the button marked 'Get Suppression Table'</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Metatoolbar_full_JS.png?raw=true">
+            <p>As soon as the suppression table has finished importing, the word cloud will be updated:</p>
+            <img src="https://github.com/pcooman/d3_tools/blob/master/WordCloud/WordCloud_Example_suppressed_JS.png?raw=true">
+          	<p>The word cloud layout randomizes the position and rotation of words, so your plot may looks slightly different from the one show above.</p>
+            <ccontent></ccontent>
+        </div>
+      
+    </div>
+</div>
+
+<script>
+$.ajaxSetup ({
+                // Disable caching of AJAX responses
+                // Used when debugging
+                cache: false
+            });
+
+function compressArray(original,suppression) {
+ 
+	var compressed = [];
+	// make a copy of the input array
+	var copy = original.slice(0);
+ 
+	// first loop goes over every element
+	for (var i = 0; i < original.length; i++) {
+         if(suppression.indexOf(original[i])<0){
+		var myCount = 0;	
+		// loop over every element in the copy and see if it's the same
+		for (var w = 0; w < copy.length; w++) {
+			if (original[i] == copy[w]) {
+				// increase amount of times duplicate is found
+				myCount++;
+				// sets item to undefined
+				delete copy[w];
+			}
+		}
+ 
+		if (myCount > 0) {
+			var a = new Object();
+			a.value = original[i];
+			a.count = myCount;
+			compressed.push(a);
+		}
+        }
+	}
+ 
+	return compressed;
+};
+
+draw_graph = function(data, vis_width, vis_height, params) {
+  /////////////////////////////////////////////
+  // chart margin/sizing setup
+  // deviate slightly from Bostock's convention
+  //   http://bl.ocks.org/mbostock/3019563
+  // because we don't want to add a new group each time
+
+  var margin = {top: 10, right: 20, bottom: 60, left: 75};
+  var width = vis_width - margin.left - margin.right,
+      height = vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", vis_width)
+    .attr("height", vis_height);
+  var chart = d3.select(".chart")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  var minFontsize = parseInt(params['minaxis']) || 0;
+  var maxFontsize = parseInt(params['maxaxis']) || 100;
+
+  if (params['dbaxis'] != null && params['saxis'] != null && params['taxis'] != null) {
+    var suppression = data.map(function(d) {return d.word});
+  } else {
+    var suppression = [];    
+  }	
+
+  var arr_words = $("textarea").val(); 
+  arr_words = arr_words.toLowerCase();
+  arr_words = arr_words.replace(/[^\w\s]/gi, '');
+  arr_words = arr_words.split(" ");
+  data_words = compressArray(arr_words, suppression)
+
+  var wordScale = d3.scale.linear()
+	.range([minFontsize,maxFontsize])
+	.domain([
+		d3.min(data_words, function(d) {return parseInt(d.count) || 0;}),
+		d3.max(data_words, function(d) {return parseInt(d.count) || 0;})
+	])
+
+  var fill = d3.scale.category20();
+		
+  d3.layout.cloud().size([width,height])
+	.words(data_words)
+	.padding(5)		// amount of white space in between words
+	.rotate(function() {return ~~(Math.random()*2)*90-45;})
+	.font("Impact")
+  .text(function(d) {return d.value;})
+	.fontSize(function(d) {return wordScale(d.count);})
+	.on("end", drawCloud)
+	.start();
+		
+  function drawCloud(words) {
+		d3.select(".chart-outer").append("svg")
+      .attr("class", "cloud")
+			.attr("width", width)
+			.attr("height", height)
+		  .append("g")
+			.attr("transform", "translate("+ (width/2) +", "+ (height/2) +")")
+		  .selectAll("text")
+			.data(words)
+		  .enter().append("text")
+    	.style("font-size", function(d) {return d.size + "px";})
+			.style("font-family", "Lato")
+                .style("font-weight", "bold")
+			.style("fill", "rgb(31,119,180)")
+    	.attr("class", "word")
+			.attr("text-anchor", "middle")
+			.attr("transform", function(d) {
+				return "translate(" + [d.x,d.y] + ")rotate(" + d.rotate + ")";
+				})
+			.text(function(d) {return d.value;})
+                .on("mouseover", function(d) {return showDetails(d.value+": "+d.count,this);})
+                .on("mouseout", function(d) {return hideDetails();})
+	}
+}
+var showDetails = function(data, element) {
+  pos = $(element).position()
+  $("#chart-tooltip").html(data)
+  width = $("#chart-tooltip").width()
+  height = $("#chart-tooltip").height()
+  $("#chart-tooltip").css('top', (pos.top-height*2.5)+'px').css('left', (pos.left-width/2.0)+'px')
+  $("#chart-tooltip").show()
+};
+var hideDetails = function() {
+  $("#chart-tooltip").hide()
+};
+
+start_loader = function(size,Xpos,Ypos) {
+    d3.select(".chart").append("image")
+    .attr("xlink:href","https://civisanalytics.com/assets/civis_logos/Civis-symbol-d4d7147a1bb51c1b53d98f76e1a7ffce.png")    
+    .attr("class","loader")
+    .attr("width", size)
+    .attr("height", size)
+    .attr("x", Xpos)
+    .attr("y", Ypos)
+}
+stop_loader = function() {
+    d3.select(".loader").remove()
+    
+}
+
+var query_data = function(client,def_vis_width,def_vis_height,params) {
+      
+    start_loader(200,150,150);
+    
+    var q = "select word from "+params['saxis']+"."+params['taxis']
+
+  // Create script to get data table metadata
+  client.defaultCredential().then(function(credential) {
+      client.request("/scripts/sql",{
+              method: "POST",
+              data: {
+                  'name': 'Word Cloud ' +params['reportId'],
+                  'remoteHostId': parseInt(params['dbaxis']),
+                  'credentialId': credential.id,
+                  'sql': "select word from "+params['saxis']+"."+params['taxis']
+              }
+              }).then(function(result) {
+            var scriptId = result.data.id;
+            
+            client.scripts.createSqlRun(scriptId).getRunFinished({pollInterval: 2})
+                           .then(function(result){
+                             return result.data.output[0].path;
+                           }).then(function(dataUrl) {
+              			  d3.csv(dataUrl, function(error, data){
+                                params['url'] = dataUrl;
+                                CivisReport.saveParams(params);
+                                stop_loader();
+                                draw_graph(data,def_vis_width,def_vis_height,params);
+                                })
+                        })
+            })
+    })
+}
+
+var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) {
+   client.request("/databases", {method: "GET"}).then(function(result) {       
+       $("#vis").prepend("<div class='form-group' id='metatoolbar'></div>");
+     	   var db_options = result.data.map(function(d) {return d.name;});
+        var db_id_options = result.data.map(function(d) {return d.id;});
+        var dim = "db"
+        var label = "Source Database"
+        
+        $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option value='32' selected>redshift-general</option></select></div>")
+        // populate the dropdown with the geography types
+        for(i_label in db_options) {
+          db_type = db_options[i_label];
+          db_id_type = db_id_options[i_label];
+          if (db_type != "redshift-general" ){
+          	$("#"+dim+"-var").append("<option value='"+db_id_type+"'>"+db_type+"</option>");
+          }
+        }
+        
+        // set picker to saved param values
+        $("#"+dim+"-var").val(params[dim+'axis']);
+        // handle change to select, wrap in anonymous function so the pickers dont clash
+        $("#"+dim+"-var").change(function(dim) {
+          return function() {
+            d3.select("#s-var").html("");
+            d3.select("#t-var").html("");
+
+            var newVar = $("#"+dim+"-var").val();
+            params[dim+'axis'] = newVar;
+            params[dim+'axislabel'] = newVar;
+            CivisReport.saveParams(params);
+            client.request("/databases/"+params['dbaxis']+"/schemas", {method: "GET"}).then(function(result) {
+                var s_options = result.data.map(function(d) {return d.schema;});
+                s_options.unshift('--Select--')
+                for(i_label in s_options) {
+                  s_type = s_options[i_label];
+                  $("#s-var").append("<option value='"+s_type+"'>"+s_type+"</option>");
+                }
+            })
+           }
+         }(dim));
+       
+       var dimensions = ['s'];
+       var toolbar_labels = ['Source Schema'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             d3.select("#t-var").html("");
+
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+             CivisReport.saveParams(params);
+             client.request("/tables", {method: "GET", 
+                                        params:{
+                                                databaseId: params['dbaxis'],
+                                                schema: params['saxis'],
+                                                limit: 50
+                                                }
+                                        })
+            .then(function(result) {
+                var t_options = result.data.map(function(d) {if (d.databaseId == params['dbaxis'] && d.schema == params['saxis']) return d.name;});
+                t_options.unshift('--Select--')
+                for(i_label in t_options) {
+                  t_type = t_options[i_label];
+                  $("#t-var").append("<option value='"+t_type+"'>"+t_type+"</option>");
+                }
+             })
+           }
+         }(dim));
+       }
+
+       var dimensions = ['t'];
+       var toolbar_labels = ['Source Table'];
+    
+       for(var i_dim in dimensions) {
+         var dim = dimensions[i_dim];
+         var label = toolbar_labels[i_dim];
+    
+         // create the 
+         $("#metatoolbar")
+          .append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><select class='form-control' id='"+dim+"-var'><option></option></select></div>")
+         // set picker to saved param values
+         $("#"+dim+"-var").val(params[dim+'axis']);
+         // handle change to select, wrap in anonymous function so the pickers dont clash
+         $("#"+dim+"-var").change(function(dim) {
+           return function() {
+             var newVar = $("#"+dim+"-var").val();
+             params[dim+'axis'] = newVar;
+             params[dim+'axislabel'] = newVar;
+             CivisReport.saveParams(params);
+           }
+         }(dim));
+       }
+     
+     var svg = d3.select("#metatoolbar").append("svg")
+      .attr("width", def_vis_width)
+      .attr("height", 60);
+
+     svg.append('rect')
+      .attr("transform","translate(0,0)")
+   	 .attr('class','form-group')
+      .attr('width', 225)
+      .attr('height', 45)
+      .attr('x', 20)
+      .attr('y', 0)
+      .attr('rx', 20)
+      .attr('ry', 20)
+      .style('fill', 'rgb(31,119,180)')
+      .on("click",  function()  {
+        d3.selectAll(".word").remove()
+
+        query_data(client,def_vis_width, def_vis_height, params);
+        })
+  							
+    svg.append('text').text('Get Suppression Table')
+      .attr('x', 135)
+      .attr('y', 30)
+      .style('fill', 'white')
+      .style("font-weight", "bold")
+      .style("font-size", "16px")
+      .attr("text-anchor", "middle")
+      .on("click", function()  {
+        d3.selectAll(".word").remove()
+        
+        query_data(client,def_vis_width, def_vis_height, params);
+        })
+     
+   })
+}
+
+//////////////////////////////////////////////////////////
+// Chart Edit Toolbar Code
+//
+// WARNING, editing the code below may cause your chart to break.
+//
+var def_vis_width = 700;
+var def_vis_height = 475;
+// create a toolbar at the top that allows the user to interact with the chart
+// currently just supports x and y axis variable selection
+var createToolbar = function(data, def_vis_width, def_vis_height, params) {
+  $("#vis").prepend("<div id='toolbar1'></div>");
+
+  var dim = 'text';
+  var label = 'Paste text here';
+  // create the select dropdown 
+  $("#toolbar1").append("<textarea rows='10' cols='135'></textarea>")    
+  // handle change to inputs, wrap in anonymous function so the pickers dont clash
+
+  $("#toolbar1").append("<div id='toolbar2'></div>");
+
+  var svg = d3.select("#toolbar2").append("svg")
+    .attr("width", def_vis_width)
+    .attr("height", 60);
+                                
+  svg.append('rect')
+    .attr("transform","translate(0,0)")
+    .attr('class','form-group toolbar_rect')
+    .attr('width', 150)
+    .attr('height', 45)
+    .attr('x', 20)
+    .attr('y', 5)
+    .attr('rx', 20)
+    .attr('ry', 20)
+    .style('fill', 'rgb(31,119,180)')
+    .on("click",  function()  {
+        d3.selectAll(".word").remove()
+        draw_graph(data,def_vis_width, def_vis_height, params);
+     })
+                                  							
+   svg.append('text').text('Draw Graph')
+    .attr('class', 'toolbar_text')
+    .attr('x', 95)
+    .attr('y', 33)
+    .style('fill', 'white')
+    .style("font-weight", "bold")
+    .style("font-size", "16px")
+    .attr("text-anchor", "middle")
+    .on("click", function()  {
+        d3.selectAll(".word").remove()
+        draw_graph(data,def_vis_width, def_vis_height, params);
+     })
+
+  $("#toolbar2").append("<div id='toolbar3'></div>");
+
+  // Create numerical inputs for minimum and maximum font size
+  var dimensions_size = ['min','max'];
+  var toolbar_labels = ['Min Font Size', 'Max Font Size']; 
+  var values = [10, 100];
+ 
+  for(var i_dim in dimensions_size) {
+    var dim = dimensions_size[i_dim];
+    var label = toolbar_labels[i_dim];
+    var value = values[i_dim];
+    params[dim+'axis'] = value;
+    // create the select dropdown 
+    $("#toolbar3").append("<div class='form-group'><label for='"+dim+"-var'>"+label+":</label><input type='number' value = "+value+" min="+0+" max="+1000+" step="+5+" id='"+dim+"-var'>px")    
+    // handle change to inputs, wrap in anonymous function so the pickers dont clash
+    $("#"+dim+"-var").change(function(dim) {
+      return function() {
+        // remove old word cloud whenever user changes the inputs
+        d3.selectAll(".word").remove()
+        
+        var newVar = $("#"+dim+"-var").val();
+        params[dim+'axis'] = newVar;
+        params[dim+'axislabel'] = newVar;
+        CivisResult.saveParams(params);
+        draw_graph(data, def_vis_width, def_vis_height, params);
+      }
+    }(dim));
+  }
+
+
+};
+// Handle config blob, download the csv from the url, create the toolbar
+// and init the graph with the resulting parameters.
+var prepChart = function(config) {
+    // use the startRefreshApiToken method to get a new api key
+  client = new CivisClient(config.apiKey)
+  client.startRefreshApiToken(config.reportId)
+
+  var params = config['params'] || {};
+  params['reportId'] = config['reportId']
+  delete params['dbaxis']
+  delete params['saxis']
+  delete params['taxis']
+
+  //var params = config['params'] || {};
+  var params = {};
+
+  var def_vis_width = 1000;
+  var def_vis_height = 600;
+
+  var margin = {top: 10, right: 20, bottom: 0, left: 75};
+  var width = def_vis_width - margin.left - margin.right,
+      height = def_vis_height - margin.top - margin.bottom;
+  d3.select('.chart-outer')
+    .attr("width", width)
+    .attr("height", height);
+  var chart = d3.select(".chart-outer")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  $("#vis").append("<div class='tooltip' id='chart-tooltip'></div>");
+  $("#chart-tooltip").hide();
+
+  var svg = d3.select(".chart").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+  
+  createMetaToolbar(client, def_vis_width, def_vis_height, params);
+
+  d3.csv(config['dataUrl'], function(error, data) {
+    if(config['mode'] == 'edit') {
+      createToolbar(data, def_vis_width, def_vis_height, params);
+    }
+  });
+};
+//Init report
+CivisResult.init(prepChart);
+</script>
+</html>

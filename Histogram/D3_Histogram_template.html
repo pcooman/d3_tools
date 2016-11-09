@@ -220,12 +220,7 @@ draw = function(data, vis_width, vis_height, params) {
 	svg.append("g")
     .attr("class", "y axis")
     .call(yAxis);
-  
-  // var	kde = kernelDensityEstimator(epanechnikovKernel(params['smoothaxis']), x.ticks(100));
-
-  debugger;
-  // kde(data_arr)
-  
+    
   svg.selectAll(".legend")
       .data(classes)  
     .enter().insert("circle", ".legend")
@@ -263,7 +258,7 @@ draw = function(data, vis_width, vis_height, params) {
     	.attr("stroke-width", 5)
     	.on("mouseover", function(d) {return showDetails(Math.floor(1000*d['y'])/10 + "%",this);})
       .on("mouseout", function(d) {return hideDetails();})
-  debugger;
+
   svg.append("path")
    // .datum(kde(data_hist[i-1].map(function(d) {return d['y'];})))
   //	.datum(kde(data_split[i-1])) 
@@ -280,10 +275,7 @@ draw = function(data, vis_width, vis_height, params) {
 	function kernelDensityEstimator(kernel, x) {
   	return function(sample) {
     	return x.map(function(x) {
-                debugger;
-
-      	return [x, d3.mean(sample, function(v) { 
-          debugger;
+        return [x, d3.mean(sample, function(v) { 
           return kernel(x - v); })];
     	});
   	};
@@ -291,7 +283,7 @@ draw = function(data, vis_width, vis_height, params) {
 
 	function epanechnikovKernel(scale) {
   	return function(u) {
-      debugger;
+
     	return Math.abs(u /= scale) <= 1 ? .75 * (1 - u * u) / scale : 0;
   	};
 	}

@@ -166,7 +166,6 @@ $.ajaxSetup ({
             });
 
 draw_graph = function(data, vis_width, vis_height, params) {
-  debugger;
 
   if(params['faxis'] != null && params['tfaxis'] != null) {
     if (params['tfaxis'] == 'year') {
@@ -214,7 +213,6 @@ draw_graph = function(data, vis_width, vis_height, params) {
           data[i]['time'] = data[i]['year']+"-"+data[i]['month']+"-"+data[i]['day']+" "+data[i]['hour']+":"+data[i]['minute']+":"+data[i]['second']+"."+data[i]['microsecond']  
       }
   }
-    debugger;
 
   if(params['faxis'] != null && params['tfaxis'] != null) {
     if (params['tfaxis'] == 'year') {
@@ -245,7 +243,6 @@ draw_graph = function(data, vis_width, vis_height, params) {
       data = MG.convert.date(data, 'time','%Y-%m-%d %H:%M:%S.%L');
   }
 
-  debugger;
   /////////////////////////////////////////////
   // chart margin/sizing setup
   // deviate slightly from Bostock's convention
@@ -273,7 +270,6 @@ draw_graph = function(data, vis_width, vis_height, params) {
     var y_accessors = params['y1axis'];
     var legend = ['Original'];
   }
-  debugger;
   
   var intervention_flag = 0;
   var markers = [];
@@ -289,7 +285,6 @@ draw_graph = function(data, vis_width, vis_height, params) {
       }
     }
   }
-    debugger;
   
   if (params['x1axis'] != null && params['y1axis'] != null) {
     MG.data_graphic({
@@ -322,7 +317,6 @@ draw_graph = function(data, vis_width, vis_height, params) {
       	legend: legend
     });
   }
-    debugger;
 
   d3.select("#vis1 path").style("fill", "none");
   d3.select("#vis1 .mg-voronoi").remove();
@@ -366,7 +360,6 @@ draw_graph = function(data, vis_width, vis_height, params) {
   d3.select("#vis2 .mg-confidence-band").style("fill","LightSkyBlue")
   d3.select("#vis2 .mg-confidence-band").style("fill-opacity", 0.5)
   d3.select("#vis2 .mg-confidence-band").style("stroke","none")
-    debugger;
   
   // 3 --------------------------------------------------------------------------------
   if (params['x1axis'] != null && params['x4axis'] != null && params['y4axis'] != null && params['z4axis'] != null ) {
@@ -398,8 +391,6 @@ draw_graph = function(data, vis_width, vis_height, params) {
   d3.select("#vis3 .mg-confidence-band").style("fill","LightSkyBlue")
   d3.select("#vis3 .mg-confidence-band").style("fill-opacity", 0.5)
   d3.select("#vis3 .mg-confidence-band").style("stroke","none")
-    debugger;
-
 }
 
 query_data = function(client,data,def_vis_width,def_vis_height,params) {
@@ -493,8 +484,6 @@ query_data = function(client,data,def_vis_width,def_vis_height,params) {
         if (params['tfaxis'] == 'second') { q = q + "group by 1,2,3,4,5,6,7 order by 1,2,3,4,5,6,7 asc;"}
         if (params['tfaxis'] == 'microsecond') { q = q + "group by 1,2,3,4,5,6,7,8 order by 1,2,3,4,5,6,7,8 asc;"}
 
-        console.log(q)
-
     } else {
         var q = ""    
         if (params['x1axis'] != null && params['y1axis'] != null) {
@@ -549,7 +538,6 @@ query_data = function(client,data,def_vis_width,def_vis_height,params) {
                                 params['url'] = dataUrl;
                                 CivisReport.saveParams(params);
                              stop_loader();
-                             console.log(data)
                              draw_graph(data,def_vis_width,def_vis_height,params);
                             
                                 })
@@ -615,6 +603,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
             CivisReport.saveParams(params);
             client.request("/databases/"+params['dbaxis']+"/schemas", {method: "GET"}).then(function(result) {
                 var s_options = result.data.map(function(d) {return d.schema;});
+                s_options.unshift('--Select--')
                 for(i_label in s_options) {
                   s_type = s_options[i_label];
                   $("#s-var").append("<option value='"+s_type+"'>"+s_type+"</option>");
@@ -653,6 +642,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
                                         })
             .then(function(result) {
                 var t_options = result.data.map(function(d) {if (d.databaseId == params['dbaxis'] && d.schema == params['saxis']) return d.name;});
+                t_options.unshift('--Select--')
                 for(i_label in t_options) {
                   t_type = t_options[i_label];
                   $("#t-var").append("<option value='"+t_type+"'>"+t_type+"</option>");
@@ -843,7 +833,7 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
       client.request("/scripts/sql",{
               method: "POST",
               data: {
-                  'name': 'test script 1234',
+                  'name': 'Time Series Analysis ' +params['reportId'],
                   'remoteHostId': parseInt(params['dbaxis']),
                   'credentialId': credential.id,
                   'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 1"
@@ -920,7 +910,6 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                           params['z1axis'] = newVar;
                                           params['z1axislabel'] = newVar;
                                           CivisResult.saveParams(params);
-                                          debugger;
                                       }(dim);
                                 	});
 
@@ -1146,6 +1135,7 @@ var prepChart = function(config) {
   client.startRefreshApiToken(config.reportId)
 
   var params = config['params'] || {};
+  params['reportId'] = config['reportId']
   delete params['dbaxis']
   delete params['saxis']
   delete params['taxis']

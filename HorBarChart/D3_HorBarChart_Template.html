@@ -222,7 +222,7 @@ draw = function(data, vis_width, vis_height, params) {
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    debugger;
+
     document.getElementById('vis').setAttribute("style","height:"+vis_height+"px");
     var bar_height = 30;
     var bar_padding = 6;
@@ -230,7 +230,7 @@ draw = function(data, vis_width, vis_height, params) {
     var x = d3.scale.linear()
       .range([0, width])
       .domain(d3.extent(data, function(d) { return parseFloat(d[params['xaxis']]); })).nice();
-		debugger;
+
     var y = d3.scale.ordinal()
     		.range(_.range(0,data.length*(bar_height + bar_padding),bar_height+bar_padding))
     		.domain(data.map(function(d) { return d[params['yaxis']]; }))

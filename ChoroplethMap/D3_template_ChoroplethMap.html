@@ -240,7 +240,7 @@ add_var = function(client,data,def_vis_width,def_vis_height,params) {
                                   var max_val = d3.max(data.map(function(d) {return parseFloat(d[params['yaxis']])}))
                                   var min_val = d3.min(data.map(function(d) {return parseFloat(d[params['yaxis']])}))
                                   max_all = d3.max([Math.abs(max_val), Math.abs(min_val)])
-                                  debugger;
+
                                   var num_steps = 5;
 
                                   var x = d3.scale.linear()
@@ -291,9 +291,7 @@ add_var = function(client,data,def_vis_width,def_vis_height,params) {
                                   }
 
                                   for (var i=0; i<data.length; i++) {
-                                        debugger;
                                     	d3.select("path.fips_"+data[i][params['xaxis']])
-                                      	//.attr("class", "fips_"+data[i][params['xaxis']]+" "+quantize(data[i][params['yaxis']]))
                                        .style("fill", data[i][params['yaxis']] > 0 
                                             ? d3.interpolateBlues(Math.ceil(data[i][params['yaxis']]*num_steps/max_all)/num_steps) 
                                             : d3.interpolateReds(Math.ceil(-data[i][params['yaxis']]*num_steps/max_all)/num_steps)) 
@@ -380,19 +378,8 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
         // handle change to select, wrap in anonymous function so the pickers dont clash
         $("#"+dim+"-var").change(function(dim) {
           return function() {
-            d3.select("#s-var").empty();
-            d3.select("#t-var").empty();
-            d3.selectAll(".label_toolbar").remove()
-            d3.select("#g-var").remove();
-            d3.select("#x-var").remove();
-            d3.select("#y-var").remove();
-            d3.selectAll("path").remove();
-            d3.selectAll(".legend_rect").remove();
-            d3.selectAll(".legend_tick").remove();
-            
-            delete params.gaxis;
-            delete params.xaxis;
-            delete params.yaxis;
+            d3.select("#s-var").html("");
+            d3.select("#t-var").html("");
 
             var newVar = $("#"+dim+"-var").val();
             params[dim+'axis'] = newVar;
@@ -400,6 +387,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
             CivisReport.saveParams(params);
             client.request("/databases/"+params['dbaxis']+"/schemas", {method: "GET"}).then(function(result) {
                 var s_options = result.data.map(function(d) {return d.schema;});
+                s_options.unshift('--Select--')
                 for(i_label in s_options) {
                   s_type = s_options[i_label];
                   $("#s-var").append("<option value='"+s_type+"'>"+s_type+"</option>");
@@ -423,18 +411,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
          // handle change to select, wrap in anonymous function so the pickers dont clash
          $("#"+dim+"-var").change(function(dim) {
            return function() {
-             d3.select("#t-var").empty();
-             d3.selectAll(".label_toolbar").remove()
-             d3.select("#g-var").remove();
-             d3.select("#x-var").remove();
-             d3.select("#y-var").remove();
-             d3.selectAll("path").remove();
-             d3.selectAll(".legend_rect").remove();
-             d3.selectAll(".legend_tick").remove();
- 
-             delete params.gaxis;
-             delete params.xaxis;
-             delete params.yaxis;
+             d3.select("#t-var").html("");
 
              var newVar = $("#"+dim+"-var").val();
              params[dim+'axis'] = newVar;
@@ -449,6 +426,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
                                         })
             .then(function(result) {
                 var t_options = result.data.map(function(d) {if (d.databaseId == params['dbaxis'] && d.schema == params['saxis']) return d.name;});
+                t_options.unshift('--Select--')
                 for(i_label in t_options) {
                   t_type = t_options[i_label];
                   $("#t-var").append("<option value='"+t_type+"'>"+t_type+"</option>");
@@ -473,18 +451,6 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
          // handle change to select, wrap in anonymous function so the pickers dont clash
          $("#"+dim+"-var").change(function(dim) {
            return function() {
-             d3.selectAll(".label_toolbar").remove()
-             d3.select("#g-var").remove();
-             d3.select("#x-var").remove();
-             d3.select("#y-var").remove();
-             d3.selectAll("path").remove();
-             d3.selectAll(".legend_rect").remove();
-             d3.selectAll(".legend_tick").remove();
-
-             delete params.gaxis;
-             delete params.xaxis;
-             delete params.yaxis;
-
              var newVar = $("#"+dim+"-var").val();
              params[dim+'axis'] = newVar;
              params[dim+'axislabel'] = newVar;
@@ -518,6 +484,10 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
         d3.selectAll("path").remove();
         d3.selectAll(".legend_rect").remove();
         d3.selectAll(".legend_tick").remove();
+        d3.selectAll(".toolbar_rect").remove();
+        d3.selectAll(".toolbar_text").remove();
+        d3.select("#geotoolbar").remove();
+        d3.select("#legend").html("");
         delete params['gaxis']
         delete params['xaxis']
         delete params['yaxis']
@@ -543,6 +513,10 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
         d3.selectAll("path").remove();
         d3.selectAll(".legend_rect").remove();
         d3.selectAll(".legend_tick").remove();
+        d3.selectAll(".toolbar_rect").remove();
+        d3.selectAll(".toolbar_text").remove();
+        d3.select("#geotoolbar").remove();
+        d3.select("#legend").html("");
         delete params['gaxis']
         delete params['xaxis']
         delete params['yaxis']
@@ -572,6 +546,7 @@ var createGeoToolbar = function(client,def_vis_width, def_vis_height, params) {
     // handle change to select, wrap in anonymous function so the pickers dont clash
     $("#"+dim+"-var").change(function(dim) {
       return function() {
+        d3.selectAll("path").remove();
         d3.selectAll(".legend_rect").remove();
         d3.selectAll(".legend_tick").remove();
         delete params.xaxis;
@@ -582,8 +557,8 @@ var createGeoToolbar = function(client,def_vis_width, def_vis_height, params) {
         params[dim+'axislabel'] = newVar;
         CivisReport.saveParams(params);
         d3.selectAll("path").remove()
-        delete params.xaxis;
-        delete params.yaxis;
+        delete params['xaxis'];
+        delete params['yaxis'];
         draw_map(def_vis_width, def_vis_height, params);
      }
    }(dim));
@@ -598,10 +573,10 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
       client.request("/scripts/sql",{
               method: "POST",
               data: {
-                  'name': 'test script 1234',
+                  'name': 'Choropleth Map '+params['reportId'],
                   'remoteHostId': parseInt(params['dbaxis']),
                   'credentialId': credential.id,
-                  'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 10"
+                  'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 1"
               }
               }).then(function(result) {
               
@@ -636,16 +611,51 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
                                         // handle change to select, wrap in anonymous function so the pickers dont clash
                                         $("#"+dim+"-var").change(function(dim) {
                                           return function() {
-                                            d3.selectAll(".legend_rect").remove();
-                                            d3.selectAll(".legend_tick").remove();
                                             var newVar = $("#"+dim+"-var").val();
                                             params[dim+'axis'] = newVar;
                                             params[dim+'axislabel'] = newVar;
                                             CivisReport.saveParams(params);
-                                            add_var(client,data,def_vis_width,def_vis_height,params);
                                          }
                                      		}(dim));
                                       }
+
+                                    var svg = d3.select("#geotoolbar").append("svg")
+                                      .attr("width", def_vis_width)
+                                      .attr("height", 60);
+                                
+                                     svg.append('rect')
+                                      .attr("transform","translate(0,0)")
+                                   	 .attr('class','form-group toolbar_rect')
+                                      .attr('width', 150)
+                                      .attr('height', 45)
+                                      .attr('x', 20)
+                                      .attr('y', 0)
+                                      .attr('rx', 20)
+                                      .attr('ry', 20)
+                                      .style('fill', 'rgb(31,119,180)')
+                                      .on("click",  function()  {
+                                            d3.selectAll(".legend_rect").remove();
+                                            d3.selectAll(".legend_tick").remove();
+                                            d3.select("#legend").html("");
+
+                                        add_data(client,data,def_vis_width, def_vis_height, params);
+                                        })
+                                  							
+                                    svg.append('text').text('Draw Graph')
+                                      .attr('class', 'toolbar_text')
+                                      .attr('x', 95)
+                                      .attr('y', 30)
+                                      .style('fill', 'white')
+                                      .style("font-weight", "bold")
+                                      .style("font-size", "16px")
+                                      .attr("text-anchor", "middle")
+                                      .on("click", function()  {
+                                            d3.selectAll(".legend_rect").remove();
+                                            d3.selectAll(".legend_tick").remove();
+                                            d3.select("#legend").html("");
+
+                                        add_var(client,data,def_vis_width, def_vis_height, params);
+                                        })
                                   stop_loader();    
                                   })
                                })
@@ -661,7 +671,8 @@ var prepChart = function(config) {
 
   //var params = config['params'] || {};
   var params = {}
-  
+  params['reportId'] = config['reportId']
+
   // sizing
   if('dimensions' in config) {
     def_vis_width = config['dimensions']['width'];

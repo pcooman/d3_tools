@@ -218,7 +218,6 @@ draw = function(data, vis_width, vis_height, params) {
       .attr("class", "y axis")
       .attr("transform", "translate(" + x(Math.max(0,d3.min(data, function(d) {return parseFloat(d[params['xaxis']])})))+",0)")
       .call(yAxis);
-  debugger;
 }
 
 var showDetails = function(data, element) {

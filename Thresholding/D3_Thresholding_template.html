@@ -281,7 +281,6 @@ draw = function(data, vis_width, vis_height, params) {
   }
   
   if (params['xaxis'] != null && params['yaxis'] != null){
-    debugger;
     var AUC = 0
     var fpr_old = mydata[0].y_fpr
     var rec_old = mydata[0].y_rec
@@ -335,7 +334,7 @@ draw = function(data, vis_width, vis_height, params) {
   var yAxis2 = d3.svg.axis()
       .scale(y2)
       .orient("left");
-  debugger;
+
   // --------------------------------------------------------------------------
 	var svg1 = d3.select(".chart-outer1").append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -617,7 +616,7 @@ draw = function(data, vis_width, vis_height, params) {
               d3.select(".axis_label.fn").text(mydata[this.getAttribute("index")].fn)
               d3.select(".axis_label.fp").text(mydata[this.getAttribute("index")].fp)
               d3.select(".axis_label.tn").text(mydata[this.getAttribute("index")].tn)
-              debugger;
+
               d3.select(".roc_rect")
               	.attr("x", x1(mydata[this.getAttribute("index")].y_fpr))
                 .attr("fill","rgb(244,168,0)")

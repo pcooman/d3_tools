@@ -147,7 +147,7 @@ draw = function(data, vis_width, vis_height, params) {
 		     .thenBy(function (v1, v2) { return v1[params['yaxis']] > v2[params['yaxis']] ? 1 : (v1[params['yaxis']] < v2[params['yaxis']] ? -1 : 0); }))
 
   }
-      debugger;
+
       /////////////////////////////////////////////
       // chart margin/sizing setup
       // deviate slightly from Bostock's convention
@@ -246,7 +246,7 @@ draw = function(data, vis_width, vis_height, params) {
         		.attr("x", 0)
         		.attr("y", function(d,i) { return 104+i*(bar_height + bar_padding) + bar_height/2; })
         		.attr("text-anchor",  "start")
-        		.text(function(d) { debugger; return d;})
+        		.text(function(d) { return d;})
         		.style("font-weight","bold")
     
         svg.selectAll(".table_line")

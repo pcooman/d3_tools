@@ -188,7 +188,7 @@ draw = function(data, vis_width, vis_height, params) {
           .range([300, width])
           .domain([d3.min(data, function(d) { return parseFloat(d[params['laxis']]); }),
                 d3.max(data, function(d) { return parseFloat(d[params['uaxis']]); })]);
-    		debugger;
+
         var y = d3.scale.ordinal()
         		.range(_.range(100,100+data.length*(bar_height + bar_padding),bar_height+bar_padding))
         		.domain(data.map(function(d) { return d[params['xaxis']]; }))
@@ -243,7 +243,6 @@ draw = function(data, vis_width, vis_height, params) {
             .style("stroke", "FireBrick")
             .style("fill", "Crimson")
             .on("mouseover", function(d,i) {
-                    debugger;
     				svg.append("line")
                         .attr("class","marker_line")
                         .attr("x1", x(parseFloat(d[params['yaxis']])))

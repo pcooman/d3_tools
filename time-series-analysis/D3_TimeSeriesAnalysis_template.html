@@ -146,7 +146,7 @@ $.ajaxSetup ({
             });
 
 draw = function(data, vis_width, vis_height, params) {
-  debugger;
+
   /////////////////////////////////////////////
   // chart margin/sizing setup
   // deviate slightly from Bostock's convention
@@ -174,7 +174,6 @@ draw = function(data, vis_width, vis_height, params) {
     var y_accessors = params['y1axis'];
     var legend = ['Original'];
   }
-  debugger;
   
   var intervention_flag = 0;
   var markers = [];
@@ -405,7 +404,7 @@ var createToolbar = function(data, params) {
           params['z1axis'] = newVar;
           params['z1axislabel'] = newVar;
           CivisResult.saveParams(params);
-          debugger;
+
           draw(data, def_vis_width, def_vis_height, params);       
       }(dim);
 	});
@@ -580,7 +579,6 @@ var prepChart = function(config) {
   $("#vis1").append("<div class='tooltip' id='chart-tooltip'></div>");
   $("#chart-tooltip").hide();
   d3.csv(config['dataUrl'], function(error, data) {
-    console.log(data)
     if(config['mode'] == 'edit') {
       createToolbar(data, params);
       def_vis_height = def_vis_height - 50; // account for toolbar

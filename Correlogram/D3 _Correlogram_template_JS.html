@@ -150,7 +150,7 @@ $.ajaxSetup ({
 draw_graph = function(mydata, vis_width, vis_height, params) {
   
   var count = params['count'];
-  debugger;
+
   /////////////////////////////////////////////
   // chart margin/sizing setup
   // deviate slightly from Bostock's convention
@@ -309,7 +309,6 @@ draw_graph = function(mydata, vis_width, vis_height, params) {
 
 query_data = function(client,data,def_vis_width,def_vis_height,params) {
   
-    debugger;
     start_loader(150,300,175)
     
     var q = "select "
@@ -346,9 +345,7 @@ query_data = function(client,data,def_vis_width,def_vis_height,params) {
               			  d3.csv(dataUrl, function(error, data){
                                 params['url'] = dataUrl;
                                 CivisReport.saveParams(params);
-                                console.log(data)
-                                console.log(params)
-                                debugger;
+
                              stop_loader();
                              draw_graph(data,def_vis_width,def_vis_height,params);
                             
@@ -416,6 +413,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
             CivisReport.saveParams(params);
             client.request("/databases/"+params['dbaxis']+"/schemas", {method: "GET"}).then(function(result) {
                 var s_options = result.data.map(function(d) {return d.schema;});
+                s_options.unshift('--Select--')
                 for(i_label in s_options) {
                   s_type = s_options[i_label];
                   $("#s-var").append("<option value='"+s_type+"'>"+s_type+"</option>");
@@ -454,6 +452,7 @@ var createMetaToolbar = function(client, def_vis_width, def_vis_height, params) 
                                         })
             .then(function(result) {
                 var t_options = result.data.map(function(d) {if (d.databaseId == params['dbaxis'] && d.schema == params['saxis']) return d.name;});
+                t_options.unshift('--Select--')
                 for(i_label in t_options) {
                   t_type = t_options[i_label];
                   $("#t-var").append("<option value='"+t_type+"'>"+t_type+"</option>");
@@ -574,7 +573,7 @@ var createToolbar = function(client,def_vis_width,def_vis_height,params) {
       client.request("/scripts/sql",{
               method: "POST",
               data: {
-                  'name': 'test script 1234',
+                  'name': 'Correlogram ' +params['reportId'],
                   'remoteHostId': parseInt(params['dbaxis']),
                   'credentialId': credential.id,
                   'sql': "select * from "+params['saxis']+"."+params['taxis']+" limit 1"
@@ -753,8 +752,9 @@ var prepChart = function(config) {
   // use the startRefreshApiToken method to get a new api key
   client = new CivisClient(config.apiKey)
   client.startRefreshApiToken(config.reportId)
-  debugger;
+
   var params = config['params'] || {};
+  params['reportId'] = config['reportId']
   delete params['dbaxis']
   delete params['saxis']
   delete params['taxis']

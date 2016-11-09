@@ -356,12 +356,6 @@ draw = function(data, vis_width, vis_height, params) {
           .attr("cx", function(d) { return x(parseFloat(d[params['xaxis']])); })
           .attr("cy", function(d) { return y(parseFloat(d[params['yaxis']])); });
     }
-
-    function get_nearest(input,element) {
-        console.log(input);
-        console.log(element);
-    debugger;    
-    }
 }
 
 var showDetails = function(data, element) {
@@ -478,7 +472,6 @@ var createToolbar = function(data, params) {
         params[dim+'axis'] = newVar;
         params[dim+'axislabel'] = newVar;
         CivisResult.saveParams(params);
-        debugger;
         
         for (var i=0; i<data.length; i++){
             var this_circle = document.getElementsByClassName("circle")[i];
@@ -586,9 +579,6 @@ var createExportToolbar = function(client, data, def_vis_width, def_vis_height, 
         params[dim+'axis'] = newVar;
         params[dim+'axislabel'] = newVar;
         CivisResult.saveParams(params);
-
-        d3.selectAll(".circle_selected")
-            .each(function(d) {get_nearest(data,d)})
       }
     }(dim));
      
@@ -630,7 +620,6 @@ var exportTable = function(client, data, params) {
                     "create table "+params['s-outaxis']+"."+params['t-outaxis']+" as "
     for (var i = 0; i<N_selected; i++){
         var this_circle = selected_circles[i];
-        debugger;
            var id = parseInt(this_circle.getAttribute("id"))
            if (i > 0) {q = q + "union all "}
            q = q + "(select row_number() over (order by distance asc) as rank, * from "+
@@ -642,8 +631,6 @@ var exportTable = function(client, data, params) {
                     "limit "+(params['scopeaxis']+1)+") "+
                     "where distance > 0) "
         }    
-  debugger;
-  console.log(q)
 
   client.defaultCredential().then(function(credential) {
       client.request("/scripts/sql",{

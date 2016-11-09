@@ -268,7 +268,6 @@ draw = function(data_full, vis_width, vis_height, params) {
   
   if (params['caxis'] != null && params['caxis'].length > 0) {
     for (var i=0; i<classes.length; i++) {
-      debugger;
     svg.append("circle")
        .attr("class","legend_circle")
        .attr("cx", 20 + size * n + padding )

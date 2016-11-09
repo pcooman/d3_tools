@@ -226,10 +226,9 @@ draw = function(data, vis_width, vis_height, params) {
         m.value_in = _.reduce(matrix, function (m1, n1) { 
         return m1 + n1[d.index]}, 0);
       }
-      debugger;
+
       m.mtotal = _.reduce(matrix, function (m1, n1) { 
         return m1 + _.reduce(n1, function (m2, n2) { 
-            debugger;            
             return m2 + n2}, 0);
       }, 0);
       return m;
@@ -321,7 +320,6 @@ draw = function(data, vis_width, vis_height, params) {
         }
           
     function groupTip (d) {
-        debugger;
         var p = d3.format(".1f"), q = d3.format(",.2r")
         return "Group Info:<br/>"
         + d.gname + "<br/>"
