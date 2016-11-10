@@ -119,7 +119,7 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>This section provides a manual for the Recommender System visualization. It explains the meaning of the inputs, the correct specification of the input data table and known issues.</p>
           	<h2>Inputs</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_Metatoolbar_empty.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_Metatoolbar_empty.png?raw=true">
             <ul>
               <li><b>Source Database:</b> A dropdown menu to select the database or cluster of the table we want ot visualize (e.g., redshift-general). Once you make a secltion here, the <i>Source Schema</i> dropdown menu will be populated with all schemas within the selected database.</li>
               <li><b>Source Schema:</b> A dropdown menu to select the schema that contains the table to visualize. Again, making a selection here initiates a script to populate the <i>Source Table</i> dropdown menu with all tables within the selected schema.</li>
@@ -127,7 +127,7 @@ body, html { overflow: scroll; height: 100% }
               <li><b>Get Table:</b> Once the source database, schema and table have been selected, click this button to retrieve the column names of the selected table.</li>
             </ul>
            <p>A short time after clicking the <i>Get Table</i> button a second toolbar should appear:</p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_Toolbar_empty.png?raw=true">     		 
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_Toolbar_empty.png?raw=true">     		 
             <ul>
               <li><b>X axis:</b> A dropdown menu to select the column in the data table that contains the values to be plotted along the X axis.</li>
               <li><b>Y axis:</b> A dropdown menu to select the column in the data table that contains the values to be plotted along the Y axis.</li>
@@ -138,7 +138,7 @@ body, html { overflow: scroll; height: 100% }
             </ul>
           	<h2>Data table</h2>
           	<p>To get the correct visualization, the data table needs to be organized as follows:<p>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_InputTable.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_InputTable.png?raw=true">
           	<p>The graph will plot a bubble for each row in the table. You are responsible for removing duplicate rows. You will need at least three columns for the <i>X</i>, <i>Y</i> and <i>Labels</i> menus. The table can contain additional columns, the toolbar will let you select the columns that are relevant to the plot.</p>
           	<h2>Known issues</h2>
           	<p>Add a way to test new cases, exclude other test cases from the X nearest nodes evaluation.</p>
@@ -150,26 +150,26 @@ body, html { overflow: scroll; height: 100% }
           	<h2>Introduction</h2>
           	<p>Here we show an example of a typical use case and what the resulting plot should look like. In this example we will plot a synthetic data set of movies, arbitrarily assigned to one of three clusters. The data can be found either on Platform (schema.table = <i>pcooman.movies_tsne</i> on redshift-general).</p>
             <h2>Data table</h2>
-          	<img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_InputTable.png?raw=true">
+          	<img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_InputTable.png?raw=true">
           	<h2>Sample plot</h2>
           	<p>First, we only select the <i>X</i>, <i>Y</i> and <i>Labels<i> variables, selecting the 'x', 'y' and 'movie_name' data table columns respectively:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_Example_simple.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_Example_simple.png?raw=true">
            <p>In the top left corner, there are three icons that allow us to manipulate and explore the plot. Clicking the magnifying glass activates the zoom function. The cursor will change to a cross-hair to indicate this change. Drawing a rectangle will zoom into that area. 
 Double-clicking will zoom out and pan back to the original view. cicking the second icon activates the panning function. The cursor will change to four-pointed arrows to indicate this change. Clicking and dragging will translate the plot. To reset the view, select the zoom icon and double click on the graph. The third icon activates 
 the selector mode. When in this mode, clicking on a node will color it red and mark it as being selected. Later on, we will export the nodes that are nearest to these selected nodes.</p> 
             <p>The <i>Select by</i> and <i>Select</i> menus offer a more targeted way to highlight and select nodes. The <i>Select by</i> menu offers 3 options: 'class', 'label' and 'importance'. Selecting one will populate the <i>Select</i> dropdown menu options. For now, since we have only selected X, Y and Labels features, we can only select based on label:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_SelectBy.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_SelectBy.png?raw=true">
             <p>Selecting 'label' will populate the Select menu with the movie names (in alphabetical order).</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_Select.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_Select.png?raw=true">
             <p>Selecting a label (e.g. 'The Angry Birds Movie') causes the corresponding node to become selected (colored red):</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_Selected.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_Selected.png?raw=true">
             <p>Next, we select 'class_3' from the <i>#Clusters</i> drop down menu and 'true_gross_revenue' from the <i>Importance</i> dropdown menu. Click on 'Draw Graph' to query the data and re-draw the graph. Now, the nodes should have different colors based on their cluster memberships and different size based on their gross revenue:</p>
-           <img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_example.png?raw=true">
+           <img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_example.png?raw=true">
            <p>Hovering over a node should bring up a tooltip, listing the label, cluster membership and importance (depending on whether or not they were provided):</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_Tooltip.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_Tooltip.png?raw=true">
             <p>The final set of inputs, located below the graph, allow us to specify an output table and how many nodes should be included. For each node, we will export the 5 nearest nodes. Note that this can include other selected nodes.</p>
             <p>The output table will contain a column with the labels of the selected nodes and all information for the 5 nearest nodes:</p>
-            <img src="https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/Clustering_OutputTable.png?raw=true">
+            <img src="https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/Clustering_OutputTable.png?raw=true">
             <p>The 'rank' column signifies the order with lower ranked movies being closer to the selected movie</p>
           	 <ccontent></ccontent>
         </div>
@@ -218,7 +218,7 @@ draw_graph = function(data, vis_width, vis_height, params) {
 
   // Zoom icon
   d3.select(".chart-outer").append("image")
-    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_zoom.png?raw=true")    
+    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/icon_zoom.png?raw=true")    
     .attr("width", 40)
     .attr("height", 40)
     .attr("x", 8)
@@ -242,7 +242,7 @@ draw_graph = function(data, vis_width, vis_height, params) {
 
   // Pan icon
   d3.select(".chart-outer").append("image")
-    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_pan.png?raw=true")    
+    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/icon_pan.png?raw=true")    
     .attr("width", 40)
     .attr("height", 40)
     .attr("x", 8)
@@ -271,7 +271,7 @@ draw_graph = function(data, vis_width, vis_height, params) {
 
   // Select icon
   d3.select(".chart-outer").append("image")
-    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/ClusteringTool/icon_select.png?raw=true")    
+    .attr("xlink:href","https://github.com/pcooman/d3_tools/blob/master/RecommenderSystem/icon_select.png?raw=true")    
     .attr("width", 30)
     .attr("height", 30)
     .attr("x", 13)
@@ -948,6 +948,7 @@ var createExportToolbar = function(client, data, def_vis_width, def_vis_height, 
         params[dim+'axis'] = newVar;
         params[dim+'axislabel'] = newVar;
         CivisResult.saveParams(params);
+        }
     }(dim));
      
      var svg = d3.select("#exporttoolbar2").append("svg")
