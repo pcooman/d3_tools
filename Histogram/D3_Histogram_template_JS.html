@@ -291,7 +291,7 @@ query_data = function(client,data,def_vis_width,def_vis_height,params) {
     
     if (params['yaxis'] != null) {
         var q = "with minmax as (select max("+params['xaxis']+"), min("+params['xaxis']+") from "+params['saxis']+"."+params['taxis']+") " +
-                "select "+params['yaxis']+", " +
+                "select "+params['yaxis']+" as class, " +
                 "floor("+params['binaxis']+"*("+params['xaxis']+" - min)/(max - min))*((max - min)/"+params['binaxis']+")+min as bin, " +
                 "(max - min)/"+params['binaxis']+" as bin_width , " +
                 "count(*) from " +
